@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import './app.css';
+import './App.css';
 import { io } from "socket.io-client";
 import { Stage, Layer, Text } from 'react-konva';
-import Card from './card';
+import Card from './components/card/card';
 
 export default class App extends Component {
   constructor(props) {
@@ -10,20 +10,21 @@ export default class App extends Component {
     this.cardElement = React.createRef();
   }
   state = {
-    username: "Default User",
     connected: false,
     username: null,
     socket: null
   };
 
   componentDidMount() {
-    this.state.username = Math.random().toString();
-    const socket = io('http://localhost:8080', {
+    const socket = io('http://localhost:5000', {
       transports: ['websocket']
     });
     socket.on("connect", () => {
-      this.state.connected = true;
-      this.state.socket = socket;
+      this.setState({
+        connected: true,
+        socket: socket,
+        username: Math.random().toString()
+      });
       socket.on("cardPositionUpdate", (data) => {
         console.log("received", data);
         if (data.username !== this.state.username) {
