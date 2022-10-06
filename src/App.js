@@ -16,9 +16,8 @@ export default class App extends Component {
   };
 
   componentDidMount() {
-    console.log(process.env.NODE_ENV)
     const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com/" : "http://localhost:5000";
-    const socket = io('http://localhost:5000', {
+    const socket = io(url, {
       transports: ['websocket']
     });
     socket.on("connect", () => {
