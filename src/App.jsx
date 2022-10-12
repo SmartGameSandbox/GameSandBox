@@ -1,60 +1,20 @@
 import React, { Component } from 'react';
 import './App.css';
-import { io } from "socket.io-client";
-import { Stage, Layer, Text } from 'react-konva';
-import Card from './components/card/card';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import RoomCreation from './components/rooms/roomCreation';
+import Room from './components/rooms/room';
+import JoinRoom from './components/rooms/joinRoom';
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-    this.cardElement = React.createRef();
-  }
-  state = {
-    connected: false,
-    username: null,
-    socket: null
-  };
-
-  componentDidMount() {
-    const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com/" : "http://localhost:5000";
-    const socket = io(url, {
-      transports: ['websocket']
-    });
-    socket.on("connect", () => {
-      this.setState({
-        connected: true,
-        socket: socket,
-        username: Math.random().toString()
-      });
-      socket.on("cardPositionUpdate", (data) => {
-        console.log("received", data);
-        if (data.username !== this.state.username) {
-          this.cardElement.current.moveToPosition(data);
-        }
-      });
-    });
-  }
-
-  handleDragMove = (data) => {
-    this.state.socket.emit("cardMove",
-      { x: data.evt.offsetX, y: data.evt.offsetY, username: this.state.username }, (err) => {
-        if (err) {
-          alert(err);
-        }
-      });
-  }
-
-  render() {
-    // Stage is a div container
-    // Layer is actual canvas element (so you may have several canvases in the stage)
-    // And then we have canvas shapes inside the Layer
-    return (
-      <Stage width={window.innerWidth} height={window.innerHeight}>
-        <Layer>
-          <Text text="Try click on rect" />
-          <Card ref={this.cardElement} onDragMove={this.handleDragMove} />
-        </Layer>
-      </Stage>
-    );
-  }
+const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<RoomCreation />} />
+        <Route path='createroom' element={<RoomCreation />} />
+        <Route path='room' element={<Room />} />
+      </Routes>
+    </BrowserRouter>
+  ) 
 }
+
+export default App

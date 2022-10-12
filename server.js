@@ -1,24 +1,49 @@
+require('dotenv').config()
 const express = require("express");
 const app = express();
+const cors = require('cors');
+if (process.env.NODE_ENV !== "production") {
+  app.use(cors());
+}
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 const path = require("path");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 const { roomSchema, Room } = require("./schemas/room");
+const idGenerator = require("./utils/id_generator");
+app.use(express.json());
 
 // Web sockets
-io.on("connection", (socket) => {
-  let roomID = 2436;
-  socket.join(roomID);
-  socket.on("cardMove", ({ x, y, username }) => {
+io.on("connection", async (socket) => {
+  // Join room
+  socket.on("joinRoom", async (data) => {
+    const roomID = data.id;
+    const password = data.password;
+    const roomData = await Room.findOne({ id: roomID, password: password });
+    if (roomID && password && roomData) {
+      socket.join(roomID);
+      // TODO: add user to the user array
+    } else {
+      socket.emit("error", "Invalid room ID or password");
+    }
+  });
+
+  socket.on("cardMove", ({ x, y, username, roomID }) => {
     socket.broadcast.to(roomID).emit("cardPositionUpdate", {
       x: x,
       y: y,
       username: username,
     });
   });
-  socket.on("disconnect", () => { });
+
+  socket.on("keepalive", async ({roomID}) => {
+    await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
+  });
+
+  socket.on("disconnect", () => {
+    // TODO: remove user from the user array
+  });
 });
 
 io.on("connect_error", (err) => {
@@ -28,32 +53,50 @@ io.on("connect_error", (err) => {
 // Restful Apis
 
 // Rooms
-app.get("/api/rooms", (req, res) => {
-  Room.find({})
-    .then((docs) => {
-      res.json(docs);
-    })
-    .catch(() => {
-      res.json({ msg: "db reading .. err.  Check with server devs" });
-    });
+app.get("/api/rooms", async (req, res) => {
+  try {
+    res.json(await Room.find());
+  } catch (err) {
+    res.json({ message: err });
+    console.log(err);
+  }
 });
 
-app.get("/api/room/:id", (req, res) => {
-  Room.find({ _id: mongoose.Types.ObjectId(`${req.params.id}`) })
-    .then((doc) => {
-      res.json(doc);
-    })
-    .catch(() => {
-      res.json({ msg: "db reading .. err.  Check with server devs" });
-    });
+// Get room by id
+app.get("/api/room/:id", async (req, res) => {
+  try {
+    res.json(await Room.findById(req.params.id));
+  } catch (err) {
+    res.json({ message: err });
+    console.log(err);
+  }
 });
 
-app.use(express.json());
-app.post("/api/rooms", (req, res) => {
-  Room.create(req.body, (err) => {
-    if (err) console.log(err);
-  });
-  res.json({ status: "ok" });
+//create room
+app.post("/api/room", async (req, res) => {
+  const ROOM_ID_LENGTH = 4;
+  let roomID = 0;
+  try {
+    do {
+      roomID = idGenerator(ROOM_ID_LENGTH);
+    } while (await Room.findOne({ id: roomID }));
+    if (!req.body) {
+      throw new Error("Error: No room body provided");
+    }
+    const gameRoomData = new Room({
+      id: roomID,
+      password: req.body.password,
+      name: req.body.name
+    });
+    const result = await gameRoomData.save();
+    if (!result) {
+      throw new Error("Error: Room not created");
+    }
+    res.json(result);
+  } catch (err) {
+    res.json({ message: err });
+    console.log(err);
+  }
 });
 
 if (process.env.NODE_ENV === "production") {
