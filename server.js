@@ -15,18 +15,20 @@ app.use(express.json());
 
 // Web sockets
 io.on("connection", async (socket) => {
-  const timer = Date.now();
-  const roomID = socket.handshake.query.id;
-  const password = socket.handshake.query.password;
-  const roomData = await Room.findOne({ id: roomID, password: password });
-  if (roomID && password && roomData) {
-    socket.join(roomID);
-    // TODO: add user to the user array
-  } else {
-    socket.emit("error", "Invalid room ID or password");
-  }
-  
-  socket.on("cardMove", ({ x, y, username }) => {
+  // Join room
+  socket.on("joinRoom", async (data) => {
+    const roomID = data.id;
+    const password = data.password;
+    const roomData = await Room.findOne({ id: roomID, password: password });
+    if (roomID && password && roomData) {
+      socket.join(roomID);
+      // TODO: add user to the user array
+    } else {
+      socket.emit("error", "Invalid room ID or password");
+    }
+  });
+
+  socket.on("cardMove", ({ x, y, username, roomID }) => {
     socket.broadcast.to(roomID).emit("cardPositionUpdate", {
       x: x,
       y: y,

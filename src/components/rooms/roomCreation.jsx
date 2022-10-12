@@ -26,16 +26,14 @@ export default class RoomCreation extends Component {
     return (
       <>
         <div>
-          <form>
-            <input ref={this.roomnameInput} placeholder='Room Name' />
-            <br />
-            <input ref={this.passwordInput} placeholder='Password' type='password' />
-            <br />
-            <button type='submit' onClick={e => {
-              e.preventDefault()
-              this.createRoom()
-            }}>CREATE ROOM</button>
-          </form>
+          <input ref={this.roomnameInput} placeholder='Room Name' autoComplete="off" />
+          <br />
+          <input ref={this.passwordInput} placeholder='Password' type='password' autoComplete="off" />
+          <br />
+          <button type='submit' onClick={e => {
+            e.preventDefault()
+            this.createRoom()
+          }}>CREATE ROOM</button>
         </div>
       </>
     );
