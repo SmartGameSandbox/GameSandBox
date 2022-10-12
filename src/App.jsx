@@ -3,6 +3,7 @@ import './App.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RoomCreation from './components/rooms/roomCreation';
 import Room from './components/rooms/room';
+import JoinRoom from './components/rooms/joinRoom';
 
 const App = () => {
   return (
@@ -11,6 +12,7 @@ const App = () => {
         <Route path='/' element={<RoomCreation />} />
         <Route path='createroom' element={<RoomCreation />} />
         <Route path='room' element={<Room />} />
+        <Route path='joinroom' element={<JoinRoom />} />
       </Routes>
     </BrowserRouter>
   ) 
