@@ -12,7 +12,6 @@ const App = () => {
         <Route path='/' element={<RoomCreation />} />
         <Route path='createroom' element={<RoomCreation />} />
         <Route path='room' element={<Room />} />
-        <Route path='joinroom' element={<JoinRoom />} />
       </Routes>
     </BrowserRouter>
   ) 
