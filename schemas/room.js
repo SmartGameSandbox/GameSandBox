@@ -1,9 +1,19 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose;
 const roomSchema = new Schema({
-    roomNumber: { type : Number , unique : true, required : true, dropDups: true },
-    name: String
+    id: { type: String, index: true, unique: true, required: true },
+    name: { type: String, maxlength: 20, required: true },
+    users: {
+        type: Array,
+        required: false,
+        default: []
+    },
+    expireAt: {
+        type: Date,
+        expires: "60m", default: Date.now
+    },
+    password: { type: String, min: [4, 'Password too short'], max: [20, 'Password too long'] },
 });
 
 module.exports.roomSchema = roomSchema;
-module.exports.Room = mongoose.model('rooms', roomSchema);
+module.exports.Room = mongoose.model('room', roomSchema);
