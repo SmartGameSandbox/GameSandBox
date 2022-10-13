@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import styles from "./loginStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -19,7 +18,7 @@ const LoginComponent = () => {
     <>
       <Box
         sx={styles.roomBoxStyle}
-        id="create-room-container"
+        id="login-container"
         component="form"
         autoComplete="off"
       >
@@ -71,7 +70,7 @@ const LoginComponent = () => {
 
         <div>
           <span>Not registered yet?</span>
-          <Button>Cretae an Account</Button>
+          <Button href="/newaccount">Cretae an Account</Button>
         </div>
       </Box>
     </>

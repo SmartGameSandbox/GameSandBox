@@ -5,6 +5,7 @@ import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
 import JoinRoom from "./components/rooms/joinRoom";
 import LoginComponent from "./components/loginComponent/loginComponent";
+import CreateNewAccountComponent from "./components/createAccountComponent/createAccountComponent";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -69,6 +70,7 @@ const App = () => {
           <Route path="/joinroom" element={<JoinRoom />} />
           <Route path="/room" element={<Room />} />
           <Route path="/login" element={<LoginComponent />} />
+          <Route path="/newaccount" element={<CreateNewAccountComponent />} />
         </Routes>
       </BrowserRouter>
     </>
