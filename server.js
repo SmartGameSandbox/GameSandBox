@@ -2,11 +2,14 @@ require('dotenv').config()
 const express = require("express");
 const app = express();
 const cors = require('cors');
+var http = require("http").Server(app);
+var io;
 if (process.env.NODE_ENV !== "production") {
   app.use(cors());
+  io = require("socket.io")(http, { cors: { origin: "*" } });
+} else {
+  io = require("socket.io")(http);
 }
-var http = require("http").Server(app);
-var io = require("socket.io")(http);
 const path = require("path");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
@@ -20,12 +23,17 @@ io.on("connection", async (socket) => {
   socket.on("joinRoom", async (data) => {
     const roomID = data.id;
     const password = data.password;
-    const roomData = await Room.findOne({ id: roomID, password: password });
-    if (roomID && password && roomData) {
-      socket.join(roomID);
+    if (roomID && password) {
+      const roomData = await Room.findOne({ id: roomID, password: password });
+      if (roomData) {
+        socket.join(roomID);
+        console.log("User joined room " + roomID);
+      } else {
+        socket.emit("error", "Invalid room ID or password");
+      }
       // TODO: add user to the user array
     } else {
-      socket.emit("error", "Invalid room ID or password");
+      socket.emit("error", "Room ID and password are required");
     }
   });
 
@@ -37,7 +45,7 @@ io.on("connection", async (socket) => {
     });
   });
 
-  socket.on("keepalive", async ({roomID}) => {
+  socket.on("keepalive", async ({ roomID }) => {
     await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
   });
 
@@ -57,17 +65,27 @@ app.get("/api/rooms", async (req, res) => {
   try {
     res.json(await Room.find());
   } catch (err) {
-    res.json({ message: err });
+    res.json({ status: "error", message: err });
     console.log(err);
   }
 });
 
 // Get room by id
-app.get("/api/room/:id", async (req, res) => {
+app.get("/api/room", async (req, res) => {
   try {
-    res.json(await Room.findById(req.params.id));
+    const id = req.query.id;
+    if (!id) {
+      throw new Error("Room ID is required");
+    }
+    const password = req.query.password;
+    const roomData = await Room.findOne({ id: id, password: password });
+    if (roomData) {
+      res.json({ status: "success" });
+    } else {
+      res.json({ status: "error", message: "Invalid room ID or password" });
+    }
   } catch (err) {
-    res.json({ message: err });
+    res.json({ status: "error", message: err });
     console.log(err);
   }
 });
@@ -94,7 +112,7 @@ app.post("/api/room", async (req, res) => {
     }
     res.json(result);
   } catch (err) {
-    res.json({ message: err });
+    res.json({ status: "error", message: err });
     console.log(err);
   }
 });
