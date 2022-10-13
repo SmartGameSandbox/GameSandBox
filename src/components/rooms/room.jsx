@@ -3,6 +3,7 @@ import './room.css';
 import { io } from "socket.io-client";
 import { Stage, Layer, Text } from 'react-konva';
 import Card from '../card/card';
+import CardImage from '../card/cardImage';
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
 const socket = io(url, { transports: ['websocket'] });
@@ -19,6 +20,17 @@ const Room = () => {
                     alert(err);
                 }
             });
+    }
+
+    const handleClick = (data) => {
+        console.log(data);
+        socket.emit("cardFlip",
+            { x: data.evt.offsetX, y: data.evt.offsetY, isFlipped: data.isFlipped, username: username, roomID: roomID }, (err) => {
+                if (err) {
+                    alert(err);
+                }
+            }
+        );
     }
 
     const joinRoom = (roomID, roomPassword) => {
@@ -43,9 +55,16 @@ const Room = () => {
 
         socket.on("cardPositionUpdate", (data) => {
             if (data.username !== username) {
-                console.log(data);
                 cardElement.current.moveToPosition(data);
             }
+        });
+
+        socket.on("cardFlipUpdate", (data) => {
+            console.log(data);
+            // if (data.username !== username) {
+            //     console.log(data);
+            //     cardElement.current.flipCard(data);
+            // }
         });
 
         socket.on("error", (error) => {
@@ -57,17 +76,23 @@ const Room = () => {
         return () => {
             socket.off("connect");
             socket.off("cardPositionUpdate");
+            socket.off("cardFlipUpdate");
             socket.off("error");
         }
     }, []);
 
     return (
-        <Stage width={window.innerWidth} height={window.innerHeight}>
-            <Layer>
-                <Text text="Try click on rect" />
-                <Card ref={cardElement} onDragMove={handleDragMove} />
-            </Layer>
-        </Stage>
+        <div>
+                <Stage width={window.innerWidth} height={500}>
+                    <Layer>
+                        {/* <Text text="Try click on rect" /> */}
+                        <Card ref={cardElement} onDragMove={handleDragMove} />
+                    </Layer>
+                </Stage>
+            <br />
+            <CardImage></CardImage>
+        </div>
+        //<Card ref={cardElement} onDragMove={handleDragMove} onClick={handleClick} />
     );
 }
 export default Room;

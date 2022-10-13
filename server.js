@@ -45,6 +45,15 @@ io.on("connection", async (socket) => {
     });
   });
 
+  socket.on("cardFlip", ({ x, y, isFlipped, username, roomID }) => {
+    socket.broadcast.to(roomID).emit("cardFlipUpdate", {
+      x: x,
+      y: y,
+      isFlipped: isFlipped,
+      username: username,
+    });
+  });
+
   socket.on("keepalive", async ({ roomID }) => {
     await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
   });
