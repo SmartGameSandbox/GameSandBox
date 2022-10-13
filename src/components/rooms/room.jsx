@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import { Stage, Layer, Text } from 'react-konva';
 import Card from '../card/card';
 
-const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com/" : "http://localhost:5000";
+const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
 const socket = io(url, { transports: ['websocket'] });
 let roomID = null;
 let roomPassword = null;
