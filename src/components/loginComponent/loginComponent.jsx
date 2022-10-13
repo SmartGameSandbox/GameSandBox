@@ -52,6 +52,7 @@ const LoginComponent = () => {
           />
         </div>
         <div sx={styles.forgotPasswordStyle}>
+          // TODO: Line sign in and forgot password in one line.
           <div>
             <Button sx={styles.forgotPasswordStyle}>Forgot password?</Button>
           </div>
