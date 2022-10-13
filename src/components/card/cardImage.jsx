@@ -2,9 +2,6 @@ import React from 'react';
 import ReactCardFlip from 'react-card-flip';
 import PokerFront from '../../images/PokerFront_2Heart.jpg';
 import PokerBack from '../../images/PokerBack.png';
-import Draggable from 'react-draggable';
-import FrontImage from './frontImage';
-import BackImage from './backImage';
 
 
 export default class CardImage extends React.Component {

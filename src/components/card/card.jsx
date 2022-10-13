@@ -6,7 +6,6 @@ import Draggable from 'react-draggable';
 import PokerBack from '../../images/PokerBack.png';
 import { Image } from 'react-konva';
 import useImage from 'use-image';
-import BackImage from './backImage';
 
 
 const CardBack = () => {
