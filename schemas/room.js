@@ -12,7 +12,7 @@ const roomSchema = new Schema({
         type: Date,
         expires: "60m", default: Date.now
     },
-    password: { type: String, required: true, min: [4, 'Password too short'], max: [20, 'Password too long'] },
+    password: { type: String, min: [4, 'Password too short'], max: [20, 'Password too long'] },
 });
 
 module.exports.roomSchema = roomSchema;
