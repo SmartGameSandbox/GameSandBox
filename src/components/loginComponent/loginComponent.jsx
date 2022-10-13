@@ -50,26 +50,20 @@ const LoginComponent = () => {
             size="large"
           />
         </div>
-        <div sx={styles.forgotPasswordStyle}>
-          {/* TODO: Line sign in and forgot password in one line. */}
-          <div>
-            <Button sx={styles.forgotPasswordStyle}>Forgot password?</Button>
-          </div>
-          <div>
-            <Button
-              variant="contained"
-              sx={styles.signInButtonStyle}
-              // onClick={() => {
-              //   createRoom();
-              // }}
-            >
-              Sign in
-            </Button>
-          </div>
+        <div>
+          <Button sx={styles.forgotPasswordStyle}>Forgot password?</Button>
+          <br />
+          <Button
+            variant="contained"
+            sx={styles.signInButtonStyle}
+            // onClick={() => { handleSignInButtonClick() }}
+          >
+            Sign in
+          </Button>
         </div>
 
         <div>
-          <span>Not registered yet?</span>
+          <span> Not registered yet?</span>
           <Button href="/newaccount">Cretae an Account</Button>
         </div>
       </Box>

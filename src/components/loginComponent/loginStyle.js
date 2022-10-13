@@ -1,3 +1,5 @@
+import { clear } from "@testing-library/user-event/dist/clear";
+
 const styles = {
     textFieldStyle: {
         mb: 2.0,
@@ -12,20 +14,18 @@ const styles = {
         borderRadius: 10,
         mt: 15,
         pt: 3,
-        pl: 5
+        pl: 10
     },
     forgotPasswordStyle: {
-        display: "flex",
-        justifyContent: "flex-between",
-        // ml: 6.0,
-        // padding: 0,
-        // margin: 0,
-
-
+        mt: 0,
+        pt: 0,
+        ml: 10.8,
+        textAlign: "right",
+        color: "black",
     },
     signInButtonStyle: {
         bgcolor: "lightseagreen",
-
+        ml: 15.0,
     }
 }
 
