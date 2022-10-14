@@ -3,8 +3,6 @@ import { Layer } from 'react-konva';
 import Deck from '../deck/deck';
 import Hand from '../hand/hand';
 import CardImage from '../card/image';
-import PokerBack from "../../assets/images/PokerBack.png"
-import PokerFront from "../../assets/images/PokerFront_2Heart.jpg"
 
 // deck data
 function generateCards() {
@@ -12,7 +10,8 @@ function generateCards() {
         id: i,
         x: 50,
         y: 50,
-        imageSource: PokerBack
+        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`,
+        isFlipped: false,
     }));
 }
 
@@ -26,7 +25,10 @@ const Table = (socket) => {
             <Layer>
                 {/* <Deck socket={socket} /> */}
                 {cards.map((card) => (
-                    <CardImage src={card.imageSource}></CardImage>
+                    <CardImage
+                    src={card.imageSource}
+                    key={card.id}
+                    />
                 ))}
             </Layer>
             <Layer>
