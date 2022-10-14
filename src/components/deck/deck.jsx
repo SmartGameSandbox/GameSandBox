@@ -3,8 +3,8 @@ import { Image } from 'react-konva';
 import useImage from 'use-image';
 
 const deckData = {
-    x: 50,
-    y: 50
+    x: 0,
+    y: 0,
 }
 
 const deckRef = React.createRef();
@@ -31,7 +31,6 @@ const Deck = ({ socket }) => {
             x={deckData.x}
             y={deckData.y}
             image={image}
-            draggable
             onDragMove={handleDragMove}
         />
     );

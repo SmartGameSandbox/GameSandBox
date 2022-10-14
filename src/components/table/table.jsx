@@ -1,12 +1,12 @@
 import React from 'react';
-import { Layer } from 'react-konva';
+import { Layer, Group } from 'react-konva';
 import Deck from '../deck/deck';
-import CardImage from '../card/image';
+import Card from '../card/card';
 
 // deck data
 function generateCards() {
     return [...Array(52)].map((_, i) => ({
-        id: i,
+        id: i.toString(),
         x: 50,
         y: 50,
         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`,
@@ -19,15 +19,33 @@ const INITIAL_STATE = generateCards();
 const Table = (socket) => {
     const [cards, setCards] = React.useState(INITIAL_STATE);
 
+    const handleClick = (e) => {
+        const targetedGroup = e.target.getGroup();
+        console.log(targetedGroup);
+        // const id = e.target.id();
+        // setCards(
+        //     cards.map((card) => {
+        //       return {
+        //         ...card,
+        //         imageSource: card.id === id && card.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` : `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${id}.jpg`,
+        //         isFlipped: card.id === id && card.isFlipped ? false : true
+        //       };
+        //     })
+        // );
+    }
+
     return (
         <>
             <Layer>
-                {/* <Deck socket={socket} /> */}
+                <Deck socket={socket} />
                 {cards.map((card) => (
-                    <CardImage
-                    src={card.imageSource}
-                    key={card.id}
-                    />
+                    <Group onClick={handleClick} key={card.id} id={card.id}>
+                        <Card
+                        src={card.imageSource}
+                        key={card.id}
+                        id={card.id}
+                        />
+                    </Group>
                 ))}
             </Layer>
             <Layer>
