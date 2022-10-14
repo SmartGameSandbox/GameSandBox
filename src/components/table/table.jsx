@@ -44,6 +44,8 @@ const Table = (socket) => {
                         src={card.imageSource}
                         key={card.id}
                         id={card.id}
+                        x={250}
+                        y={250}
                         />
                 ))}
             </Layer>
