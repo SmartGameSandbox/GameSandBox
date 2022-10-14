@@ -1,6 +1,7 @@
 import React from 'react';
 import { Layer } from 'react-konva';
 import Deck from '../deck/deck';
+import Hand from '../hand/hand';
 import CardImage from '../card/image';
 import PokerBack from "../../assets/images/PokerBack.png"
 import PokerFront from "../../assets/images/PokerFront_2Heart.jpg"
@@ -29,6 +30,7 @@ const Table = (socket) => {
                 ))}
             </Layer>
             <Layer>
+                <Hand></Hand>
             </Layer>
         </>
     );
