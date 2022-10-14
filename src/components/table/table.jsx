@@ -9,7 +9,7 @@ function generateCards() {
         id: i,
         x: 50,
         y: 50,
-        imageSource: null,
+        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`,
         isFlipped: false,
     }));
 }
@@ -24,7 +24,10 @@ const Table = (socket) => {
             <Layer>
                 {/* <Deck socket={socket} /> */}
                 {cards.map((card) => (
-                    <CardImage src={`${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`}></CardImage>
+                    <CardImage
+                    src={card.imageSource}
+                    key={card.id}
+                    />
                 ))}
             </Layer>
             <Layer>
