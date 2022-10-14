@@ -1,7 +1,6 @@
 import React from 'react';
 import { Image } from 'react-konva';
 import useImage from 'use-image';
-import cardBackImage from '../../assets/images/PokerBack.png'
 
 const deckData = {
     x: 50,
@@ -11,7 +10,7 @@ const deckData = {
 const deckRef = React.createRef();
 const Deck = ({ socket }) => {
     // const socketSetting = socket.socket;
-    const [image] = useImage(cardBackImage);
+    const [image] = useImage(`${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`);
     const handleDragMove = (data) => {
         // TODO: Send data to server
         // socketSetting.emit("cardMove",
