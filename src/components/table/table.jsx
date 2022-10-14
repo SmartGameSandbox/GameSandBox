@@ -3,7 +3,6 @@ import { Layer, Group } from 'react-konva';
 import Deck from '../deck/deck';
 import Card from '../card/card';
 import Hand from '../hand/hand';
-import CardImage from '../card/image';
 
 // deck data
 function generateCards() {
