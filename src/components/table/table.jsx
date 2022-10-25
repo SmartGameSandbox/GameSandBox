@@ -12,7 +12,7 @@ function generateCards() {
         id: i.toString(),
         x: 50,
         y: 50,
-        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`,
+        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${i.toString()}.jpg`,
         isFlipped: false,
     }));
 }
@@ -83,16 +83,15 @@ const Table = (socket) => {
             <Layer>
                 <Deck socket={socket} />
                 {cards.map((card) => (
-                    <Group onClick={handleClick} key={card.id} id={card.id}>
                         <Card
                         src={card.imageSource}
                         key={card.id}
                         id={card.id}
+                        x={250}
+                        y={250}
                         />
-                    </Group>
                 ))}
             </Layer>
-            
         </>
     );
 };

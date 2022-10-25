@@ -3,8 +3,8 @@ import { Image } from 'react-konva';
 import useImage from 'use-image';
 
 const deckData = {
-    x: 0,
-    y: 0,
+    x: 250,
+    y: 250,
 }
 
 const deckRef = React.createRef();
