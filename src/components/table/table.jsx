@@ -7,7 +7,6 @@ import Konva from 'konva';
 import * as Constants from '../../util/constants'
 import useWindowDimensions from '../../util/windowDimensions';
 
-
 // deck data
 function generateCards() {
     return [...Array(52)].map((_, i) => ({
@@ -18,6 +17,24 @@ function generateCards() {
         isFlipped: false,
     }));
 }
+
+function shuffleCards(cards) {
+    let currentIndex = cards.length,  randomIndex;
+  
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+  
+      // Pick a remaining element.
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+  
+      // And swap it with the current element.
+      [cards[currentIndex], cards[randomIndex]] = [
+        cards[randomIndex], cards[currentIndex]];
+    }
+
+    return cards;
+  }
 
 // when card reaches certain coordinate, or overlaps with hand, add it to the hand container data structure
 function placeCardInHand(playerHand, card) {
