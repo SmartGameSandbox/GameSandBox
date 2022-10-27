@@ -10,8 +10,6 @@ const Table = (socket) => {
             <Layer>
                 <Deck socket={socket} />
             </Layer>
-            <Layer>
-            </Layer>
         </>
     );
 };
