@@ -14,17 +14,17 @@ function generateCards() {
         id: i.toString(),
         x: Constants.DECK_STARTING_POSITION_X,
         y: Constants.DECK_STARTING_POSITION_Y,
-        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${i.toString()}.jpg`,
+        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`,
         isFlipped: false,
     }));
 }
 
 // when card reaches certain coordinate, or overlaps with hand, add it to the hand container data structure
 function placeCardInHand(playerHand, card) {
-     playerHand.push(card);
-     return card;
+    playerHand.push(card);
+    return card;
 }
- 
+
 //
 function checkPosition(pos, height, width) {
     console.log(pos)
@@ -65,19 +65,23 @@ const Table = (socket) => {
 
 
 
-    const handleClick = (e) => {
-        const targetedGroup = e.target.getGroup();
-        console.log(targetedGroup);
-        // const id = e.target.id();
-        // setCards(
-        //     cards.map((card) => {
-        //       return {
-        //         ...card,
-        //         imageSource: card.id === id && card.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` : `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${id}.jpg`,
-        //         isFlipped: card.id === id && card.isFlipped ? false : true
-        //       };
-        //     })
-        // );
+    const handleClick = (event) => {
+        const id = String(event.target.parent.index);
+        setCards(
+            cards.map((card) => {
+              if (card.id === id) {
+                return {
+                    ...card,
+                    imageSource: card.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` : `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${id}.jpg`,
+                    isFlipped: card.isFlipped ? false : true
+                  };
+              } else {
+                return {
+                    ...card
+                }
+              }
+            })
+        );
     }
 
     return (
@@ -91,15 +95,17 @@ const Table = (socket) => {
             </Layer>
             <Layer>
                 {/* <Deck socket={socket} /> */}
-                {cards.map((card) => (
-                    <Card
-                        src={card.imageSource}
-                        key={card.id}
-                        id={card.id}
-                        x={250}
-                        y={250}
-                    />
-                ))}
+                    {cards.map((card) => (
+                        <Group onClick={handleClick}>
+                        <Card
+                            src={card.imageSource}
+                            key={card.id}
+                            id={card.id}
+                            x={Constants.DECK_STARTING_POSITION_X}
+                            y={Constants.DECK_STARTING_POSITION_Y}
+                        />
+                        </Group>
+                    ))}
             </Layer>
         </>
     );
