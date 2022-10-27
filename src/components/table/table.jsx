@@ -42,44 +42,15 @@ function placeCardInHand(playerHand, card) {
     return card;
 }
 
-//
-function checkPosition(pos, height, width) {
-    console.log(pos)
 
-    if ((pos.x >= (height / Constants.HAND_BOX_HEIGHT_DIVIDER) && pos.x <= (width / Constants.HAND_BOX_WIDTH_DIVIDER))) {
-        placeCardInHand(pos)
-    }
-}
 
 const INITIAL_STATE = generateCards();
 
 const Table = (socket) => {
     const [cards, setCards] = React.useState(INITIAL_STATE);
-    const playerHand = []
-    // const { height, width } = useWindowDimensions();
+    const playerHand = [...cards]
 
-
-    // // Drag into hand code block
-    // var width = window.innerWidth;
-    // var height = window.innerHeight;
-
-    // var stage = new Konva.Stage({
-    //     container: 'container',
-    //     width: width,
-    //     height: height,
-    //   });
-
-    // var layer = new Konva.Layer();
-
-    // stage.add(layer);
-    // var tempLayer = new Konva.Layer();
-    // stage.add(tempLayer);
-
-    // var text = new Konva.Text({
-    //   fill: 'black',
-    // });
-    // layer.add(text);
-
+    const { height, width } = useWindowDimensions();
 
 
     const handleClick = (event) => {
@@ -105,14 +76,12 @@ const Table = (socket) => {
         <>
             <Layer>
                 <Group>
-                    <Hand
-                    // cards = {this.playerHand}
-                    />
+                    <Hand/>
                 </Group>
             </Layer>
             <Layer>
                 {/* <Deck socket={socket} /> */}
-                    {cards.map((card) => (
+                    {playerHand.map((card) => (
                         <Group onClick={handleClick}>
                         <Card
                             src={card.imageSource}
@@ -120,6 +89,8 @@ const Table = (socket) => {
                             id={card.id}
                             x={Constants.DECK_STARTING_POSITION_X}
                             y={Constants.DECK_STARTING_POSITION_Y}
+                            tableHeight={height}
+                            tableWidth={width}
                         />
                         </Group>
                     ))}

@@ -42,6 +42,10 @@ const Hand = ({ tableCards }) => {
         tableCards.push(e)
     }
 
+    const placeCardInHand = (e) => {
+        // move card by id from table into hand
+    }
+
     const handleClick = (e) => {
         const targetedGroup = e.target.getGroup();
         console.log(targetedGroup);
@@ -85,6 +89,9 @@ const Hand = ({ tableCards }) => {
                     id={card.id}
                     x={state.x + ( 50 * (cards.indexOf(card) + 1))}
                     y={state.y + 35}
+                    tableHeight={height}
+                    tableWidth={width}
+                    placeCardInHand={placeCardInHand}
                 />
             ))}
 
