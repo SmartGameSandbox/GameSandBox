@@ -7,7 +7,7 @@ const styles = {
     roomBoxStyle: {
         height: 420,
         width: 400,
-        ml: "calc(50% - 200px)",
+        ml: "calc(50% - 250px)",
         border: "2px solid lightseagreen",
         borderRadius: 10,
         mt: 15,

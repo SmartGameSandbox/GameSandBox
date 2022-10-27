@@ -29,7 +29,6 @@ const Room = () => {
             roomID = params.get('id');
             roomPassword = params.get('password');
             axios.get(`${url}/api/room?id=${roomID}&password=${roomPassword}`).then((response) => {
-                console.log(response.data);
                 setImageUrl(response.data.image);
             }).catch((error) => {
                 console.log(error);
@@ -44,8 +43,9 @@ const Room = () => {
     }, []);
 
     return (
-        <>
-            <img style={styles.roomBackground} alt="board" src={imageUrl} />
+        <>  {imageUrl !== null &&
+                <img style={styles.roomBackground} alt="board" src={imageUrl} />
+            }
             <Stage width={window.innerWidth} height={window.innerHeight}>
                 <Table socket={socket} />
             </Stage>

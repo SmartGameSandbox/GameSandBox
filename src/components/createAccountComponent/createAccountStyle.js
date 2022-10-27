@@ -5,9 +5,9 @@ const styles = {
         ml: 2,
         width: 300
     },
-    roomBoxStyle: {
+    loginBoxStyle: {
         height: 500,
-        width: 380,
+        width: 400,
         ml: "calc(50% - 200px)",
         border: "2px solid lightseagreen",
         borderRadius: 10,
