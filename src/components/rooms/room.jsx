@@ -1,26 +1,18 @@
 import React from 'react';
 import './room.css';
 import { io } from "socket.io-client";
-import { Stage, Layer, Text } from 'react-konva';
-import Card from '../card/card';
+import Table from "../table/table";
+import { Stage } from 'react-konva';
+import axios from 'axios';
+import styles from './roomStyle';
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
 const socket = io(url, { transports: ['websocket'] });
 let roomID = null;
 let roomPassword = null;
-let username = null;
 
 const Room = () => {
-    const cardElement = React.useRef(React.createRef());
-    const handleDragMove = (data) => {
-        socket.emit("cardMove",
-            { x: data.evt.offsetX, y: data.evt.offsetY, username: username, roomID: roomID }, (err) => {
-                if (err) {
-                    alert(err);
-                }
-            });
-    }
-
+    const [imageUrl, setImageUrl] = React.useState('');
     const joinRoom = (roomID, roomPassword) => {
         socket.emit("joinRoom", { id: roomID, password: roomPassword }, (err) => {
             if (err) {
@@ -36,38 +28,28 @@ const Room = () => {
             const params = new URLSearchParams(search);
             roomID = params.get('id');
             roomPassword = params.get('password');
+            axios.get(`${url}/api/room?id=${roomID}&password=${roomPassword}`).then((response) => {
+                setImageUrl(response.data.image);
+            }).catch((error) => {
+                console.log(error);
+            });
             // TODO: Add REAL username to room
-            username = Math.random().toString(36).substring(7);
             joinRoom(roomID, roomPassword);
-        });
-
-        socket.on("cardPositionUpdate", (data) => {
-            if (data.username !== username) {
-                console.log(data);
-                cardElement.current.moveToPosition(data);
-            }
-        });
-
-        socket.on("error", (error) => {
-            alert("Invalid room ID or password");
-            window.location.href = "/joinroom";
-            console.error(error);
         });
 
         return () => {
             socket.off("connect");
-            socket.off("cardPositionUpdate");
-            socket.off("error");
         }
     }, []);
 
     return (
-        <Stage width={window.innerWidth} height={window.innerHeight}>
-            <Layer>
-                <Text text="Try click on rect" />
-                <Card ref={cardElement} onDragMove={handleDragMove} />
-            </Layer>
-        </Stage>
+        <>  {imageUrl !== null &&
+                <img style={styles.roomBackground} alt="board" src={imageUrl} />
+            }
+            <Stage width={window.innerWidth} height={window.innerHeight}>
+                <Table socket={socket} />
+            </Stage>
+        </>
     );
 }
 export default Room;

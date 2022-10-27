@@ -80,7 +80,7 @@ app.get("/api/room", async (req, res) => {
     const password = req.query.password;
     const roomData = await Room.findOne({ id: id, password: password });
     if (roomData) {
-      res.json({ status: "success" });
+      res.json(roomData);
     } else {
       res.json({ status: "error", message: "Invalid room ID or password" });
     }
@@ -104,7 +104,8 @@ app.post("/api/room", async (req, res) => {
     const gameRoomData = new Room({
       id: roomID,
       password: req.body.password,
-      name: req.body.name
+      name: req.body.name,
+      image: req.body.image
     });
     const result = await gameRoomData.save();
     if (!result) {
