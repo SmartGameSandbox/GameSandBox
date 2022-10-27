@@ -1,22 +1,43 @@
 import React from 'react';
-import { Layer, Group, Rect} from 'react-konva';
+import { Layer, Group, Rect } from 'react-konva';
 import Card from '../card/card'
 import Konva from 'konva';
 import useWindowDimensions from '../../util/windowDimensions';
 import * as Constants from '../../util/constants';
+import Deck from '../deck/deck';
 
 
 // deck data
 
 
-const Hand = ({tableCards}) => {
-    const cards = []
+const Hand = ({ tableCards }) => {
+    const cards = [{
+        id: 'test',
+        x: 100,
+        y: 100,
+        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_2.jpg`,
+        isFlipped: false,
+    }, {
+        id: 'test2',
+        x: 100,
+        y: 100,
+        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_31.jpg`,
+        isFlipped: false,
+    },
+    {
+        id: 'test3',
+        x: 100,
+        y: 100,
+        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_46.jpg`,
+        isFlipped: false,
+    }]
     const { height, width } = useWindowDimensions();
     const state = {
         x: width / Constants.HAND_BOX_WIDTH_DIVIDER,
         y: height / Constants.HAND_BOX_HEIGHT_DIVIDER,
     }
-    console.log(state.x ,state.y)
+    console.log(state.x, state.y)
+
     const placeCardOnTable = (e) => {
         tableCards.push(e)
     }
@@ -36,9 +57,12 @@ const Hand = ({tableCards}) => {
         // );
     }
 
+
+
     return (
+
         <>
-                <Rect
+            <Rect
                 // ref={this.shapeRef}
                 x={state.x}
                 y={state.y}
@@ -47,20 +71,26 @@ const Hand = ({tableCards}) => {
                 height={Constants.HAND_HEIGHT}
                 fill={"rgb(117,117,117)"}
                 shadowBlur={5}
-                // draggable="true"
-                // onDragMove={this.handleDragMove}
+            // draggable="true"
+            // onDragMove={this.handleDragMove}
             />
-                {cards.map((card) => (
-                    <Group onClick={handleClick} key={card.id} id={card.id}>
-                        <Card
-                        src={card.imageSource}
-                        key={card.id}
-                        id={card.id}
-                        />
-                    </Group>
-                ))}
+
+            { /*Map cards in hand to visible hand
+             TODO: make visible to player only */}
+
+            {cards.map((card) => (
+                <Card
+                    src={card.imageSource}
+                    key={card.id}
+                    id={card.id}
+                    x={state.x + ( 50 * (cards.indexOf(card) + 1))}
+                    y={state.y + 35}
+                />
+            ))}
+
 
         </>
+
     );
 };
 
