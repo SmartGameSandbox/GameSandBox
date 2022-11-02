@@ -1,14 +1,10 @@
 import React from 'react';
-import { Layer, Group, Rect } from 'react-konva';
+import { Rect } from 'react-konva';
 import Card from '../card/card'
-import Konva from 'konva';
 import useWindowDimensions from '../../util/windowDimensions';
 import * as Constants from '../../util/constants';
-import Deck from '../deck/deck';
-
 
 // deck data
-
 const Hand = ({ tableCards }) => {
 
     const cards = [{
@@ -38,8 +34,7 @@ const Hand = ({ tableCards }) => {
         x: width / Constants.HAND_BOX_WIDTH_DIVIDER,
         y: height / Constants.HAND_BOX_HEIGHT_DIVIDER,
     }
-
-
+    
     const placeCardOnTable = (e) => {
         tableCards.push(e)
     }

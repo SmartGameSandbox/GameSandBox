@@ -35,10 +35,6 @@ class Card extends React.Component {
     this.image.addEventListener('load', this.handleLoad);
   }
 
-  checkPosition(event) {
-    console.log(event)
-  }
-
   handleLoad = (e) => {
     // after setState react-konva will update canvas and redraw the layer
     // because "image" property is changed
@@ -77,7 +73,6 @@ class Card extends React.Component {
 
 
 checkPosition() {
-
     if ((this.state.y >= (this.state.tableHeight / Constants.HAND_BOX_HEIGHT_DIVIDER) && (this.state.x >= (this.state.tableWidth / Constants.HAND_BOX_WIDTH_DIVIDER)))) {
         // placeCardInHand(pos)
         console.log("Card moved from Table into Hand")
