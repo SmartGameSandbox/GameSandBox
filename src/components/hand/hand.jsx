@@ -9,15 +9,16 @@ import Deck from '../deck/deck';
 
 // deck data
 
-
 const Hand = ({ tableCards }) => {
+
     const cards = [{
         id: 'test',
         x: 100,
         y: 100,
         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_2.jpg`,
         isFlipped: false,
-    }, {
+    },
+    {
         id: 'test2',
         x: 100,
         y: 100,
@@ -31,12 +32,13 @@ const Hand = ({ tableCards }) => {
         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_46.jpg`,
         isFlipped: false,
     }]
+
     const { height, width } = useWindowDimensions();
     const state = {
         x: width / Constants.HAND_BOX_WIDTH_DIVIDER,
         y: height / Constants.HAND_BOX_HEIGHT_DIVIDER,
     }
-    console.log(state.x, state.y)
+
 
     const placeCardOnTable = (e) => {
         tableCards.push(e)
@@ -44,6 +46,14 @@ const Hand = ({ tableCards }) => {
 
     const placeCardInHand = (e) => {
         // move card by id from table into hand
+        // card = {
+        //     id: 'test3',
+        //     x: 100,
+        //     y: 100,
+        //     imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_46.jpg`,
+        //     isFlipped: false,
+        // }
+        this.state.placeCardInHand()
     }
 
     const handleClick = (e) => {
@@ -60,8 +70,6 @@ const Hand = ({ tableCards }) => {
         //     })
         // );
     }
-
-
 
     return (
 

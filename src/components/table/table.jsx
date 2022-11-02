@@ -36,11 +36,7 @@ function shuffleCards(cards) {
     return cards;
   }
 
-// when card reaches certain coordinate, or overlaps with hand, add it to the hand container data structure
-function placeCardInHand(playerHand, card) {
-    playerHand.push(card);
-    return card;
-}
+
 
 
 
@@ -52,6 +48,11 @@ const Table = (socket) => {
 
     const { height, width } = useWindowDimensions();
 
+    // when card reaches certain coordinate, or overlaps with hand, add it to the hand container data structure
+function placeCardInHand(card) {
+    playerHand.push(card);
+    return card;
+}
 
     const handleClick = (event) => {
         const id = String(event.target.parent.index);
@@ -76,7 +77,9 @@ const Table = (socket) => {
         <>
             <Layer>
                 <Group>
-                    <Hand/>
+                    <Hand
+                    placeCardInHand={placeCardInHand}
+                    />
                 </Group>
             </Layer>
             <Layer>
