@@ -124,6 +124,10 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+app.post("/api/createUser", async (req, res) => {
+  // this is where we ask db to make user
+})
+
 http.listen(port, async (err) => {
   if (err) return console.loge(err);
   try {

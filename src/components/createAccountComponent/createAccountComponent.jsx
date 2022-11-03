@@ -3,6 +3,8 @@ import styles from "./createAccountStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import e from "cors";
+import { ConstructionOutlined } from "@mui/icons-material";
 
 const CreateNewAccountComponent = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
@@ -24,6 +26,22 @@ const CreateNewAccountComponent = () => {
   const handleConfirmPasswordTextInputChange = (event) => {
     setConfirmPasswordInputText(event.target.value);
   };
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    let username = usernameInputText
+    let email = emailInputText
+    let password = passwordInputText
+    let confirmPw = confirmPasswordInputText
+
+    if (password !== confirmPasswordInputText){
+      console.log("no matcing pw")
+      // probably better to show a modal
+    } else {
+      console.log("password matches")
+    }
+  }
+
   return (
     <>
       <Box
@@ -33,6 +51,7 @@ const CreateNewAccountComponent = () => {
         autoComplete="off"
       >
         <h1>Create User</h1>
+        <form>
         <div>
           <TextField
             id="username-input"
@@ -86,17 +105,16 @@ const CreateNewAccountComponent = () => {
           />
         </div>
         <div sx={styles.forgotPasswordStyle}>
-          <div>
             <Button
               variant="contained"
               sx={styles.signInButtonStyle}
               href="/login"
-              onClick={() => {}}
+              onClick={handleSubmit}
             >
               Submit
             </Button>
-          </div>
         </div>
+        </form>
       </Box>
     </>
   );
