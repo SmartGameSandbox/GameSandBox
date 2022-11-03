@@ -14,11 +14,7 @@ let roomPassword = null;
 const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
     const joinRoom = (roomID, roomPassword) => {
-        socket.emit("joinRoom", { id: roomID, password: roomPassword }, (err) => {
-            if (err) {
-                console.log(err);
-            }
-        });
+        socket.emit("joinRoom", { id: roomID, password: roomPassword }, () => {});
     }
 
     React.useEffect(() => {
@@ -30,11 +26,11 @@ const Room = () => {
             roomPassword = params.get('password');
             axios.get(`${url}/api/room?id=${roomID}&password=${roomPassword}`).then((response) => {
                 setImageUrl(response.data.image);
+                joinRoom(roomID, roomPassword);
             }).catch((error) => {
                 console.log(error);
             });
             // TODO: Add REAL username to room
-            joinRoom(roomID, roomPassword);
         });
 
         return () => {
@@ -43,11 +39,12 @@ const Room = () => {
     }, []);
 
     return (
-        <>  {imageUrl !== null &&
+        <>  {
+                imageUrl !== undefined && imageUrl !== '' && imageUrl !== null &&
                 <img style={styles.roomBackground} alt="board" src={imageUrl} />
             }
             <Stage width={window.innerWidth} height={window.innerHeight}>
-                <Table socket={socket} />
+                <Table socket={socket}/>
             </Stage>
         </>
     );

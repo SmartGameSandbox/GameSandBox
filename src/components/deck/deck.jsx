@@ -3,14 +3,14 @@ import { Image } from 'react-konva';
 import useImage from 'use-image';
 
 const deckData = {
-    x: 50,
-    y: 50
+    x: 250,
+    y: 250,
 }
 
 const deckRef = React.createRef();
 const Deck = ({ socket }) => {
     // const socketSetting = socket.socket;
-    const [image] = useImage('https://konvajs.org/assets/yoda.jpg');
+    const [image] = useImage(`${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`);
     const handleDragMove = (data) => {
         // TODO: Send data to server
         // socketSetting.emit("cardMove",
@@ -31,7 +31,6 @@ const Deck = ({ socket }) => {
             x={deckData.x}
             y={deckData.y}
             image={image}
-            draggable
             onDragMove={handleDragMove}
         />
     );
