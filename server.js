@@ -37,20 +37,18 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("cardMove", ({ x, y, username, roomID }) => {
-    socket.broadcast.to(roomID).emit("cardPositionUpdate", {
+  //TODO: add user name and broadcast to room with roomID only
+  socket.on("cardMove", ({ x, y, card, roomID }) => {
+    socket.emit("cardPositionUpdate", {
       x: x,
       y: y,
-      username: username,
+      card: card,
     });
   });
 
-  socket.on("cardFlip", ({ x, y, isFlipped, username, roomID }) => {
-    socket.broadcast.to(roomID).emit("cardFlipUpdate", {
-      x: x,
-      y: y,
-      isFlipped: isFlipped,
-      username: username,
+  socket.on("cardFlip", ({ card, roomID }) => {
+    socket.emit("cardFlipUpdate", {
+      card: card,
     });
   });
 

@@ -56,8 +56,8 @@ class Card extends React.Component {
       x: e.target.x(),
       y: e.target.y(),
     });
-    console.log("X: ", this.state.x)
-    console.log("Y: ", this.state.y)
+    //console.log("X: ", this.state.x)
+    //console.log("Y: ", this.state.y)
     this.checkPosition()
 
   }
@@ -80,7 +80,7 @@ checkPosition() {
 }
 
   render() {
-    console.log(this.state.image)
+    //console.log(this.state.image)
     return (
       <Image
         x={this.props.x}

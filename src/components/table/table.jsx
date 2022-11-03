@@ -38,6 +38,9 @@ const INITIAL_STATE = generateCards();
 const Table = (socket) => {
     const [cards, setCards] = React.useState(INITIAL_STATE);
     const playerHand = [...cards]
+    const search = window.location.search;
+    const params = new URLSearchParams(search);
+    const roomID = params.get('id');
 
     const { height, width } = useWindowDimensions();
 
@@ -49,6 +52,14 @@ const Table = (socket) => {
 
     const handleClick = (event) => {
         const id = String(event.target.parent.index);
+        //TODO: add username
+        socket.socket.emit("cardFlip",
+          { card: id, room: roomID }, (err) => {
+            if (err) {
+              alert(err);
+            }
+          });
+
         setCards(
             cards.map((card) => {
                 if (card.id === id) {
@@ -66,6 +77,54 @@ const Table = (socket) => {
         );
     }
 
+    const handleDragMove = (event) => {
+        //TODO: add username
+        socket.socket.emit("cardMove",
+          { x: event.target.parent.children[0].attrs.x, y: event.target.parent.children[0].attrs.y, card: event.target.parent.index, room: roomID }, (err) => {
+            if (err) {
+              alert(err);
+            }
+          });
+      }
+
+    const moveCard = (xPosition, yPosition, cardNumber) => {
+        setCards(
+            cards.map((card) => {
+                if (card.id === cardNumber) {
+                    return {
+                        ...card,
+                        x: xPosition,
+                        y: yPosition,
+                    };
+                } else {
+                    return {
+                        ...card
+                    }
+                }
+            })
+        );
+    }
+
+    React.useEffect(() => {
+        console.log('Child => socket', socket);
+        if (socket) {
+          socket.socket.on("connect", () => {
+            //console.log("received from parent" + data);
+            // if (data.username !== this.state.username) {
+            //   this.cardElement.current.moveToPosition(data);
+            // }
+            socket.socket.on("cardPositionUpdate", (data) => {
+                console.log(data)
+                moveCard(data.x, data.y, data.card);
+            });
+
+            socket.socket.on("cardFlipUpdate", (data) => {
+                console.log(data)
+            });
+          });
+        }
+    }, [socket]);
+
     return (
         <>
             <Layer>
@@ -78,13 +137,13 @@ const Table = (socket) => {
             <Layer>
                 {/* <Deck socket={socket} /> */}
                 {playerHand.map((card) => (
-                    <Group onClick={handleClick}>
+                    <Group onClick={handleClick} onDragMove={handleDragMove}>
                         <Card
                             src={card.imageSource}
                             key={card.id}
                             id={card.id}
-                            x={Constants.DECK_STARTING_POSITION_X}
-                            y={Constants.DECK_STARTING_POSITION_Y}
+                            x={card.x}
+                            y={card.y}
                             tableHeight={height}
                             tableWidth={width}
                         />
