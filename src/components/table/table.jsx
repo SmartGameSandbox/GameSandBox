@@ -97,6 +97,54 @@ const Table = (socket) => {
         // CHECK IF IT IS MOVED TO HAND
     }
 
+    const handleDragMove = (event) => {
+        //TODO: add username
+        socket.socket.emit("cardMove",
+          { x: event.target.parent.children[0].attrs.x, y: event.target.parent.children[0].attrs.y, card: event.target.parent.index, room: roomID }, (err) => {
+            if (err) {
+              alert(err);
+            }
+          });
+      }
+
+    const moveCard = (xPosition, yPosition, cardNumber) => {
+        setCards(
+            cards.map((card) => {
+                if (card.id === cardNumber) {
+                    return {
+                        ...card,
+                        x: xPosition,
+                        y: yPosition,
+                    };
+                } else {
+                    return {
+                        ...card
+                    }
+                }
+            })
+        );
+    }
+
+    React.useEffect(() => {
+        console.log('Child => socket', socket);
+        if (socket) {
+          socket.socket.on("connect", () => {
+            //console.log("received from parent" + data);
+            // if (data.username !== this.state.username) {
+            //   this.cardElement.current.moveToPosition(data);
+            // }
+            socket.socket.on("cardPositionUpdate", (data) => {
+                console.log(data)
+                moveCard(data.x, data.y, data.card);
+            });
+
+            socket.socket.on("cardFlipUpdate", (data) => {
+                console.log(data)
+            });
+          });
+        }
+    }, [socket]);
+
     return (
         <>
             <Layer>

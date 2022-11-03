@@ -38,7 +38,7 @@ io.on("connection", async (socket) => {
       cardID: cardID,
       x: x,
       y: y,
-      username: username,
+      card: card,
     });
   });
 
