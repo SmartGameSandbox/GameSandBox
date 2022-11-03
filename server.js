@@ -27,32 +27,28 @@ io.on("connection", async (socket) => {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
         socket.join(roomID);
+        // add user to the user array here
         console.log("User joined room " + roomID);
-      } else {
-        socket.emit("error", "Invalid room ID or password");
       }
-      // TODO: add user to the user array
-    } else {
-      socket.emit("error", "Room ID and password are required");
     }
   });
 
-  socket.on("cardMove", ({ x, y, username, roomID }) => {
-    socket.broadcast.to(roomID).emit("cardPositionUpdate", {
+  socket.on("cardMove", ({ x, y, username, roomID, cardID }) => {
+    io.to(roomID).emit("cardPositionUpdate", {
+      cardID: cardID,
       x: x,
       y: y,
       username: username,
     });
   });
 
-  socket.on("cardFlip", ({ x, y, isFlipped, username, roomID }) => {
-    socket.broadcast.to(roomID).emit("cardFlipUpdate", {
-      x: x,
-      y: y,
-      isFlipped: isFlipped,
-      username: username,
-    });
-  });
+  // socket.on("cardFlip", ({ isFlipped, username, roomID, cardID }) => {
+  //   io.to(roomID).emit("cardFlipUpdate", {
+  //     cardID: cardID,
+  //     isFlipped: isFlipped,
+  //     username: username,
+  //   });
+  // });
 
   socket.on("keepalive", async ({ roomID }) => {
     await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
