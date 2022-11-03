@@ -9,7 +9,7 @@ const generateCards = () => {
         x: Constants.DECK_STARTING_POSITION_X,
         y: Constants.DECK_STARTING_POSITION_Y,
         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`,
-        isFlipped: false,
+        isFlipped: true,
     }));
 }
 
@@ -26,66 +26,63 @@ const Table = (socket) => {
     React.useEffect(() => {
         socket.on('cardPositionUpdate', (data) => {
             if (data.username !== username) {
-                setCards(
-                    cards.map((card) => {
+                setCards((prevCards) => {
+                    return prevCards.map((card) => {
                         if (card.id === data.cardID) {
                             card.x = data.x;
                             card.y = data.y;
                         }
                         return card;
-                    })
-                );
+                    });
+                });
             }
         });
 
-        // socket.on('cardFlipUpdate', (data) => {
-        //     if (data.username !== username) {
-        //         console.log("data", data);
-        //         setCards(
-        //             cards.map((card) => {
-        //                 if (card.id === data.cardID) {
-        //                     console.log("found the card and flip it");
-        //                     flipCard(card);
-        //                 }
-        //                 return card;
-        //             })
-        //         );
-        //     }
-        // });
+        socket.on('cardFlipUpdate', (data) => {
+            if (data.username !== username) {
+                setCards((prevCards) => {
+                    return prevCards.map((card) => {
+                        if (card.id === data.cardID) {
+                            setCardFlip(card, data.isFlipped);
+                        }
+                        return card;
+                    });
+                });
+            }
+        });
 
         return () => {
             socket.off('cardPositionUpdate');
+            socket.off('cardFlipUpdate');
         }
-    }, []);
+    }, [socket]);
 
-    const flipCard = (card) => {
-        card.isFlipped = !card.isFlipped;
-        card.imageSource = card.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
-            `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${card.id}.jpg`;
+    const setCardFlip = (inputCard, isFlipped) => {
+        inputCard.isFlipped = isFlipped;
+        inputCard.imageSource = inputCard.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
+            `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${inputCard.id}.jpg`;
     }
 
-    const handleClick = (cardID) => {
-        // setCards(
-        //     cards.map((card) => {
-        //         if (card.id === cardID) {
-        //             flipCard(card);
-        //         }
-        //         return card;
-        //     })
-        // );
-        let card = cards.find((card) => card.id === cardID);
-        console.log(card)
-        // socket.emit("cardFlip",
-        //     { isFlipped: card.isFlipped, username: username, roomID: roomID, cardID: cardID }, (err) => {
-        //         if (err) {
-        //             console.error(err);
-        //         }
-        //     });
+    const handleClick = (card) => {
+        setCards((prevCards) => {
+            return prevCards.map((element) => {
+                if (element.id === card.id) {
+                    setCardFlip(element, !element.isFlipped);
+                }
+                return element;
+            });
+        });
+        socket.emit("cardFlip",
+            { isFlipped: card.isFlipped, username: username, roomID: roomID, cardID: card.id }, (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            });
     }
 
-    const onDragMove = (e, cardID) => {
+    const onDragMove = (e, card) => {
         socket.emit("cardMove",
-            { x: e.evt.offsetX, y: e.evt.offsetY, username: username, roomID: roomID, cardID: cardID }, (err) => {
+            { x: e.evt.offsetX, y: e.evt.offsetY, username: username, roomID: roomID, cardID: card.id }, (err) => {
                 if (err) {
                     console.error(err);
                 }
@@ -97,54 +94,6 @@ const Table = (socket) => {
         // CHECK IF IT IS MOVED TO HAND
     }
 
-    const handleDragMove = (event) => {
-        //TODO: add username
-        socket.socket.emit("cardMove",
-          { x: event.target.parent.children[0].attrs.x, y: event.target.parent.children[0].attrs.y, card: event.target.parent.index, room: roomID }, (err) => {
-            if (err) {
-              alert(err);
-            }
-          });
-      }
-
-    const moveCard = (xPosition, yPosition, cardNumber) => {
-        setCards(
-            cards.map((card) => {
-                if (card.id === cardNumber) {
-                    return {
-                        ...card,
-                        x: xPosition,
-                        y: yPosition,
-                    };
-                } else {
-                    return {
-                        ...card
-                    }
-                }
-            })
-        );
-    }
-
-    React.useEffect(() => {
-        console.log('Child => socket', socket);
-        if (socket) {
-          socket.socket.on("connect", () => {
-            //console.log("received from parent" + data);
-            // if (data.username !== this.state.username) {
-            //   this.cardElement.current.moveToPosition(data);
-            // }
-            socket.socket.on("cardPositionUpdate", (data) => {
-                console.log(data)
-                moveCard(data.x, data.y, data.card);
-            });
-
-            socket.socket.on("cardFlipUpdate", (data) => {
-                console.log(data)
-            });
-          });
-        }
-    }, [socket]);
-
     return (
         <>
             <Layer>
@@ -152,13 +101,12 @@ const Table = (socket) => {
                     <Group
                         key={card.id}
                         draggable
-                        onClick={handleClick(card.id)}
-                        onDragMove={(e) => onDragMove(e, card.id)}
+                        onClick={() => handleClick(card)}
+                        onDragMove={(e) => onDragMove(e, card)}
                         onDragEnd={onDragEnd}
                     >
                         <Card
                             src={card.imageSource}
-                            key={card.id}
                             id={card.id}
                             x={card.x}
                             y={card.y}

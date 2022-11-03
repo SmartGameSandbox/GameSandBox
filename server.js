@@ -38,17 +38,18 @@ io.on("connection", async (socket) => {
       cardID: cardID,
       x: x,
       y: y,
-      card: card,
+      username: username
     });
   });
 
-  // socket.on("cardFlip", ({ isFlipped, username, roomID, cardID }) => {
-  //   io.to(roomID).emit("cardFlipUpdate", {
-  //     cardID: cardID,
-  //     isFlipped: isFlipped,
-  //     username: username,
-  //   });
-  // });
+  socket.on("cardFlip", ({ isFlipped, username, roomID, cardID }) => {
+    console.log("get flipped mesg", isFlipped, username, roomID, cardID);
+    io.to(roomID).emit("cardFlipUpdate", {
+      cardID: cardID,
+      isFlipped: isFlipped,
+      username: username,
+    });
+  });
 
   socket.on("keepalive", async ({ roomID }) => {
     await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
