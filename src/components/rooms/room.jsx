@@ -17,6 +17,14 @@ const Room = () => {
         socket.emit("joinRoom", { id: roomID, password: roomPassword }, () => {});
     }
 
+    const handleMouseMove = (data) => {
+        socket.emit("mouseMove", { x: data.evt.offsetX, y: data.evt.offsetY, username: socket.id, roomID: roomID}, (err) => {
+            if (err) {
+                alert(err);
+            }
+        })
+    }
+
     React.useEffect(() => {
         socket.on("connect", () => {
             console.log("Connected to server");
@@ -33,8 +41,13 @@ const Room = () => {
             // TODO: Add REAL username to room
         });
 
+        socket.on("mousePositionUpdate", (data) => {
+            console.log(`${data.username} moved to x: ${data.x}, y: ${data.y}`);
+        });
+
         return () => {
             socket.off("connect");
+            socket.off("mousePositionUpdate");
         }
     }, []);
 
@@ -43,7 +56,11 @@ const Room = () => {
                 imageUrl !== undefined && imageUrl !== '' && imageUrl !== null &&
                 <img style={styles.roomBackground} alt="board" src={imageUrl} />
             }
-            <Stage width={window.innerWidth} height={window.innerHeight}>
+            <Stage
+                width={window.innerWidth}
+                height={window.innerHeight}
+                onMouseMove={(e) => handleMouseMove(e)}
+            >
                 <Table socket={socket}/>
             </Stage>
         </>

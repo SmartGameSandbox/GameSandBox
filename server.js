@@ -51,6 +51,14 @@ io.on("connection", async (socket) => {
     });
   });
 
+  socket.on("mouseMove", ({ x, y, username, roomID }) => {
+    io.to(roomID).emit("mousePositionUpdate", {
+      x: x,
+      y: y,
+      username: username,
+    });
+  });
+
   socket.on("keepalive", async ({ roomID }) => {
     await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
   });
