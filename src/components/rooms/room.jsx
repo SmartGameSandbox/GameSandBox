@@ -5,6 +5,7 @@ import Table from "../table/table";
 import { Stage } from 'react-konva';
 import axios from 'axios';
 import styles from './roomStyle';
+import { CardTravelSharp } from '@mui/icons-material';
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
 const socket = io(url, { transports: ['websocket'] });
@@ -13,8 +14,9 @@ let roomPassword = null;
 
 const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
+
     const joinRoom = (roomID, roomPassword) => {
-        socket.emit("joinRoom", { id: roomID, password: roomPassword }, () => {});
+        socket.emit("joinRoom", { id: roomID, password: roomPassword, username: socket.id }, () => {});
     }
 
     const handleMouseMove = (data) => {
@@ -35,19 +37,15 @@ const Room = () => {
             axios.get(`${url}/api/room?id=${roomID}&password=${roomPassword}`).then((response) => {
                 setImageUrl(response.data.image);
                 joinRoom(roomID, roomPassword);
+                //emit joine room event to add a cursor
             }).catch((error) => {
                 console.log(error);
             });
             // TODO: Add REAL username to room
         });
 
-        socket.on("mousePositionUpdate", (data) => {
-            console.log(`${data.username} moved to x: ${data.x}, y: ${data.y}`);
-        });
-
         return () => {
             socket.off("connect");
-            socket.off("mousePositionUpdate");
         }
     }, []);
 

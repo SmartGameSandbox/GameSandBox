@@ -10,9 +10,9 @@ export default class Cursor extends Component {
     state = {
         //left: this.location.current.left,
         //top: this.location.current.top
-        left: this.props.left,
-        top: this.props.top ,
-        id: this.props.id,
+        x: this.props.x,
+        y: this.props.y ,
+        id: this.props.username,
         //compareTo: this.props.compare
     };
 

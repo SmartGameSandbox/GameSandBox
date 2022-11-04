@@ -2,6 +2,7 @@ import React from 'react';
 import { Layer, Group } from 'react-konva';
 import Card from '../card/card';
 import * as Constants from '../../util/constants'
+import Cursor from '../cursor/cursor';
 
 const generateCards = () => {
     return [...Array(52)].map((_, i) => ({
@@ -19,10 +20,13 @@ const roomID = params.get('id');
 const username = Date.now().toString();
 
 const INITIAL_STATE = generateCards();
+let CURSOR_LIST = [];
 
 const Table = (socket) => {
     socket = socket.socket;
     const [cards, setCards] = React.useState(INITIAL_STATE);
+    const [cursors, setCursor] = React.useState(CURSOR_LIST);
+
     React.useEffect(() => {
         socket.on('cardPositionUpdate', (data) => {
             if (data.username !== username) {
@@ -51,9 +55,31 @@ const Table = (socket) => {
             }
         });
 
+        socket.on("mousePositionUpdate", (data) => {
+            console.log(`${data.username} moved to x: ${data.x}, y: ${data.y}`);
+            if(data.username !== socket.id) {
+                setCursor(cursors.map((cursor) => {
+                    if(cursor.username === data.username) {
+                        cursor.x = data.x;
+                        cursor.y = data.y;
+                    }
+                    return cursor;
+                }));
+            }
+        });
+
+        socket.on("userJoinSignal", (data) => {
+            console.log("User joined");
+            if(data.username !== socket.id) {
+                setCursor([...cursors, {username: data.username, x: 0, y: 0}]);
+            }
+        });
+
         return () => {
             socket.off('cardPositionUpdate');
             socket.off('cardFlipUpdate');
+            socket.off("mousePositionUpdate");
+            socket.off("userJoinSignal");
         }
     }, [socket]);
 
@@ -97,6 +123,12 @@ const Table = (socket) => {
     return (
         <>
             <Layer>
+                {cursors.map((cursor) => {
+                     <Cursor
+                        x={cursor.x}
+                        y={cursor.y}
+                        username={cursor.username} />
+                })} 
                 {cards.map((card) => (
                     <Group
                         key={card.id}
