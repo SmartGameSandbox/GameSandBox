@@ -5,6 +5,7 @@ import Table from "../table/table";
 import { Stage } from 'react-konva';
 import axios from 'axios';
 import styles from './roomStyle';
+import * as Constants from '../../util/constants';
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
 const socket = io(url, { transports: ['websocket'] });
@@ -16,6 +17,16 @@ const Room = () => {
     const joinRoom = (roomID, roomPassword) => {
         socket.emit("joinRoom", { id: roomID, password: roomPassword }, () => {});
     }
+    const [width, setWidth] = React.useState();
+    const [height, setHeight] = React.useState();
+
+    const getScreenSize = () => {
+        const newWidth = (window.innerWidth - Constants.WINDOW_BUFFER_WIDTH);
+        setWidth(newWidth);
+    
+        const newHeight = (window.innerHeight - Constants.WINDOW_BUFFER_HEIGHT);
+        setHeight(newHeight);
+      };
 
     React.useEffect(() => {
         socket.on("connect", () => {
@@ -30,6 +41,9 @@ const Room = () => {
             }).catch((error) => {
                 console.log(error);
             });
+
+            setWidth(window.innerHeight);
+            setHeight(window.innerWidth);
             // TODO: Add REAL username to room
         });
 
@@ -38,12 +52,18 @@ const Room = () => {
         }
     }, []);
 
+    React.useEffect(() => {
+        window.addEventListener("resize", getScreenSize);
+      }, []);
+
+    console.log(width, height)
+
     return (
         <>  {
                 imageUrl !== undefined && imageUrl !== '' && imageUrl !== null &&
                 <img style={styles.roomBackground} alt="board" src={imageUrl} />
             }
-            <Stage width={window.innerWidth} height={window.innerHeight}>
+            <Stage width={width} height={height}>
                 <Table socket={socket}/>
             </Stage>
         </>
