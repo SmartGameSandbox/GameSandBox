@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Rect } from 'react-konva';
 import Konva from 'konva';
 import { color } from '@mui/system';
+import { ThirteenMpSharp } from '@mui/icons-material';
 export default class Cursor extends Component {
     constructor(props) {
         super(props);
@@ -11,8 +12,8 @@ export default class Cursor extends Component {
         //left: this.location.current.left,
         //top: this.location.current.top
         x: this.props.x,
-        y: this.props.y ,
-        id: this.props.username,
+        y: this.props.y,
+        //id: this.props.username,
         //compareTo: this.props.compare
     };
 
@@ -26,12 +27,12 @@ export default class Cursor extends Component {
         return (
             <Rect
                 ref={this.location}
-                x={this.props.left}
-                y={this.props.top}
+                x={this.state.x}
+                y={this.state.y}
                 width={10}
                 height={10}
                 fill={'red'}
-                shadowBlur={5}
+                //shadowBlur={5}
                 //draggable="true"
             />
         );

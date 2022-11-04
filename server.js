@@ -29,7 +29,7 @@ io.on("connection", async (socket) => {
         socket.join(roomID);
         // add user to the user array here
         console.log("User joined room " + roomID);
-        socket.emit("userJoinSignal", { username: data.username });
+        io.to(roomID).emit("userJoinSignal", { username: socket.id })
       }
     }
   });

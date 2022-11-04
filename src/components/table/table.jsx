@@ -20,12 +20,11 @@ const roomID = params.get('id');
 const username = Date.now().toString();
 
 const INITIAL_STATE = generateCards();
-let CURSOR_LIST = [];
 
 const Table = (socket) => {
     socket = socket.socket;
     const [cards, setCards] = React.useState(INITIAL_STATE);
-    const [cursors, setCursor] = React.useState(CURSOR_LIST);
+    const [cursors, setCursor] = React.useState([]);
 
     React.useEffect(() => {
         socket.on('cardPositionUpdate', (data) => {
@@ -69,9 +68,14 @@ const Table = (socket) => {
         });
 
         socket.on("userJoinSignal", (data) => {
-            console.log("User joined");
+            console.log("userJoinSignal");
+            console.log(`${data.username} ==? ${socket.id}`)
             if(data.username !== socket.id) {
+                console.log("is adding happening")
+                console.log(`${data.username}`)
+                // adding new item to array is not working
                 setCursor([...cursors, {username: data.username, x: 0, y: 0}]);
+                console.log(cursors)
             }
         });
 
@@ -81,7 +85,7 @@ const Table = (socket) => {
             socket.off("mousePositionUpdate");
             socket.off("userJoinSignal");
         }
-    }, [socket]);
+    }, [socket, cursors]);
 
     const setCardFlip = (inputCard, isFlipped) => {
         inputCard.isFlipped = isFlipped;
@@ -124,10 +128,10 @@ const Table = (socket) => {
         <>
             <Layer>
                 {cursors.map((cursor) => {
-                     <Cursor
+                     return <Cursor
+                        key={cursor.username}
                         x={cursor.x}
-                        y={cursor.y}
-                        username={cursor.username} />
+                        y={cursor.y} />
                 })} 
                 {cards.map((card) => (
                     <Group
