@@ -7,14 +7,18 @@ import * as Constants from '../../util/constants';
 // deck data
 const Hand = ({cardsInHand}) => {
 
+    const [hands, setHands] = React.useState(cardsInHand);
     const { height, width } = useWindowDimensions();
     const state = {
         x: width / Constants.HAND_BOX_WIDTH_DIVIDER,
         y: height / Constants.HAND_BOX_HEIGHT_DIVIDER,
     }
 
-    return (
+    React.useEffect(() => {
+        setHands(cardsInHand);
+    }, [cardsInHand]);
 
+    return (
         <>
             <Rect
                 // ref={this.shapeRef}
@@ -32,12 +36,12 @@ const Hand = ({cardsInHand}) => {
             { /*Map cards in hand to visible hand
              TODO: make visible to player only */}
 
-            {cardsInHand.map((card) => (
+            {hands.map((card) => (
                 <Card
                     src={card.imageSource}
                     key={card.id}
                     id={card.id}
-                    x={state.x + ( 50 * (cardsInHand.indexOf(card) + 1))}
+                    x={state.x + ( 50 * (hands.indexOf(card) + 1))}
                     y={state.y + 35}
                     tableHeight={height}
                     tableWidth={width}

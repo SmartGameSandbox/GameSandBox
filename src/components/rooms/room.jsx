@@ -42,9 +42,11 @@ const Room = () => {
                 console.log(error);
             });
 
+            // fixed size!!!
             setWidth(window.innerHeight);
             setHeight(window.innerWidth);
             // TODO: Add REAL username to room
+            
         });
 
         return () => {

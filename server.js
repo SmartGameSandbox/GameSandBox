@@ -51,6 +51,15 @@ io.on("connection", async (socket) => {
     });
   });
 
+  socket.on("cardDraw", ({ username, roomID, cardID }) => {
+    io.to(roomID).emit("cardDrawUpdate", {
+      cardID: cardID,
+      username: username,
+    });
+  });
+
+
+
   socket.on("keepalive", async ({ roomID }) => {
     await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
   });
@@ -58,6 +67,8 @@ io.on("connection", async (socket) => {
   socket.on("disconnect", () => {
     // TODO: remove user from the user array
   });
+
+  
 });
 
 io.on("connect_error", (err) => {
