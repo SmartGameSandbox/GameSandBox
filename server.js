@@ -20,15 +20,13 @@ app.use(express.json());
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
-  socket.on("joinRoom", async (data) => {
-    const roomID = data.id;
-    const password = data.password;
+  socket.on("joinRoom", async ({ roomID, password, username}) => {
     if (roomID && password) {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
         socket.join(roomID);
         // add user to the user array here
-        console.log("User joined room " + roomID);
+        console.log(`User ${username} joined room ${roomID}`);
       }
     }
   });
@@ -51,6 +49,14 @@ io.on("connection", async (socket) => {
     });
   });
 
+  socket.on("mouseMove", ({ x, y, username, roomID }) => {
+    io.to(roomID).emit("mousePositionUpdate", {
+      x: x,
+      y: y,
+      username: username,
+    });
+  });
+  
   socket.on("cardDraw", ({ username, roomID, cardID }) => {
     io.to(roomID).emit("cardDrawUpdate", {
       cardID: cardID,
@@ -66,7 +72,6 @@ io.on("connection", async (socket) => {
     });
   });
 
-
   socket.on("keepalive", async ({ roomID }) => {
     await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
   });
@@ -74,8 +79,6 @@ io.on("connection", async (socket) => {
   socket.on("disconnect", () => {
     // TODO: remove user from the user array
   });
-
-  
 });
 
 io.on("connect_error", (err) => {

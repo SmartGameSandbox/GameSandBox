@@ -1,12 +1,10 @@
 import React from 'react';
 import { Rect, Group } from 'react-konva';
 import Card from '../card/card'
-import useWindowDimensions from '../../util/windowDimensions';
 import * as Constants from '../../util/constants';
 
 // deck data
 const Hand = ({ cardsInHand, playerDiscardCard }) => {
-
     const [hands, setHands] = React.useState(cardsInHand);
     const height = window.innerHeight;
     const width = window.innerWidth;

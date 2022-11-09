@@ -2,8 +2,8 @@ import React from 'react';
 import { Layer, Group } from 'react-konva';
 import Card from '../card/card';
 import * as Constants from '../../util/constants'
-import Hand from '../hand/hand'
-import useWindowDimensions from '../../util/windowDimensions';
+import Cursors from '../cursor/cursors';
+import Hand from '../hand/hand';
 
 const generateCards = () => {
     return [...Array(52)].map((_, i) => ({
@@ -15,49 +15,23 @@ const generateCards = () => {
     }));
 }
 
-// // cards in hand demo
-// const generateHand = () => {
-//     return [{
-//         id: 'test',
-//         x: 100,
-//         y: 100,
-//         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_2.jpg`,
-//         isFlipped: false,
-//     },
-//     {
-//         id: 'test2',
-//         x: 100,
-//         y: 100,
-//         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_31.jpg`,
-//         isFlipped: false,
-//     },
-//     {
-//         id: 'test3',
-//         x: 100,
-//         y: 100,
-//         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_46.jpg`,
-//         isFlipped: false,
-//     }]
-// }
-
 const search = window.location.search;
 const params = new URLSearchParams(search);
 const roomID = params.get('id');
-const username = Date.now().toString();
-
 const INITIAL_STATE = generateCards();
 const HAND_STATE = [];
 
-const Table = (socket) => {
-    socket = socket.socket;
+const Table = ({ socket, username }) => {
     const height = window.innerHeight;
     const width = window.innerWidth;
+    const [currentUsername] = React.useState(username);
     const [cards, setCards] = React.useState(INITIAL_STATE);
+    const [cursors, setCursors] = React.useState([]);
     const [cardsInHand, setCardsInHand] = React.useState(HAND_STATE);
 
     React.useEffect(() => {
         socket.on('cardPositionUpdate', (data) => {
-            if (data.username !== username) {
+            if (data.username !== currentUsername) {
                 setCards((prevCards) => {
                     return prevCards.map((card) => {
                         if (card.id === data.cardID) {
@@ -71,7 +45,7 @@ const Table = (socket) => {
         });
 
         socket.on('cardFlipUpdate', (data) => {
-            if (data.username !== username) {
+            if (data.username !== currentUsername) {
                 setCards((prevCards) => {
                     return prevCards.map((card) => {
                         if (card.id === data.cardID) {
@@ -83,8 +57,29 @@ const Table = (socket) => {
             }
         });
 
+        socket.on("mousePositionUpdate", (data) => {
+            if (data.username !== currentUsername) {
+                // update cursor position in object inside cursors
+                setCursors((prevCursors) => {
+                    const found = prevCursors.find((cursor) => cursor.username === data.username);
+                    if (found) {
+                        return prevCursors.map((cursor) => {
+                            if (cursor.username === data.username) {
+                                cursor.x = data.x;
+                                cursor.y = data.y;
+                            }
+                            return cursor;
+                        });
+                    } else {
+                        prevCursors.push({ username: data.username, x: data.x, y: data.y });
+                        return prevCursors;
+                    }
+                });
+            }
+        });
+
         socket.on('cardDrawUpdate', (data) => {
-            if (data.username !== username) {
+            if (data.username !== currentUsername) {
                 // Remove card from cards
                 setCards((prevCards) => {
                     return prevCards.filter((card) => {
@@ -96,22 +91,21 @@ const Table = (socket) => {
 
         // TODO:change func
         socket.on('playerDiscardCardUpdate', (data) => {
-            if (data.username !== username) {
+            if (data.username !== currentUsername) {
             }
         })
-
-
 
         return () => {
             socket.off('cardPositionUpdate');
             socket.off('cardFlipUpdate');
+            socket.off("mousePositionUpdate");
+            socket.off("userJoinSignal");
             socket.off('cardHandUpdate');
             socket.off('playerDiscardCard');
         }
-    }, [socket]);
+    }, [socket, currentUsername]);
 
     const playerDiscardCard = (card, positionX, positionY) => {
-        console.log('playerDiscardCard')
         // . Add card to cards
         setCards((prevCards) => {
             card.x = positionX - Constants.CARD_DRAW_WIDTH_OFFSET;
@@ -120,7 +114,6 @@ const Table = (socket) => {
         });
 
         // socket.emit('playerDiscardCard', { cardID: card.id, username: username });
-
         // Remove card from cardsInHand
         setCardsInHand((prevCards) => {
             return prevCards.filter((c) => {
@@ -164,7 +157,7 @@ const Table = (socket) => {
 
     const onDragEnd = (e, card) => {
         console.log('Drag end');
-        
+
         // Update psuedo-z-index of card
         setCards((prevCards) => {
             return prevCards.filter((element) => {
@@ -206,6 +199,7 @@ const Table = (socket) => {
     return (
         <>
             <Layer>
+                <Cursors cursors={cursors} username={currentUsername} />
                 <Hand
                     playerDiscardCard={playerDiscardCard}
                     cardsInHand={cardsInHand}
@@ -213,13 +207,14 @@ const Table = (socket) => {
 
                 {cards.map((card) => (
                     <Group
-                        key={card.id}
+                        key={`cardGroup_${card.id}`}
                         draggable
                         onClick={() => handleClick(card)}
                         onDragMove={(e) => onDragMove(e, card)}
                         onDragEnd={(e) => onDragEnd(e, card)}
                     >
                         <Card
+                            key={`card_${card.id}`}
                             src={card.imageSource}
                             id={card.id}
                             x={card.x}
