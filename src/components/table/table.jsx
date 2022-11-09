@@ -95,7 +95,7 @@ const Table = (socket) => {
         })
 
         // TODO:change func
-        socket.on('playerDiscardCard', (data) => {
+        socket.on('playerDiscardCardUpdate', (data) => {
             if (data.username !== username) {
             }
         })
@@ -105,7 +105,8 @@ const Table = (socket) => {
         return () => {
             socket.off('cardPositionUpdate');
             socket.off('cardFlipUpdate');
-            socket.off('cardHandUpdate')
+            socket.off('cardHandUpdate');
+            socket.off('playerDiscardCard');
         }
     }, [socket]);
 
@@ -163,9 +164,8 @@ const Table = (socket) => {
 
     const onDragEnd = (e, card) => {
         console.log('Drag end');
-        console.log()
         if ((e.evt.clientX >= width / Constants.CARD_HAND_HITBOX_WIDTH_DIVIDER) &&
-         (e.evt.clientY >= height / Constants.CARD_HAND_HITBOX_HEIGHT_DIVIDER)) {
+            (e.evt.clientY >= height / Constants.CARD_HAND_HITBOX_HEIGHT_DIVIDER)) {
             setCardsInHand((prevCards) => {
                 setCardFlip(card, false);
                 return [...prevCards, card];

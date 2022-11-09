@@ -24,11 +24,9 @@ const Hand = ({ cardsInHand, playerDiscardCard }) => {
         console.log(width / Constants.HAND_BOX_WIDTH_DIVIDER, height / Constants.HAND_BOX_HEIGHT_DIVIDER);
         if ((e.evt.clientX >= width / Constants.HAND_BOX_WIDTH_DIVIDER) &&
             !(e.evt.clientY >= height / Constants.HAND_BOX_HEIGHT_DIVIDER)) {
-            playerDiscardCard(card, e.evt.clientX , e.evt.clientY);
+            playerDiscardCard(card, e.evt.clientX, e.evt.clientY);
         }
     }
-
-
 
     return (
         <>

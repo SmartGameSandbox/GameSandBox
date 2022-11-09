@@ -58,6 +58,13 @@ io.on("connection", async (socket) => {
     });
   });
 
+  //socket for playerDiscardCard
+  socket.on("playerDiscardCard", ({ username, roomID, cardID }) => {
+    io.to(roomID).emit("playerDiscardCardUpdate", {
+      cardID: cardID,
+      username: username,
+    });
+  });
 
 
   socket.on("keepalive", async ({ roomID }) => {
