@@ -20,16 +20,13 @@ app.use(express.json());
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
-  socket.on("joinRoom", async (data) => {
-    const roomID = data.id;
-    const password = data.password;
+  socket.on("joinRoom", async ({ roomID, password, username}) => {
     if (roomID && password) {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
         socket.join(roomID);
         // add user to the user array here
-        console.log("User joined room " + roomID);
-        io.to(roomID).emit("userJoinSignal", { username: socket.id })
+        console.log(`User ${username} joined room ${roomID}`);
       }
     }
   });
