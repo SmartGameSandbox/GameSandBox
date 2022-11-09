@@ -15,30 +15,30 @@ const generateCards = () => {
     }));
 }
 
-// cards in hand demo
-const generateHand = () => {
-    return [{
-        id: 'test',
-        x: 100,
-        y: 100,
-        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_2.jpg`,
-        isFlipped: false,
-    },
-    {
-        id: 'test2',
-        x: 100,
-        y: 100,
-        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_31.jpg`,
-        isFlipped: false,
-    },
-    {
-        id: 'test3',
-        x: 100,
-        y: 100,
-        imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_46.jpg`,
-        isFlipped: false,
-    }]
-}
+// // cards in hand demo
+// const generateHand = () => {
+//     return [{
+//         id: 'test',
+//         x: 100,
+//         y: 100,
+//         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_2.jpg`,
+//         isFlipped: false,
+//     },
+//     {
+//         id: 'test2',
+//         x: 100,
+//         y: 100,
+//         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_31.jpg`,
+//         isFlipped: false,
+//     },
+//     {
+//         id: 'test3',
+//         x: 100,
+//         y: 100,
+//         imageSource: `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_46.jpg`,
+//         isFlipped: false,
+//     }]
+// }
 
 const search = window.location.search;
 const params = new URLSearchParams(search);
@@ -46,11 +46,12 @@ const roomID = params.get('id');
 const username = Date.now().toString();
 
 const INITIAL_STATE = generateCards();
-const HAND_STATE = generateHand();
+const HAND_STATE = [];
 
 const Table = (socket) => {
     socket = socket.socket;
-    const { height, width } = useWindowDimensions();
+    const height = window.innerHeight;
+    const width = window.innerWidth;
     const [cards, setCards] = React.useState(INITIAL_STATE);
     const [cardsInHand, setCardsInHand] = React.useState(HAND_STATE);
 
@@ -108,6 +109,26 @@ const Table = (socket) => {
         }
     }, [socket]);
 
+    const playerDiscardCard = (card, positionX, positionY) => {
+        console.log('playerDiscardCard')
+        // . Add card to cards
+        setCards((prevCards) => {
+            card.x = positionX - Constants.CARD_DRAW_WIDTH_OFFSET;
+            card.y = positionY - Constants.CARD_DRAW_HEIGHT_OFFSET;
+            return [...prevCards, card];
+        });
+
+        // socket.emit('playerDiscardCard', { cardID: card.id, username: username });
+
+        // Remove card from cardsInHand
+        setCardsInHand((prevCards) => {
+            return prevCards.filter((c) => {
+                return c.id !== card.id;
+            });
+        });
+
+    }
+
     const setCardFlip = (inputCard, isFlipped) => {
         inputCard.isFlipped = isFlipped;
         inputCard.imageSource = inputCard.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
@@ -142,8 +163,11 @@ const Table = (socket) => {
 
     const onDragEnd = (e, card) => {
         console.log('Drag end');
-        if ((e.evt.clientX >= width / Constants.HAND_BOX_WIDTH_DIVIDER) && (e.evt.clientY >= width / Constants.HAND_BOX_HEIGHT_DIVIDER)) {
+        console.log()
+        if ((e.evt.clientX >= width / Constants.CARD_HAND_HITBOX_WIDTH_DIVIDER) &&
+         (e.evt.clientY >= height / Constants.CARD_HAND_HITBOX_HEIGHT_DIVIDER)) {
             setCardsInHand((prevCards) => {
+                setCardFlip(card, false);
                 return [...prevCards, card];
             });
 
@@ -169,6 +193,7 @@ const Table = (socket) => {
         <>
             <Layer>
                 <Hand
+                    playerDiscardCard={playerDiscardCard}
                     cardsInHand={cardsInHand}
                 />
 
