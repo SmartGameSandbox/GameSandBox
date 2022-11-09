@@ -164,6 +164,20 @@ const Table = (socket) => {
 
     const onDragEnd = (e, card) => {
         console.log('Drag end');
+        
+        // Update psuedo-z-index of card
+        setCards((prevCards) => {
+            return prevCards.filter((element) => {
+                return element.id !== card.id;
+            });
+        });
+        setCards((prevCards) => {
+            card.x = e.evt.offsetX - Constants.CARD_DRAW_WIDTH_OFFSET;
+            card.y = e.evt.offsetY - Constants.CARD_DRAW_HEIGHT_OFFSET;
+            return [...prevCards, card];
+        });
+
+        // Area check for card draw
         if ((e.evt.clientX >= width / Constants.CARD_HAND_HITBOX_WIDTH_DIVIDER) &&
             (e.evt.clientY >= height / Constants.CARD_HAND_HITBOX_HEIGHT_DIVIDER)) {
             setCardsInHand((prevCards) => {
