@@ -3,6 +3,7 @@ import { Layer, Group } from 'react-konva';
 import Card from '../card/card';
 import * as Constants from '../../util/constants'
 import Cursor from '../cursor/cursor';
+import Hand from '../hand/hand';
 
 const generateCards = () => {
     return [...Array(52)].map((_, i) => ({
@@ -20,11 +21,15 @@ const roomID = params.get('id');
 const username = Date.now().toString();
 
 const INITIAL_STATE = generateCards();
+const HAND_STATE = [];
 
 const Table = (socket) => {
     socket = socket.socket;
+    const height = window.innerHeight;
+    const width = window.innerWidth;
     const [cards, setCards] = React.useState(INITIAL_STATE);
     const [cursors, setCursor] = React.useState([]);
+    const [cardsInHand, setCardsInHand] = React.useState(HAND_STATE);
 
     React.useEffect(() => {
         socket.on('cardPositionUpdate', (data) => {
@@ -79,13 +84,51 @@ const Table = (socket) => {
             }
         });
 
+        socket.on('cardDrawUpdate', (data) => {
+            if (data.username !== username) {
+                // Remove card from cards
+                setCards((prevCards) => {
+                    return prevCards.filter((card) => {
+                        return card.id !== data.cardID;
+                    });
+                });
+            }
+        })
+
+        // TODO:change func
+        socket.on('playerDiscardCardUpdate', (data) => {
+            if (data.username !== username) {
+            }
+        })
+
         return () => {
             socket.off('cardPositionUpdate');
             socket.off('cardFlipUpdate');
             socket.off("mousePositionUpdate");
             socket.off("userJoinSignal");
+            socket.off('cardHandUpdate');
+            socket.off('playerDiscardCard');
         }
     }, [socket, cursors]);
+
+    const playerDiscardCard = (card, positionX, positionY) => {
+        // . Add card to cards
+        setCards((prevCards) => {
+            card.x = positionX - Constants.CARD_DRAW_WIDTH_OFFSET;
+            card.y = positionY - Constants.CARD_DRAW_HEIGHT_OFFSET;
+            return [...prevCards, card];
+        });
+
+        // socket.emit('playerDiscardCard', { cardID: card.id, username: username });
+
+        // Remove card from cardsInHand
+        setCardsInHand((prevCards) => {
+            return prevCards.filter((c) => {
+                return c.id !== card.id;
+            });
+        });
+
+    }
 
     const setCardFlip = (inputCard, isFlipped) => {
         inputCard.isFlipped = isFlipped;
@@ -119,9 +162,45 @@ const Table = (socket) => {
             });
     }
 
-    const onDragEnd = (e) => {
+    const onDragEnd = (e, card) => {
         console.log('Drag end');
-        // CHECK IF IT IS MOVED TO HAND
+        
+        // Update psuedo-z-index of card
+        setCards((prevCards) => {
+            return prevCards.filter((element) => {
+                return element.id !== card.id;
+            });
+        });
+        setCards((prevCards) => {
+            card.x = e.evt.offsetX - Constants.CARD_DRAW_WIDTH_OFFSET;
+            card.y = e.evt.offsetY - Constants.CARD_DRAW_HEIGHT_OFFSET;
+            return [...prevCards, card];
+        });
+
+        // Area check for card draw
+        if ((e.evt.clientX >= width / Constants.CARD_HAND_HITBOX_WIDTH_DIVIDER) &&
+            (e.evt.clientY >= height / Constants.CARD_HAND_HITBOX_HEIGHT_DIVIDER)) {
+            setCardsInHand((prevCards) => {
+                setCardFlip(card, false);
+                return [...prevCards, card];
+            });
+
+            // Remove card from cards
+            setCards((prevCards) => {
+                return prevCards.filter((element) => {
+                    return element.id !== card.id;
+                });
+            });
+
+            socket.emit("cardDraw",
+                { username: username, roomID: roomID, cardID: card.id }, (err) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                }
+            );
+
+        }
     }
 
     return (
@@ -133,13 +212,18 @@ const Table = (socket) => {
                         x={cursor.x}
                         y={cursor.y} />
                 })} 
+                <Hand
+                    playerDiscardCard={playerDiscardCard}
+                    cardsInHand={cardsInHand}
+                />
+
                 {cards.map((card) => (
                     <Group
                         key={card.id}
                         draggable
                         onClick={() => handleClick(card)}
                         onDragMove={(e) => onDragMove(e, card)}
-                        onDragEnd={onDragEnd}
+                        onDragEnd={(e) => onDragEnd(e, card)}
                     >
                         <Card
                             src={card.imageSource}

@@ -5,7 +5,7 @@ import Table from "../table/table";
 import { Stage } from 'react-konva';
 import axios from 'axios';
 import styles from './roomStyle';
-import { CardTravelSharp } from '@mui/icons-material';
+import * as Constants from '../../util/constants';
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
 const socket = io(url, { transports: ['websocket'] });
@@ -27,6 +27,9 @@ const Room = () => {
         })
     }
 
+    const width = window.innerWidth - Constants.WINDOW_BUFFER_WIDTH;
+    const height = window.innerHeight - Constants.WINDOW_BUFFER_HEIGHT;
+
     React.useEffect(() => {
         socket.on("connect", () => {
             console.log("Connected to server");
@@ -41,7 +44,9 @@ const Room = () => {
             }).catch((error) => {
                 console.log(error);
             });
+
             // TODO: Add REAL username to room
+
         });
 
         return () => {
@@ -49,14 +54,16 @@ const Room = () => {
         }
     }, []);
 
+    console.log(width, height)
+
     return (
         <>  {
                 imageUrl !== undefined && imageUrl !== '' && imageUrl !== null &&
                 <img style={styles.roomBackground} alt="board" src={imageUrl} />
             }
-            <Stage
-                width={window.innerWidth}
-                height={window.innerHeight}
+            <Stage 
+                width={width} 
+                height={height}
                 onMouseMove={(e) => handleMouseMove(e)}
             >
                 <Table socket={socket}/>
