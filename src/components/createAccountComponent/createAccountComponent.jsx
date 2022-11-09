@@ -28,19 +28,19 @@ const CreateNewAccountComponent = () => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    let username = usernameInputText
-    let email = emailInputText
-    let password = passwordInputText
-    let confirmPw = confirmPasswordInputText
+    e.preventDefault();
+    let username = usernameInputText;
+    let email = emailInputText;
+    let password = passwordInputText;
+    let confirmPw = confirmPasswordInputText;
 
-    if (password !== confirmPasswordInputText){
-      console.log("no matcing pw")
+    if (password !== confirmPasswordInputText) {
+      console.log("no matcing pw");
       // probably better to show a modal
     } else {
-      console.log("password matches")
+      console.log("password matches");
     }
-  }
+  };
 
   return (
     <>
@@ -52,59 +52,59 @@ const CreateNewAccountComponent = () => {
       >
         <h1>Create User</h1>
         <form>
-        <div>
-          <TextField
-            id="username-input"
-            sx={styles.textFieldStyle}
-            placeholder="Please select your username"
-            value={usernameInputText}
-            onChange={handleUsernameTextInputChange}
-            className="text-field"
-            required
-            label="Username"
-            size="large"
-          />
-          <br />
-          <TextField
-            id="email-input"
-            sx={styles.textFieldStyle}
-            placeholder="Please enter your email address"
-            value={emailInputText}
-            onChange={handleEmailInputtTextChange}
-            className="text-field"
-            required
-            label="Email Address"
-            type={"email"}
-            size="large"
-          />
-          <br />
-          <TextField
-            id="password-input"
-            sx={styles.textFieldStyle}
-            placeholder="Please create your password"
-            value={passwordInputText}
-            onChange={handlePasswordTextInputChange}
-            className="text-field"
-            required
-            label="Password"
-            type={"password"}
-            size="large"
-          />
-          <br />
-          <TextField
-            id="confirm-password-input"
-            sx={styles.textFieldStyle}
-            placeholder="Please confirm your password"
-            value={confirmPasswordInputText}
-            onChange={handleConfirmPasswordTextInputChange}
-            className="text-field"
-            required
-            label="Confirm Password"
-            type={"password"}
-            size="large"
-          />
-        </div>
-        <div sx={styles.forgotPasswordStyle}>
+          <div>
+            <TextField
+              id="username-input"
+              sx={styles.textFieldStyle}
+              placeholder="Please select your username"
+              value={usernameInputText}
+              onChange={handleUsernameTextInputChange}
+              className="text-field"
+              required
+              label="Username"
+              size="large"
+            />
+            <br />
+            <TextField
+              id="email-input"
+              sx={styles.textFieldStyle}
+              placeholder="Please enter your email address"
+              value={emailInputText}
+              onChange={handleEmailInputtTextChange}
+              className="text-field"
+              required
+              label="Email Address"
+              type={"email"}
+              size="large"
+            />
+            <br />
+            <TextField
+              id="password-input"
+              sx={styles.textFieldStyle}
+              placeholder="Please create your password"
+              value={passwordInputText}
+              onChange={handlePasswordTextInputChange}
+              className="text-field"
+              required
+              label="Password"
+              type={"password"}
+              size="large"
+            />
+            <br />
+            <TextField
+              id="confirm-password-input"
+              sx={styles.textFieldStyle}
+              placeholder="Please confirm your password"
+              value={confirmPasswordInputText}
+              onChange={handleConfirmPasswordTextInputChange}
+              className="text-field"
+              required
+              label="Confirm Password"
+              type={"password"}
+              size="large"
+            />
+          </div>
+          <div sx={styles.forgotPasswordStyle}>
             <Button
               variant="contained"
               sx={styles.signInButtonStyle}
@@ -113,7 +113,7 @@ const CreateNewAccountComponent = () => {
             >
               Submit
             </Button>
-        </div>
+          </div>
         </form>
       </Box>
     </>

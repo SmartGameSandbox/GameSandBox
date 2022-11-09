@@ -3,6 +3,8 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 var http = require("http").Server(app);
+const { check, validationResult } = require('express-validator');
+
 var io;
 if (process.env.NODE_ENV !== "production") {
   app.use(cors());
@@ -15,6 +17,7 @@ const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 const { roomSchema, Room } = require("./schemas/room");
 const idGenerator = require("./utils/id_generator");
+const { Check } = require('@mui/icons-material');
 app.use(express.json());
 
 // Web sockets
@@ -124,9 +127,78 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.post("/api/createUser", async (req, res) => {
-  // this is where we ask db to make user
-})
+// createAccount 
+app.get("/api/admin", (req, res) => res.render('createAccount'));
+app.post("/api/register",
+  [
+    check('username', 'Username is required')
+      .trim()
+      .exists()
+      .notEmpty()
+      .isLength({ min: 5, max: 20 })
+      .withMessage('Username must be between 5 and 20 characters'),
+    check('email', 'Email is required')
+      .notEmpty()
+      .exists()
+      .isEmail(),
+    check('password', 'Password is required')
+      .trim()
+      .exists()
+      .notEmpty()
+      .isLength({ min: 4, max: 20 })
+      .withMessage('Password must be between 4 and 20 characters')
+  ],
+  async (req, res) => {
+    let incorrectInput = validationResult(req);
+    console.log(incorrectInput);
+
+    if (!incorrectInput.isEmpty()) {
+      return res.status(400).json({ errors: incorrectInput.array() });
+    } else {
+      queryData = newUserModel(req.body.username, req.body.email, req.body.password);
+      let queryData = await User.find({ $or: [{ username: queryData.username }, { email: queryData.email }, { password: queryData.password }] });
+      console.log(queryData);
+
+      if (queryData.length === 0) {
+        queryData.save().
+          then((result) => {
+            console.log(result);
+            res.render(createAccount, { registerSuccess: "Account is set up with GameSandBox!" });
+          }).
+          catch((err) => {
+            console.log(err);
+            res.status(500).json({ error: err });
+          });
+
+      } else if (queryData.length > 0) {
+        let matchQueryEmails = [];
+        let matchQueryUsername = [];
+
+        for (let i = 0; i < queryData.length; i++) {
+          if (queryData[i].email === queryData.email) {
+            matchQueryEmails.push(queryData[i].email);
+          }
+          if (queryData[i].username === queryData.username) {
+            matchQueryUsername.push(queryData[i].username);
+          }
+        }
+
+        let emailMatchresult = matchQueryEmails.filter(emailMatch => emailMatch === queryData.email);
+        let usernameMatchResult = matchQueryUsername.filter(usernameMatch => usernameMatch === queryData.username);
+        console.log(emailMatchresult);
+        console.log(usernameMatchResult);
+      }
+
+      if (usernameMatchResult.length > 0 && emailMatchresult.length > 0) {
+        return res.render(createAccount, { registerError: "Username and email already exist" });
+      }
+      else if (usernameMatch.length > 0) {
+        return res.render(createAccount, { registerError: "Username already exist" });
+      } else if (emailmatch.length > 0) {
+        return res.render(createAccount, { registerError: "Email already exist" });
+      }
+    }
+  });
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);
