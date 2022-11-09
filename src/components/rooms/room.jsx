@@ -17,16 +17,9 @@ const Room = () => {
     const joinRoom = (roomID, roomPassword) => {
         socket.emit("joinRoom", { id: roomID, password: roomPassword }, () => {});
     }
-    const [width, setWidth] = React.useState();
-    const [height, setHeight] = React.useState();
 
-    const getScreenSize = () => {
-        const newWidth = (window.innerWidth - Constants.WINDOW_BUFFER_WIDTH);
-        setWidth(newWidth);
-    
-        const newHeight = (window.innerHeight - Constants.WINDOW_BUFFER_HEIGHT);
-        setHeight(newHeight);
-      };
+    const width = window.innerWidth - Constants.WINDOW_BUFFER_WIDTH;
+    const height = window.innerHeight - Constants.WINDOW_BUFFER_HEIGHT;
 
     React.useEffect(() => {
         socket.on("connect", () => {
@@ -42,19 +35,14 @@ const Room = () => {
                 console.log(error);
             });
 
-            setWidth(window.innerHeight);
-            setHeight(window.innerWidth);
             // TODO: Add REAL username to room
+
         });
 
         return () => {
             socket.off("connect");
         }
     }, []);
-
-    React.useEffect(() => {
-        window.addEventListener("resize", getScreenSize);
-      }, []);
 
     console.log(width, height)
 
