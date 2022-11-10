@@ -3,9 +3,6 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 var http = require("http").Server(app);
-const { check, validationResult } = require('express-validator');
-//const userSchema = require('./schemas/user');
-const { User } = require("./schemas/user");
 
 var io;
 if (process.env.NODE_ENV !== "production") {
@@ -129,14 +126,20 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+
+// Register
+const { check, validationResult } = require('express-validator');
+const { User } = require("./schemas/user");
+
 // createAccount 
-app.get("/api/admin", (req, res) => res.render('createAccount'));
+app.get("/api/register", (req, res) => res.render('createAccount'));
 app.post("/api/register", async (req, res) => {
   const newUserModel = new User({
     username: req.body.username,
     email: req.body.email,
     password: req.body.password
   });
+  // const result = await newUserModel.save();
 
   //queryData = newUserModel(req.body.username, req.body.email, req.body.password);
   //let queryData = await newUserModel.find({ $or: [{ username: queryData.username }, { email: queryData.email }, { password: queryData.password }] });
@@ -192,6 +195,58 @@ app.post("/api/register", async (req, res) => {
   */
 }
 );
+
+// Session
+
+// const session = require('express-session');
+// const MongoDBStore = require('session-file-store')(session);
+// const MONGODB_URI = "http://localhost:5000"
+
+// const mongoDBStore = new MongoDBStore({
+//   uri: process.env.MONGODB_URI,
+//   collection: 'sessions'
+// });
+
+// app.use(
+//   session({
+//     httpOnly: true,
+//     secure: true,
+//     secret: 'secret key',
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//       httpOnly: true,
+//       secure: true,
+//     },
+//     store: mongoDBStore,
+//   }
+//   ));
+// app.use(cors(corsOptions));
+// app.use(express.json());
+
+// const loginRouter = require('./routes/login');
+// const { Router } = require('express');
+// app.use("/api", loginRouter);
+
+// app.listen(port, () => console.log(`Server started on port ${port}`));
+
+
+// Router.post('/login', async (req, res) => {
+//   const { username, email, password } = req.body;
+//   if (!email || !password) {
+//     res.status(400).json({ message: { msgBody: "All fields are required", msgError: true } });
+//   }
+//   const user = await User.findOne({ username });
+//   if (!user) {
+//     return res.status(400).json({ message: { msgBody: "Username is not found", msgError: true } });
+//   }
+//   if (user.password !== password) {
+//     return res.status(400).json({ message: { msgBody: "Password is incorrect", msgError: true } });
+//   }
+//   req.session.user = user;
+//   res.status(200).json({ message: { msgBody: "Login successful", msgError: false } });
+// });
+
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);

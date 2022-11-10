@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose;
 const userSchema = new Schema({
-    name: { type: String, maxlength: 20, required: false },
+    username: { type: String, maxlength: 20, required: false },
     email: { type: String, required: false },
     password: { type: String, min: [4, 'Password too short'], max: [20, 'Password too long'] },
 });
