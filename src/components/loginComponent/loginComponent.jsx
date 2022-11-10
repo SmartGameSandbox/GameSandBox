@@ -3,6 +3,7 @@ import styles from "./loginStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import axios from "axios";
 
 const LoginComponent = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
@@ -12,6 +13,27 @@ const LoginComponent = () => {
   const [passwordInputText, setPasswordInputText] = React.useState("");
   const handlePasswordTextInputChange = (event) => {
     setPasswordInputText(event.target.value);
+  };
+
+  const handleSubmit = () => {
+    let username = usernameInputText;
+    let password = passwordInputText;
+    console.log("password matches");
+    const url =
+      process.env.NODE_ENV === "production"
+        ? "https://smartgamesandbox.herokuapp.com"
+        : "http://localhost:5000";
+    axios
+      .post(`${url}/api/login`, {
+        username: username,
+        password: password,
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -56,7 +78,7 @@ const LoginComponent = () => {
           <Button
             variant="contained"
             sx={styles.signInButtonStyle}
-            // onClick={() => { handleSignInButtonClick() }}
+            onClick={handleSubmit}
           >
             Sign in
           </Button>
