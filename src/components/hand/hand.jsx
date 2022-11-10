@@ -6,42 +6,45 @@ import * as Constants from '../../util/constants';
 // deck data
 const Hand = ({ cardsInHand, playerDiscardCard }) => {
     const [hands, setHands] = React.useState(cardsInHand);
-    const height = window.innerHeight;
-    const width = window.innerWidth;
-    const state = {
-        x: width / Constants.HAND_BOX_WIDTH_DIVIDER,
-        y: height / Constants.HAND_BOX_HEIGHT_DIVIDER,
-    }
 
     React.useEffect(() => {
-        setHands(cardsInHand);
+        setHands(cardsInHand.map((card, index) => {
+            card.x= 30 + (Constants.HAND_CARD_GAP * (index + 1));
+            card.y= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + 15;
+            return card;
+        }));
     }, [cardsInHand]);
 
+    const handleClick = (card) => {
+        setHands((prevHands) => {
+            return prevHands.map((hand) => {
+                if (hand.id === card.id) {
+                    hand.isFlipped = !hand.isFlipped;
+                    hand.imageSource = hand.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
+                        `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${hand.id}.jpg`;
+                }
+                return hand;
+            });
+        });
+    }
+
     const onDragEnd = (e, card) => {
-        console.log(e.evt.clientX, e.evt.clientY);
-        console.log(width / Constants.HAND_BOX_WIDTH_DIVIDER, height / Constants.HAND_BOX_HEIGHT_DIVIDER);
-        if ((e.evt.clientX >= width / Constants.HAND_BOX_WIDTH_DIVIDER) &&
-            !(e.evt.clientY >= height / Constants.HAND_BOX_HEIGHT_DIVIDER)) {
-            playerDiscardCard(card, e.evt.clientX, e.evt.clientY);
+        if (e.evt.clientY <= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT) {
+            playerDiscardCard(card, e.evt.offsetX - 0.5 * Constants.CARD_WIDTH, e.evt.offsetY - 0.5 * Constants.CARD_HEIGHT);
+        } else {
+            setHands([]);
+            setHands(hands);
         }
     }
 
     return (
         <>
-
             <Rect
-                strokeWidth={4} // border width
-                stroke="lightseagreen" // border color
-                // ref={this.shapeRef}
-                x={state.x}
-                y={state.y}
-                // value={this.state.cardNumber}
+                x={0}
+                y={Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT}
                 width={Constants.HAND_WIDTH}
                 height={Constants.HAND_HEIGHT}
-                fill={"rgb(100,117,117)"}
-                shadowBlur={2}
-            // draggable="true"
-            // onDragMove={this.handleDragMove}
+                fill={"rgba(100, 177, 177, 1)"}
             />
 
             { /*Map cards in hand to visible hand
@@ -51,15 +54,14 @@ const Hand = ({ cardsInHand, playerDiscardCard }) => {
                 <Group
                     key={card.id}
                     draggable
-                    // onClick={() => handleClick(card)}
-                    // onDragMove={(e) => onDragMove(e, card)}
                     onDragEnd={(e) => onDragEnd(e, card)}
+                    onClick={() => handleClick(card)}
                 >
                     <Card
                         src={card.imageSource}
                         id={card.id}
-                        x={state.x + (50 * (hands.indexOf(card) + 1))}
-                        y={state.y + 35}
+                        x={card.x}
+                        y={card.y}
                     />
                 </Group>
             ))}
