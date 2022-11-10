@@ -150,9 +150,6 @@ app.post("/api/register", async (req, res) => {
     }
   });
 
-  console.log("registering user")
-  res.json({ status: "came to register server route" });
-
   /*
   if (queryData.length === 0) {
     queryData.save().
