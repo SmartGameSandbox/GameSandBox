@@ -17,19 +17,16 @@ const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
 
     const joinRoom = (roomID, roomPassword) => {
-        socket.emit("joinRoom", { roomID: roomID, password: roomPassword, username: username}, () => {});
+        socket.emit("joinRoom", { roomID: roomID, password: roomPassword, username: username }, () => { });
     }
 
     const handleMouseMove = (data) => {
-        socket.emit("mouseMove", { x: data.evt.offsetX, y: data.evt.offsetY, username: username, roomID: roomID}, (err) => {
+        socket.emit("mouseMove", { x: data.evt.offsetX, y: data.evt.offsetY, username: username, roomID: roomID }, (err) => {
             if (err) {
                 alert(err);
             }
         })
     }
-
-    const width = window.innerWidth - Constants.WINDOW_BUFFER_WIDTH;
-    const height = window.innerHeight - Constants.WINDOW_BUFFER_HEIGHT;
 
     React.useEffect(() => {
         socket.on("connect", () => {
@@ -53,17 +50,24 @@ const Room = () => {
     }, []);
 
     return (
-        <>  {
-                imageUrl !== undefined && imageUrl !== '' && imageUrl !== null &&
-                <img style={styles.roomBackground} alt="board" src={imageUrl} />
-            }
-            <Stage 
-                width={width} 
-                height={height}
-                onMouseMove={(e) => handleMouseMove(e)}
-            >
-                <Table socket={socket} username={username}/>
-            </Stage>
+        <>
+            <div style={styles.roomWrapper}>
+                <div
+                    style={styles.stageWrapper}
+                >
+                    {
+                        imageUrl !== undefined && imageUrl !== '' && imageUrl !== null &&
+                        <img style={styles.board} alt="board" src={imageUrl} />
+                    }
+                    <Stage
+                        width={Constants.CANVAS_WIDTH}
+                        height={Constants.CANVAS_HEIGHT}
+                        onMouseMove={(e) => handleMouseMove(e)}
+                    >
+                        <Table socket={socket} username={username} />
+                    </Stage>
+                </div>
+            </div>
         </>
     );
 }

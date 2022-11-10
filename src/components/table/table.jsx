@@ -22,8 +22,6 @@ const INITIAL_STATE = generateCards();
 const HAND_STATE = [];
 
 const Table = ({ socket, username }) => {
-    const height = window.innerHeight;
-    const width = window.innerWidth;
     const [currentUsername] = React.useState(username);
     const [cards, setCards] = React.useState(INITIAL_STATE);
     const [cursors, setCursors] = React.useState([]);
@@ -32,15 +30,11 @@ const Table = ({ socket, username }) => {
     React.useEffect(() => {
         socket.on('cardPositionUpdate', (data) => {
             if (data.username !== currentUsername) {
-                setCards((prevCards) => {
-                    return prevCards.map((card) => {
-                        if (card.id === data.cardID) {
-                            card.x = data.x;
-                            card.y = data.y;
-                        }
-                        return card;
-                    });
-                });
+                let newlist = cards.filter((card) => card.id !== data.cardID);
+                let targetCard = cards.find((card) => card.id === data.cardID);
+                targetCard.x = data.x;
+                targetCard.y = data.y;
+                setCards([...newlist, targetCard]);
             }
         });
 
@@ -89,9 +83,12 @@ const Table = ({ socket, username }) => {
             }
         })
 
-        // TODO:change func
         socket.on('playerDiscardCardUpdate', (data) => {
             if (data.username !== currentUsername) {
+                // add card in data to cards
+                setCards((prevCards) => {
+                    return prevCards.concat(data.card);
+                });
             }
         })
 
@@ -106,14 +103,14 @@ const Table = ({ socket, username }) => {
     }, [socket, currentUsername]);
 
     const playerDiscardCard = (card, positionX, positionY) => {
-        // . Add card to cards
+        // Add card to cards
         setCards((prevCards) => {
-            card.x = positionX - Constants.CARD_DRAW_WIDTH_OFFSET;
-            card.y = positionY - Constants.CARD_DRAW_HEIGHT_OFFSET;
+            card.x = positionX;
+            card.y = positionY;
             return [...prevCards, card];
         });
 
-        // socket.emit('playerDiscardCard', { cardID: card.id, username: username });
+        socket.emit('playerDiscardCard', { username: username, roomID: roomID, card: card });
         // Remove card from cardsInHand
         setCardsInHand((prevCards) => {
             return prevCards.filter((c) => {
@@ -153,28 +150,31 @@ const Table = ({ socket, username }) => {
                     console.error(err);
                 }
             });
+        socket.emit("mouseMove",
+            {
+                x: e.evt.offsetX,
+                y: e.evt.offsetY,
+                username: username,
+                roomID: roomID
+            }, (err) => {
+                if (err) {
+                    alert(err);
+                }
+            })
+    }
+
+    const onDragStart = (card) => {
+        // remove card from cards
+        let newlist = cards.filter((c) => {
+            return c.id !== card.id;
+        });
+        setCards([...newlist, card]);
     }
 
     const onDragEnd = (e, card) => {
-        console.log('Drag end');
-
-        // Update psuedo-z-index of card
-        setCards((prevCards) => {
-            return prevCards.filter((element) => {
-                return element.id !== card.id;
-            });
-        });
-        setCards((prevCards) => {
-            card.x = e.evt.offsetX - Constants.CARD_DRAW_WIDTH_OFFSET;
-            card.y = e.evt.offsetY - Constants.CARD_DRAW_HEIGHT_OFFSET;
-            return [...prevCards, card];
-        });
-
         // Area check for card draw
-        if ((e.evt.clientX >= width / Constants.CARD_HAND_HITBOX_WIDTH_DIVIDER) &&
-            (e.evt.clientY >= height / Constants.CARD_HAND_HITBOX_HEIGHT_DIVIDER)) {
+        if (e.evt.clientY >= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT) {
             setCardsInHand((prevCards) => {
-                setCardFlip(card, false);
                 return [...prevCards, card];
             });
 
@@ -199,7 +199,6 @@ const Table = ({ socket, username }) => {
     return (
         <>
             <Layer>
-                <Cursors cursors={cursors} username={currentUsername} />
                 <Hand
                     playerDiscardCard={playerDiscardCard}
                     cardsInHand={cardsInHand}
@@ -211,6 +210,7 @@ const Table = ({ socket, username }) => {
                         draggable
                         onClick={() => handleClick(card)}
                         onDragMove={(e) => onDragMove(e, card)}
+                        onDragStart={() => onDragStart(card)}
                         onDragEnd={(e) => onDragEnd(e, card)}
                     >
                         <Card
@@ -222,6 +222,9 @@ const Table = ({ socket, username }) => {
                         />
                     </Group>
                 ))}
+            </Layer>
+            <Layer>
+                <Cursors cursors={cursors} username={currentUsername} />
             </Layer>
         </>
     );

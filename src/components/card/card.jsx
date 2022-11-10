@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image } from 'react-konva';
+import * as Constants from '../../util/constants';
 
 class Card extends React.Component {
   state = {
@@ -42,6 +43,8 @@ class Card extends React.Component {
       <Image
         x={this.props.x}
         y={this.props.y}
+        height={Constants.CARD_HEIGHT}
+        width={Constants.CARD_WIDTH}
         image={this.state.image}
         ref={(node) => {
           this.imageNode = node;

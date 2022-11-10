@@ -65,9 +65,9 @@ io.on("connection", async (socket) => {
   });
 
   //socket for playerDiscardCard
-  socket.on("playerDiscardCard", ({ username, roomID, cardID }) => {
+  socket.on("playerDiscardCard", ({ username, roomID, card }) => {
     io.to(roomID).emit("playerDiscardCardUpdate", {
-      cardID: cardID,
+      card: card,
       username: username,
     });
   });
