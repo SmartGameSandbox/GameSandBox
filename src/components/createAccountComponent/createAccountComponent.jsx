@@ -55,7 +55,7 @@ const CreateNewAccountComponent = () => {
   return (
     <>
       <Box
-        sx={styles.roomBoxStyle}
+        sx={styles.loginBoxStyle}
         id="create-account-container"
         component="form"
         autoComplete="off"

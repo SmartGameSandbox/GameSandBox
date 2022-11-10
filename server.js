@@ -22,27 +22,54 @@ app.use(express.json());
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
-  socket.on("joinRoom", async (data) => {
-    const roomID = data.id;
-    const password = data.password;
+  socket.on("joinRoom", async ({ roomID, password, username}) => {
     if (roomID && password) {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
         socket.join(roomID);
-        console.log("User joined room " + roomID);
-      } else {
-        socket.emit("error", "Invalid room ID or password");
+        // add user to the user array here
+        console.log(`User ${username} joined room ${roomID}`);
       }
-      // TODO: add user to the user array
-    } else {
-      socket.emit("error", "Room ID and password are required");
     }
   });
 
-  socket.on("cardMove", ({ x, y, username, roomID }) => {
-    socket.broadcast.to(roomID).emit("cardPositionUpdate", {
+  socket.on("cardMove", ({ x, y, username, roomID, cardID }) => {
+    io.to(roomID).emit("cardPositionUpdate", {
+      cardID: cardID,
       x: x,
       y: y,
+      username: username
+    });
+  });
+
+  socket.on("cardFlip", ({ isFlipped, username, roomID, cardID }) => {
+    console.log("get flipped mesg", isFlipped, username, roomID, cardID);
+    io.to(roomID).emit("cardFlipUpdate", {
+      cardID: cardID,
+      isFlipped: isFlipped,
+      username: username,
+    });
+  });
+
+  socket.on("mouseMove", ({ x, y, username, roomID }) => {
+    io.to(roomID).emit("mousePositionUpdate", {
+      x: x,
+      y: y,
+      username: username,
+    });
+  });
+  
+  socket.on("cardDraw", ({ username, roomID, cardID }) => {
+    io.to(roomID).emit("cardDrawUpdate", {
+      cardID: cardID,
+      username: username,
+    });
+  });
+
+  //socket for playerDiscardCard
+  socket.on("playerDiscardCard", ({ username, roomID, card }) => {
+    io.to(roomID).emit("playerDiscardCardUpdate", {
+      card: card,
       username: username,
     });
   });
@@ -82,7 +109,7 @@ app.get("/api/room", async (req, res) => {
     const password = req.query.password;
     const roomData = await Room.findOne({ id: id, password: password });
     if (roomData) {
-      res.json({ status: "success" });
+      res.json(roomData);
     } else {
       res.json({ status: "error", message: "Invalid room ID or password" });
     }
@@ -106,7 +133,8 @@ app.post("/api/room", async (req, res) => {
     const gameRoomData = new Room({
       id: roomID,
       password: req.body.password,
-      name: req.body.name
+      name: req.body.name,
+      image: req.body.image
     });
     const result = await gameRoomData.save();
     if (!result) {

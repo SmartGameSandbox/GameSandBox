@@ -4,8 +4,10 @@ import styles from './roomStyle';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import FileBase64 from 'react-file-base64';
 
 const CreateRoom = () => {
+  const [item, setItem] = React.useState({ imageUrl: '' });
   const [roomNameInputText, setRoomNameInputText] = React.useState('Card Game Sandbox');
   const handleRoomNameTextInputChange = event => {
     setRoomNameInputText(event.target.value);
@@ -21,7 +23,8 @@ const CreateRoom = () => {
 
     axios.post(`${url}/api/room`, {
       name: roomNameInputText,
-      password: passwordInputText
+      password: passwordInputText,
+      image: item.imageUrl === '' ? null : item.imageUrl
     }).then((response) => {
       window.location.href = `/room?id=${response.data.id}&password=${response.data.password}`;
     }).catch((error) => {
@@ -61,8 +64,13 @@ const CreateRoom = () => {
             type={"password"}
             size="large"
           />
+          <FileBase64
+            type="file"
+            multiple={false}
+            onDone={({ base64 }) => setItem({ ...item, imageUrl: base64 })}
+          />
         </div>
-        <Button variant="contained" sx={{bgcolor: 'lightseagreen'}} onClick={() => { createRoom(); }}>Create Room</Button>
+        <Button variant="contained" sx={styles.createRoomButtonStyle} onClick={() => { createRoom(); }}>Create Room</Button>
       </Box>
     </>
   );
