@@ -275,6 +275,20 @@ app.post("/api/register", async (req, res) => {
 //   res.status(200).json({ message: { msgBody: "Login successful", msgError: false } });
 // });
 
+app.post('/api/login', async (req, res) => {
+  await User.find({"username": req.body.username}).then((response) => {
+    if(response.length > 1){
+      res.status(400).json({"status":"more than 1 user with the same username"})
+    } else {
+      if(response[0].password === req.body.password){
+        res.status(200).json({username: req.body.username})
+      } else {
+        res.status(400).json({"status":"password doesn't match"})
+      }
+    }
+  })
+})
+
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);
