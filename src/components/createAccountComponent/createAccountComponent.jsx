@@ -5,6 +5,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import e from "cors";
 import { ConstructionOutlined } from "@mui/icons-material";
+import axios from 'axios';
 
 const CreateNewAccountComponent = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
@@ -27,18 +28,27 @@ const CreateNewAccountComponent = () => {
     setConfirmPasswordInputText(event.target.value);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     let username = usernameInputText;
     let email = emailInputText;
     let password = passwordInputText;
     let confirmPw = confirmPasswordInputText;
 
-    if (password !== confirmPasswordInputText) {
+    if (password !== confirmPw) {
       console.log("no matcing pw");
       // probably better to show a modal
     } else {
       console.log("password matches");
+      const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
+      axios.post(`${url}/api/register`, {
+        username: username,
+        email: email,
+        password: password
+      }).then((response) => {
+        console.log(response);
+      }).catch((error) => {
+        console.log(error);
+      });
     }
   };
 
@@ -51,7 +61,6 @@ const CreateNewAccountComponent = () => {
         autoComplete="off"
       >
         <h1>Create User</h1>
-        <form>
           <div>
             <TextField
               id="username-input"
@@ -114,7 +123,6 @@ const CreateNewAccountComponent = () => {
               Submit
             </Button>
           </div>
-        </form>
       </Box>
     </>
   );
