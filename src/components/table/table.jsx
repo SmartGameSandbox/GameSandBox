@@ -4,6 +4,7 @@ import Card from '../card/card';
 import * as Constants from '../../util/constants'
 import Cursors from '../cursor/cursors';
 import Hand from '../hand/hand';
+import Deck from '../deck/deck';
 
 const generateCards = () => {
     return [...Array(52)].map((_, i) => ({
@@ -18,12 +19,14 @@ const generateCards = () => {
 const search = window.location.search;
 const params = new URLSearchParams(search);
 const roomID = params.get('id');
-const INITIAL_STATE = generateCards();
+const DECK_STATE = generateCards();
 const HAND_STATE = [];
+const TABLE_STATE = [];
 
 const Table = ({ socket, username }) => {
     const [currentUsername] = React.useState(username);
-    const [cards, setCards] = React.useState(INITIAL_STATE);
+    const [cards, setCards] = React.useState(TABLE_STATE);
+    const [cardsInDeck, setCardsInDeck] = React.useState(DECK_STATE);
     const [cursors, setCursors] = React.useState([]);
     const [cardsInHand, setCardsInHand] = React.useState(HAND_STATE);
 
@@ -92,6 +95,17 @@ const Table = ({ socket, username }) => {
             }
         })
 
+        // playerDiscardCardFromHandUpdate
+        socket.on('playerDiscardCardFromHandUpdate', (data) => {
+            if (data.username !== currentUsername) {
+                // add card in data to cards
+                setCardsInDeck((prevCards) => {
+                    return prevCards.concat(data.card);
+                });
+            }
+        })
+
+
         return () => {
             socket.off('cardPositionUpdate');
             socket.off('cardFlipUpdate');
@@ -119,6 +133,26 @@ const Table = ({ socket, username }) => {
         });
 
     }
+
+    const playerDiscardCardFromDeck = (card, positionX, positionY) => {
+        console.log('placing card on table from deck')
+        // Add card 
+        setCards((prevCards) => {
+            card.x = positionX;
+            card.y = positionY;
+            return [...prevCards, card];
+        });
+
+        socket.emit('playerDiscardCardFromDeck', { username: username, roomID: roomID, card: card });
+
+        // Remove card from cardsInDeck
+        setCardsInDeck((prevCards) => {
+            return prevCards.filter((c) => {
+                return c.id !== card.id;
+            });
+        });
+    }
+
 
     const setCardFlip = (inputCard, isFlipped) => {
         inputCard.isFlipped = isFlipped;
@@ -172,8 +206,10 @@ const Table = ({ socket, username }) => {
     }
 
     const onDragEnd = (e, card) => {
+        console.log(e.evt.clientX, e.evt.clientY);
+        console.log("Y",Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT)
         // Area check for card draw
-        if (e.evt.clientY >= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT) {
+        if (e.evt.clientY >= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + 100) {
             setCardsInHand((prevCards) => {
                 return [...prevCards, card];
             });
@@ -194,6 +230,32 @@ const Table = ({ socket, username }) => {
             );
 
         }
+        // Area check for card discard from deck
+        else if ((
+            e.evt.clientX >= Constants.DECK_STARTING_POSITION_X && e.evt.clientX < Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH) &&
+             (e.evt.clientY >= Constants.DECK_STARTING_POSITION_Y && e.evt.clientY <= Constants.DECK_STARTING_POSITION_Y + (Constants.DECK_AREA_HEIGHT*2))) {
+            console.log('placing card back to deck')
+            // Add card to cards
+            setCardsInDeck((prevCards) => {
+                return [...prevCards, card];
+            });
+
+            // Remove card from deck
+            setCards((prevCards) => {
+                return prevCards.filter((element) => {
+                    return element.id !== card.id;
+                });
+            });
+
+
+            socket.emit("cardDiscardFromDeck",
+                { username: username, roomID: roomID, cardID: card.id }, (err) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                }
+            );
+        }
     }
 
     return (
@@ -202,6 +264,11 @@ const Table = ({ socket, username }) => {
                 <Hand
                     playerDiscardCard={playerDiscardCard}
                     cardsInHand={cardsInHand}
+                />
+
+                <Deck
+                    cardsInDeck={cardsInDeck}
+                    playerDiscardCardFromDeck={playerDiscardCardFromDeck}
                 />
 
                 {cards.map((card) => (

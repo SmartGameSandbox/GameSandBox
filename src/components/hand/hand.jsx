@@ -29,7 +29,7 @@ const Hand = ({ cardsInHand, playerDiscardCard }) => {
     }
 
     const onDragEnd = (e, card) => {
-        if (e.evt.clientY <= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT) {
+        if (e.evt.clientY <= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + 100) {
             playerDiscardCard(card, e.evt.offsetX - 0.5 * Constants.CARD_WIDTH, e.evt.offsetY - 0.5 * Constants.CARD_HEIGHT);
         } else {
             setHands([]);

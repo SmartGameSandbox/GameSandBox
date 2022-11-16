@@ -8,6 +8,8 @@ export const CARD_DIVIDER_WIDTH_X = 30
 // Deck Constants
 export const DECK_STARTING_POSITION_X = 600
 export const DECK_STARTING_POSITION_Y = 200
+export const DECK_AREA_WIDTH = 100
+export const DECK_AREA_HEIGHT = 120
 
 // Canvas Constants
 export const CANVAS_HEIGHT = 600;
