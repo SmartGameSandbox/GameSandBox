@@ -114,11 +114,11 @@ const Table = ({ socket, username }) => {
             }
         );
 
-        socket.emit("mouseMove", { 
-            x: e.target.attrs.x + 0.5 * Constants.CARD_WIDTH, 
+        socket.emit("mouseMove", {
+            x: e.target.attrs.x + 0.5 * Constants.CARD_WIDTH,
             y: e.target.attrs.y + 0.5 * Constants.CARD_HEIGHT,
-            username: username, 
-            roomID: roomID 
+            username: username,
+            roomID: roomID
         }, (err) => {
             if (err) {
                 alert(err);
@@ -140,17 +140,17 @@ const Table = ({ socket, username }) => {
             });
         });
         socket.emit("cardFlip",
-          {
-            isFlipped: targetCard.isFlipped,
-            username: currentUsername,
-            imageSource: targetCard.imageSource,
-            roomID: roomID,
-            cardID: cardID
-          }, (err) => {
-            if (err) {
-              console.error(err);
+            {
+                isFlipped: targetCard.isFlipped,
+                username: currentUsername,
+                imageSource: targetCard.imageSource,
+                roomID: roomID,
+                cardID: cardID
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                }
             }
-          }
         );
     }
 
@@ -175,7 +175,7 @@ const Table = ({ socket, username }) => {
             setCardsInHand((prevCards) => {
                 return [...prevCards, targetCard];
             });
-    
+
             // Remove card from cards
             setCards((prevCards) => {
                 return prevCards.filter((element) => {
@@ -184,26 +184,18 @@ const Table = ({ socket, username }) => {
             });
 
             socket.emit("cardDraw",
-              { username: currentUsername, roomID: roomID, cardID: cardID }, (err) => {
-                  if (err) {
-                      console.error(err);
-                  }
-              }
+                { username: currentUsername, roomID: roomID, cardID: cardID }, (err) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                }
             );
-          }
+        }
     }
 
     return (
         <>
             <Layer>
-                <Hand
-                    playerDiscardCard={playerDiscardCard}
-                    username={currentUsername}
-                    roomID={roomID}
-                    cardsInHand={cardsInHand}
-                    socket={socket}
-                />
-
                 {cards.map((card) => (
                     <Card
                         socket={socket}
@@ -220,6 +212,13 @@ const Table = ({ socket, username }) => {
                         onDragEnd={onDragEndCard}
                     />
                 ))}
+                <Hand
+                    playerDiscardCard={playerDiscardCard}
+                    username={currentUsername}
+                    roomID={roomID}
+                    cardsInHand={cardsInHand}
+                    socket={socket}
+                />
             </Layer>
             <Layer>
                 <Cursors key={`cursor_${currentUsername}`} cursors={cursors} username={currentUsername} />
