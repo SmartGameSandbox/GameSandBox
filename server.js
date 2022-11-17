@@ -15,25 +15,40 @@ const path = require("path");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 const { roomSchema, Room } = require("./schemas/room");
+const { cardSchema, Card } = require("./schemas/card");
 const idGenerator = require("./utils/id_generator");
-const { Check } = require('@mui/icons-material');
 app.use(express.json());
+
+// later need to reset this
+// TODO: Need to track user's hands and deck
+const ALLROOMSDATA = {};
 
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
   socket.on("joinRoom", async ({ roomID, password, username}) => {
-    if (roomID && password) {
+    if (roomID) {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
+        if (!ALLROOMSDATA[roomID]) {
+          ALLROOMSDATA[roomID] = roomData;
+        }
         socket.join(roomID);
+        io.to(socket.id).emit('roomCardData', ALLROOMSDATA[roomID]);
         // add user to the user array here
         console.log(`User ${username} joined room ${roomID}`);
       }
+    } else {
+      res.json({ error: "Room not found" });
     }
   });
 
   socket.on("cardMove", ({ x, y, username, roomID, cardID }) => {
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === cardID);
+    ALLROOMSDATA[roomID].cards[index].x = x;
+    ALLROOMSDATA[roomID].cards[index].y = y;
+    ALLROOMSDATA[roomID].cards.push(ALLROOMSDATA[roomID].cards[index]);
+    ALLROOMSDATA[roomID].cards.splice(index, 1);
     io.to(roomID).emit("cardPositionUpdate", {
       cardID: cardID,
       x: x,
@@ -42,11 +57,16 @@ io.on("connection", async (socket) => {
     });
   });
 
-  socket.on("cardFlip", ({ isFlipped, username, roomID, cardID }) => {
-    console.log("get flipped mesg", isFlipped, username, roomID, cardID);
+  socket.on("cardFlip", ({ isFlipped, imageSource, username, roomID, cardID }) => {
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === cardID);
+    ALLROOMSDATA[roomID].cards[index].isFlipped = isFlipped;
+    ALLROOMSDATA[roomID].cards[index].imageSource = imageSource;
+    ALLROOMSDATA[roomID].cards.push(ALLROOMSDATA[roomID].cards[index]);
+    ALLROOMSDATA[roomID].cards.splice(index, 1);
     io.to(roomID).emit("cardFlipUpdate", {
       cardID: cardID,
       isFlipped: isFlipped,
+      imageSource: imageSource,
       username: username,
     });
   });
@@ -60,6 +80,9 @@ io.on("connection", async (socket) => {
   });
   
   socket.on("cardDraw", ({ username, roomID, cardID }) => {
+    // remove cardID
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === cardID);
+    ALLROOMSDATA[roomID].cards.splice(index, 1);
     io.to(roomID).emit("cardDrawUpdate", {
       cardID: cardID,
       username: username,
@@ -67,19 +90,13 @@ io.on("connection", async (socket) => {
   });
 
   //socket for playerDiscardCard
-  socket.on("playerDiscardCard", ({ username, roomID, card }) => {
-    io.to(roomID).emit("playerDiscardCardUpdate", {
+  socket.on("cardDiscard", ({ username, roomID, card }) => {
+    // add card
+    ALLROOMSDATA[roomID].cards.push(card);
+    io.to(roomID).emit("cardDiscardUpdate", {
       card: card,
       username: username,
     });
-  });
-
-  socket.on("keepalive", async ({ roomID }) => {
-    await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
-  });
-
-  socket.on("disconnect", () => {
-    // TODO: remove user from the user array
   });
 });
 
@@ -88,7 +105,6 @@ io.on("connect_error", (err) => {
 });
 
 // Restful Apis
-
 // Rooms
 app.get("/api/rooms", async (req, res) => {
   try {
@@ -130,16 +146,19 @@ app.post("/api/room", async (req, res) => {
     if (!req.body) {
       throw new Error("Error: No room body provided");
     }
+    const allCards = await Card.find();
     const gameRoomData = new Room({
       id: roomID,
       password: req.body.password,
       name: req.body.name,
-      image: req.body.image
+      image: req.body.image,
+      cards: allCards,
     });
     const result = await gameRoomData.save();
     if (!result) {
       throw new Error("Error: Room not created");
     }
+    ALLROOMSDATA[roomID] = gameRoomData;
     res.json(result);
   } catch (err) {
     res.json({ status: "error", message: err });

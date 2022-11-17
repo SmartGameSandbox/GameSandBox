@@ -29,24 +29,16 @@ const Room = () => {
     }
 
     React.useEffect(() => {
-        socket.on("connect", () => {
-            console.log("Connected to server");
-            const search = window.location.search;
-            const params = new URLSearchParams(search);
-            roomID = params.get('id');
-            roomPassword = params.get('password');
-            axios.get(`${url}/api/room?id=${roomID}&password=${roomPassword}`).then((response) => {
-                setImageUrl(response.data.image);
-                joinRoom(roomID, roomPassword);
-            }).catch((error) => {
-                console.log(error);
-            });
-            // TODO: Add REAL username to room
+        const search = window.location.search;
+        const params = new URLSearchParams(search);
+        roomID = params.get('id');
+        roomPassword = params.get('password');
+        axios.get(`${url}/api/room?id=${roomID}&password=${roomPassword}`).then((response) => {
+            setImageUrl(response.data.image);
+            joinRoom(roomID, roomPassword);
+        }).catch((error) => {
+            console.log(error);
         });
-
-        return () => {
-            socket.off("connect");
-        }
     }, []);
 
     return (
@@ -64,7 +56,7 @@ const Room = () => {
                         height={Constants.CANVAS_HEIGHT}
                         onMouseMove={(e) => handleMouseMove(e)}
                     >
-                        <Table socket={socket} username={username} />
+                        <Table socket={socket} username={username}/>
                     </Stage>
                 </div>
             </div>
