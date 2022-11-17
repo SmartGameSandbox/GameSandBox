@@ -76,6 +76,7 @@ const Hand = ({ cardsInHand, username, roomID, playerDiscardCard, socket }) => {
                     x={card.x}
                     y={card.y}
                     socket={socket}
+                    isInHand={true}
                     isFlipped={card.isFlipped}
                     onClick={onClickCard}
                     onDragEnd={onDragEndCard}

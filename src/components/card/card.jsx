@@ -32,9 +32,10 @@ class Card extends React.Component {
     this.setState(() => ({ image: this.image }));
   };
 
-  bringToTop = () => {
-    // This needs to be changed to the specific number of possible cards
-    this.imageNode.zIndex(52);
+  bringToTop = (isInHand) => {
+    if (!isInHand) {
+      this.imageNode.moveToTop();
+    }
   }
 
   render() {
@@ -49,7 +50,7 @@ class Card extends React.Component {
         draggable
         onDragMove={(e) => this.props.onDragMove(e, this.props.id)}
         onDragStart={() => this.bringToTop()}
-        onClick={(e) => {this.props.onClick(e, this.props.id); this.bringToTop()}}
+        onClick={(e) => {this.props.onClick(e, this.props.id); this.bringToTop(this.props.isInHand)}}
         onDragEnd={(e) => this.props.onDragEnd(e, this.props.id)}
         ref={(node) => {
           this.imageNode = node;
