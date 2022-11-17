@@ -59,28 +59,24 @@ const App = () => {
               color="inherit"
               aria-label="menu"
               sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
+            ></IconButton>
 
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Smart Game SandBox
             </Typography>
-
-            <Button color="inherit" onClick={() => navigateCreateRoom()}>
-              <AddIcon />
-              &nbsp;Create Room
-            </Button>
-            <Button color="inherit" onClick={() => navigateJoinRoom()}>
-              <CycloneIcon />
-              &nbsp;Join Room
-            </Button>
-            {isAuthed() === false && (
-              <Button color="inherit" onClick={() => navigateLogin()}>
-                <FaceIcon />
-                &nbsp;Login
+            {isAuthed() === true && (
+              <Button color="inherit" onClick={() => navigateCreateRoom()}>
+                <AddIcon />
+                &nbsp;Create Room
               </Button>
             )}
+            {isAuthed() === true && (
+              <Button color="inherit" onClick={() => navigateJoinRoom()}>
+                <CycloneIcon />
+                &nbsp;Join Room
+              </Button>
+            )}
+
             {isAuthed() === true && (
               <Button color="inherit" onClick={() => logout()}>
                 <FaceIcon />
