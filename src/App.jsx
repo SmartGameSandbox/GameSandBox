@@ -43,12 +43,9 @@ const App = () => {
     }
   };
 
-  const protectedRoute = () => {
-    return isAuthed() ? (
-      <Route path="/createroom" element={<RoomCreation />} />
-    ) : (
-      <Navigate to="/login" />
-    );
+  const logout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
   };
 
   return (
@@ -85,7 +82,7 @@ const App = () => {
               </Button>
             )}
             {isAuthed() === true && (
-              <Button color="inherit" onClick={() => navigateLogin()}>
+              <Button color="inherit" onClick={() => logout()}>
                 <FaceIcon />
                 &nbsp;Logout
               </Button>
