@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
 import JoinRoom from "./components/rooms/joinRoom";
@@ -17,8 +17,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
 import CycloneIcon from "@mui/icons-material/Cyclone";
 import FaceIcon from "@mui/icons-material/Face";
-import { ReactSession } from 'react-client-session'
-ReactSession.setStoreType("localStorage")
+import { ReactSession } from "react-client-session";
+ReactSession.setStoreType("localStorage");
 
 const App = () => {
   const navigateCreateRoom = () => {
@@ -34,18 +34,22 @@ const App = () => {
   };
 
   const isAuthed = () => {
-    if(ReactSession.get("username")){
-      console.log(ReactSession.get("username"))
-      return true
+    if (ReactSession.get("username")) {
+      console.log(ReactSession.get("username"));
+      return true;
     } else {
-      console.log(ReactSession.get("username"))
-      return false 
+      console.log(ReactSession.get("username"));
+      return false;
     }
-  }
+  };
 
   const protectedRoute = () => {
-    return (isAuthed()) ? <Route path="/createroom" element={<RoomCreation />} /> : <Navigate to="/login"/>;
-  }
+    return isAuthed() ? (
+      <Route path="/createroom" element={<RoomCreation />} />
+    ) : (
+      <Navigate to="/login" />
+    );
+  };
 
   return (
     <>
@@ -61,9 +65,11 @@ const App = () => {
             >
               <MenuIcon />
             </IconButton>
+
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Smart Game SandBox
             </Typography>
+
             <Button color="inherit" onClick={() => navigateCreateRoom()}>
               <AddIcon />
               &nbsp;Create Room
@@ -72,17 +78,28 @@ const App = () => {
               <CycloneIcon />
               &nbsp;Join Room
             </Button>
-            <Button color="inherit" onClick={() => navigateLogin()}>
-              <FaceIcon />
-              &nbsp;Login
-            </Button>
+            {isAuthed() === false && (
+              <Button color="inherit" onClick={() => navigateLogin()}>
+                <FaceIcon />
+                &nbsp;Login
+              </Button>
+            )}
+            {isAuthed() === true && (
+              <Button color="inherit" onClick={() => navigateLogin()}>
+                <FaceIcon />
+                &nbsp;Logout
+              </Button>
+            )}
           </Toolbar>
         </AppBar>
       </Box>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LoginComponent />} />
-          <Route path="/createroom" element={isAuthed() ?<RoomCreation />: <Navigate to='/login'/>} />
+          <Route
+            path="/createroom"
+            element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
+          />
           <Route path="/joinroom" element={<JoinRoom />} />
           <Route path="/room" element={<Room />} />
           <Route path="/login" element={<LoginComponent />} />
