@@ -4,6 +4,8 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
+import { ReactSession } from "react-client-session";
+ReactSession.setStoreType("localStorage");
 
 const LoginComponent = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
@@ -30,6 +32,12 @@ const LoginComponent = () => {
       })
       .then((response) => {
         console.log(response);
+        if (response.status === 200) {
+          ReactSession.set("username", response.data);
+          window.location.href = "/createroom";
+        } else {
+          window.location.href = "/login";
+        }
       })
       .catch((error) => {
         console.log(error);

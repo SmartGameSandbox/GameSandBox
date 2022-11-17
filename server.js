@@ -22,7 +22,7 @@ app.use(express.json());
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
-  socket.on("joinRoom", async ({ roomID, password, username}) => {
+  socket.on("joinRoom", async ({ roomID, password, username }) => {
     if (roomID && password) {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
@@ -58,7 +58,7 @@ io.on("connection", async (socket) => {
       username: username,
     });
   });
-  
+
   socket.on("cardDraw", ({ username, roomID, cardID }) => {
     io.to(roomID).emit("cardDrawUpdate", {
       cardID: cardID,
@@ -169,9 +169,9 @@ app.post("/api/register", async (req, res) => {
   });
   // const result = await newUserModel.save();
 
-  //queryData = newUserModel(req.body.username, req.body.email, req.body.password);
-  //let queryData = await newUserModel.find({ $or: [{ username: queryData.username }, { email: queryData.email }, { password: queryData.password }] });
-  //console.log(queryData);
+  // queryData = newUserModel(req.body.username, req.body.email, req.body.password);
+  // let queryData = await newUserModel.find({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+  // console.log(queryData);
   newUserModel.save((err, data) => {
     if (err) {
       console.log(err);
@@ -226,54 +226,19 @@ app.post("/api/register", async (req, res) => {
 
 // Session
 
-// const session = require('express-session');
-// const MongoDBStore = require('session-file-store')(session);
-// const MONGODB_URI = "http://localhost:5000"
-
-// const mongoDBStore = new MongoDBStore({
-//   uri: process.env.MONGODB_URI,
-//   collection: 'sessions'
-// });
-
-// app.use(
-//   session({
-//     httpOnly: true,
-//     secure: true,
-//     secret: 'secret key',
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       httpOnly: true,
-//       secure: true,
-//     },
-//     store: mongoDBStore,
-//   }
-//   ));
-// app.use(cors(corsOptions));
-// app.use(express.json());
-
-// const loginRouter = require('./routes/login');
-// const { Router } = require('express');
-// app.use("/api", loginRouter);
-
-// app.listen(port, () => console.log(`Server started on port ${port}`));
-
-
-// Router.post('/login', async (req, res) => {
-//   const { username, email, password } = req.body;
-//   if (!email || !password) {
-//     res.status(400).json({ message: { msgBody: "All fields are required", msgError: true } });
-//   }
-//   const user = await User.findOne({ username });
-//   if (!user) {
-//     return res.status(400).json({ message: { msgBody: "Username is not found", msgError: true } });
-//   }
-//   if (user.password !== password) {
-//     return res.status(400).json({ message: { msgBody: "Password is incorrect", msgError: true } });
-//   }
-//   req.session.user = user;
-//   res.status(200).json({ message: { msgBody: "Login successful", msgError: false } });
-// });
+app.post('/api/login', async (req, res) => {
+  await User.find({ "username": req.body.username }).then((response) => {
+    if (response.length > 1) {
+      res.status(400).json({ "status": "more than 1 user with the same username" })
+    } else {
+      if (response[0].password === req.body.password) {
+        res.status(200).json({ username: req.body.username })
+      } else {
+        res.status(400).json({ "status": "password doesn't match" })
+      }
+    }
+  })
+})
 
 
 http.listen(port, async (err) => {
