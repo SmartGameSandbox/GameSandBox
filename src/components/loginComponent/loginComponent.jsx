@@ -94,7 +94,7 @@ const LoginComponent = () => {
 
         <div>
           <span> Not registered yet?</span>
-          <Button href="/newaccount">Cretae an Account</Button>
+          <Button href="/newaccount">Create an Account</Button>
         </div>
       </Box>
     </>
