@@ -97,7 +97,10 @@ const App = () => {
             path="/createroom"
             element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
           />
-          <Route path="/joinroom" element={<JoinRoom />} />
+          <Route
+            path="/joinroom"
+            element={isAuthed() ? <JoinRoom /> : <Navigate to="/login" />}
+          />
           <Route path="/room" element={<Room />} />
           <Route path="/login" element={<LoginComponent />} />
           <Route path="/newaccount" element={<CreateNewAccountComponent />} />
