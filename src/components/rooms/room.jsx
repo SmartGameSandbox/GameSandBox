@@ -13,7 +13,12 @@ const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.he
 const socket = io(url, { transports: ['websocket'] });
 let roomID = null;
 let roomPassword = null;
-let username = ReactSession.get("username").username;
+var username = null;
+if (ReactSession.get("username")) {
+    username = ReactSession.get("username").username;
+} else {
+    window.location.href = "/login";
+}
 const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
 
