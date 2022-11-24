@@ -16,10 +16,6 @@ let username = Date.now().toString();
 const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
 
-    const joinRoom = (roomID, roomPassword) => {
-        socket.emit("joinRoom", { roomID: roomID, password: roomPassword, username: username }, () => { });
-    }
-
     const handleMouseMove = (data) => {
         socket.emit("mouseMove", { x: data.evt.offsetX, y: data.evt.offsetY, username: username, roomID: roomID }, (err) => {
             if (err) {
@@ -35,7 +31,7 @@ const Room = () => {
         roomPassword = params.get('password');
         axios.get(`${url}/api/room?id=${roomID}&password=${roomPassword}`).then((response) => {
             setImageUrl(response.data.image);
-            joinRoom(roomID, roomPassword);
+            socket.emit("joinRoom", { roomID: roomID, password: roomPassword, username: username }, () => { });
         }).catch((error) => {
             console.log(error);
         });

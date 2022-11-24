@@ -57,21 +57,21 @@ io.on("connection", async (socket) => {
     });
   });
 
-  // socket.on("cardFlipOnDeck", ({ username, roomID, card }) => {
-  //   let index = ALLROOMSDATA[roomID].decks.findIndex((c) => c.id === card.id);
-  //   ALLROOMSDATA[roomID].decks.push(ALLROOMSDATA[roomID].decks[index]);
-  //   ALLROOMSDATA[roomID].decks.splice(index, 1);
-  //   io.to(roomID).emit("cardFlipOnDeckUpdate", {
-  //     card: card,
-  //     username: username,
-  //   });
-  // });
+  socket.on("cardChangeOnDeck", ({ username, roomID, card }) => {
+    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);   
+    ALLROOMSDATA[roomID].deck.splice(index, 1);
+    ALLROOMSDATA[roomID].deck.push(card);
+    io.to(roomID).emit("cardChangeOnDeckUpdate", {
+      card,
+      username: username
+    });
+  });
 
-  // socket.on("cardFlipOnHand", ({ username, roomID, card }) => {
-  //   let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
-  //   ALLROOMSDATA[roomID].hands[username].push(ALLROOMSDATA[roomID].hands[username][index]);
-  //   ALLROOMSDATA[roomID].hands[username].splice(index, 1);
-  // });
+  socket.on("cardChangeOnHand", ({ username, roomID, card }) => {
+    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].hands[username].push(ALLROOMSDATA[roomID].hands[username][index]);
+    ALLROOMSDATA[roomID].hands[username].splice(index, 1);
+  });
 
   socket.on("mouseMove", ({ x, y, username, roomID }) => {
     io.to(roomID).emit("mousePositionUpdate", {
@@ -81,44 +81,44 @@ io.on("connection", async (socket) => {
     });
   });
   
-  // socket.on("cardTableToHand", ({ username, roomID, card }) => {
-  //   // remove cardID
-  //   ALLROOMSDATA[roomID].hands[username].push(card);
-  //   let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
-  //   ALLROOMSDATA[roomID].cards.splice(index, 1);
-  //   io.to(roomID).emit("cardTableToHandUpdate", {
-  //     card: card,
-  //     username: username,
-  //   });
-  // });
+  socket.on("cardTableToHand", ({ username, roomID, card }) => {
+    // remove cardID
+    ALLROOMSDATA[roomID].hands[username].push(card);
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].cards.splice(index, 1);
+    io.to(roomID).emit("cardTableToHandUpdate", {
+      card: card,
+      username: username,
+    });
+  });
 
-  // socket.on("cardHandToTable", ({ username, roomID, card }) => {
-  //   // add card
-  //   ALLROOMSDATA[roomID].cards.push(card);
-  //   // remove card from hand
-  //   let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
-  //   ALLROOMSDATA[roomID].hands[username].splice(index, 1);
-  //   io.to(roomID).emit("cardHandToTableUpdate", {
-  //     card: card,
-  //     username: username,
-  //   });
-  // });
+  socket.on("cardHandToTable", ({ username, roomID, card }) => {
+    // add card
+    ALLROOMSDATA[roomID].cards.push(card);
+    // remove card from hand
+    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].hands[username].splice(index, 1);
+    io.to(roomID).emit("cardHandToTableUpdate", {
+      card: card,
+      username: username,
+    });
+  });
 
-  // socket.on("cardTableToDeck", ({ username, roomID, card }) => {
-  //   // remove cardID
-  //   ALLROOMSDATA[roomID].deck.push(card);
-  //   let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
-  //   ALLROOMSDATA[roomID].cards.splice(index, 1);
-  //   io.to(roomID).emit("cardTableToDeckUpdate", {
-  //     card: card,
-  //     username: username,
-  //   });
-  // });
+  socket.on("cardTableToDeck", ({ username, roomID, card }) => {
+    // remove cardID
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].cards.splice(index, 1);
+    ALLROOMSDATA[roomID].deck.push(card);
+    io.to(roomID).emit("cardTableToDeckUpdate", {
+      card: card,
+      username: username,
+    });
+  });
 
   socket.on("cardDeckToTable", ({ username, roomID, card }) => {
     // add card
     ALLROOMSDATA[roomID].cards.push(card);
-    // remove card from hand
+    // remove card from deck
     let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
     ALLROOMSDATA[roomID].deck.splice(index, 1);
     io.to(roomID).emit("cardDeckToTableUpdate", {
@@ -127,29 +127,29 @@ io.on("connection", async (socket) => {
     });
   });
 
-  // socket.on("cardDeckToHand", ({ username, roomID, card }) => {
-  //   // add card
-  //   ALLROOMSDATA[roomID].hands[username].push(card);
-  //   // remove card from hand
-  //   let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
-  //   ALLROOMSDATA[roomID].deck.splice(index, 1);
-  //   io.to(roomID).emit("cardDeckToTableUpdate", {
-  //     card: card,
-  //     username: username,
-  //   });
-  // });
+  socket.on("cardDeckToHand", ({ username, roomID, card }) => {
+    // add card
+    ALLROOMSDATA[roomID].hands[username].push(card);
+    // remove card from deck
+    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].deck.splice(index, 1);
+    io.to(roomID).emit("cardDeckToHandUpdate", {
+      card: card,
+      username: username,
+    });
+  });
 
-  // socket.on("cardDeckToTable", ({ username, roomID, card }) => {
-  //   // add card
-  //   ALLROOMSDATA[roomID].cards.push(card);
-  //   // remove card from hand
-  //   let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
-  //   ALLROOMSDATA[roomID].deck.splice(index, 1);
-  //   io.to(roomID).emit("cardDeckToTableUpdate", {
-  //     card: card,
-  //     username: username,
-  //   });
-  // });
+  socket.on("cardHandToDeck", ({ username, roomID, card }) => {
+    // add card
+    ALLROOMSDATA[roomID].deck.push(card);
+    // remove card from deck
+    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].hands[username].splice(index, 1);
+    io.to(roomID).emit("cardHandToDeckUpdate", {
+      card: card,
+      username: username,
+    });
+  });
 });
 
 io.on("connect_error", (err) => {

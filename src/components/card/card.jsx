@@ -32,8 +32,9 @@ class Card extends React.Component {
     this.setState(() => ({ image: this.image }));
   };
 
-  bringToTop = (isOnTable) => {
-    if (isOnTable) {
+  bringToTop = (e) => {
+    const position = e.target.attrs;
+    if (position.y <= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT) {
       this.imageNode.moveToTop();
     }
   }
@@ -49,8 +50,8 @@ class Card extends React.Component {
         image={this.state.image}
         draggable
         onDragMove={(e) => this.props.onDragMove(e, this.props.id)}
-        onDragStart={(e) => {this.props.onDragStart(e, this.props.id); this.bringToTop();}}
-        onClick={(e) => {this.props.onClick(e, this.props.id); this.bringToTop(this.props.isOnTable)}}
+        onDragStart={(e) => {this.props.onDragStart(e, this.props.id); this.bringToTop(e);}}
+        onClick={(e) => {this.props.onClick(e, this.props.id); this.bringToTop(e)}}
         onDragEnd={(e) => this.props.onDragEnd(e, this.props.id)}
         ref={(node) => {
           this.imageNode = node;
