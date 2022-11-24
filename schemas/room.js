@@ -4,6 +4,9 @@ const { Schema } = mongoose;
 const roomSchema = new Schema({
     id: { type: String, index: true, unique: true, required: true },
     name: { type: String, maxlength: 20, required: true },
+    cards: { type: Array, required: false },
+    deck: { type: Array, required: false },
+    hands: { type: Object, required: false },
     users: {
         type: Array,
         required: false,
@@ -11,7 +14,7 @@ const roomSchema = new Schema({
     },
     expireAt: {
         type: Date,
-        expires: "60m", default: Date.now
+        expires: "24h", default: Date.now
     },
     image: String,
     password: { type: String, min: [4, 'Password too short'], max: [20, 'Password too long'] },

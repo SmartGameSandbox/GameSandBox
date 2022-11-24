@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
 import JoinRoom from "./components/rooms/joinRoom";
-import LoginComponent from "./components/loginComponent/loginComponent";
+import LoginComponent from "./components/login/login";
 import CreateNewAccountComponent from "./components/createAccountComponent/createAccountComponent";
 
 import AppBar from "@mui/material/AppBar";
@@ -13,7 +13,6 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
 import CycloneIcon from "@mui/icons-material/Cyclone";
 import FaceIcon from "@mui/icons-material/Face";
@@ -29,16 +28,10 @@ const App = () => {
     window.location.href = "/joinroom";
   };
 
-  const navigateLogin = () => {
-    window.location.href = "/login";
-  };
-
   const isAuthed = () => {
     if (ReactSession.get("username")) {
-      console.log(ReactSession.get("username"));
       return true;
     } else {
-      console.log(ReactSession.get("username"));
       return false;
     }
   };
@@ -64,20 +57,20 @@ const App = () => {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Smart Game SandBox
             </Typography>
-            {isAuthed() === true && (
+            {isAuthed() && (
               <Button color="inherit" onClick={() => navigateCreateRoom()}>
                 <AddIcon />
                 &nbsp;Create Room
               </Button>
             )}
-            {isAuthed() === true && (
+            {isAuthed() && (
               <Button color="inherit" onClick={() => navigateJoinRoom()}>
                 <CycloneIcon />
                 &nbsp;Join Room
               </Button>
             )}
 
-            {isAuthed() === true && (
+            {isAuthed() && (
               <Button color="inherit" onClick={() => logout()}>
                 <FaceIcon />
                 &nbsp;Logout

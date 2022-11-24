@@ -15,40 +15,63 @@ const path = require("path");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 const { roomSchema, Room } = require("./schemas/room");
+const { cardSchema, Card } = require("./schemas/card");
 const idGenerator = require("./utils/id_generator");
-const { Check } = require('@mui/icons-material');
 app.use(express.json());
+
+// later need to reset this
+// TODO: Need to track user's hands and deck
+const ALLROOMSDATA = {};
 
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
   socket.on("joinRoom", async ({ roomID, password, username }) => {
-    if (roomID && password) {
+    if (roomID) {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
+        if (!ALLROOMSDATA[roomID]) {
+          ALLROOMSDATA[roomID] = roomData;
+        }
         socket.join(roomID);
+        if (!ALLROOMSDATA[roomID].hands) {
+          ALLROOMSDATA[roomID].hands = {};
+        }
+        if (ALLROOMSDATA[roomID].hands[username] === undefined) {
+          ALLROOMSDATA[roomID].hands[username] = [];
+        }
+        io.to(socket.id).emit('roomCardData', ALLROOMSDATA[roomID]);
         // add user to the user array here
         console.log(`User ${username} joined room ${roomID}`);
       }
+    } else {
+      console.error("Room Invalid");
     }
   });
 
-  socket.on("cardMove", ({ x, y, username, roomID, cardID }) => {
-    io.to(roomID).emit("cardPositionUpdate", {
-      cardID: cardID,
-      x: x,
-      y: y,
+  socket.on("cardChangeOnTable", ({ username, roomID, card }) => {
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].cards.splice(index, 1);
+    ALLROOMSDATA[roomID].cards.push(card);
+    io.to(roomID).emit("cardChangeOnTableUpdate", {
+      card,
       username: username
     });
   });
 
-  socket.on("cardFlip", ({ isFlipped, username, roomID, cardID }) => {
-    console.log("get flipped mesg", isFlipped, username, roomID, cardID);
-    io.to(roomID).emit("cardFlipUpdate", {
-      cardID: cardID,
-      isFlipped: isFlipped,
-      username: username,
+  socket.on("cardChangeOnDeck", ({ username, roomID, card }) => {
+    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].deck.splice(index, 1);
+    ALLROOMSDATA[roomID].deck.push(card);
+    io.to(roomID).emit("cardChangeOnDeckUpdate", {
+      card,
+      username: username
     });
+  });
+
+  socket.on("cardChangeOnHand", ({ username, roomID, card }) => {
+    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].hands[username][index] = card;
   });
 
   socket.on("mouseMove", ({ x, y, username, roomID }) => {
@@ -59,27 +82,93 @@ io.on("connection", async (socket) => {
     });
   });
 
-  socket.on("cardDraw", ({ username, roomID, cardID }) => {
-    io.to(roomID).emit("cardDrawUpdate", {
-      cardID: cardID,
-      username: username,
-    });
-  });
-
-  //socket for playerDiscardCard
-  socket.on("playerDiscardCard", ({ username, roomID, card }) => {
-    io.to(roomID).emit("playerDiscardCardUpdate", {
+  socket.on("cardTableToHand", ({ username, roomID, card }) => {
+    // remove cardID
+    ALLROOMSDATA[roomID].hands[username].push(card);
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].cards.splice(index, 1);
+    io.to(roomID).emit("cardTableToHandUpdate", {
       card: card,
       username: username,
     });
   });
 
-  socket.on("keepalive", async ({ roomID }) => {
-    await Room.findOneAndUpdate({ id: roomID }, { expireAt: Date.now });
+  socket.on("cardHandToTable", ({ username, roomID, card }) => {
+    // add card
+    ALLROOMSDATA[roomID].cards.push(card);
+    // remove card from hand
+    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].hands[username].splice(index, 1);
+    io.to(roomID).emit("cardHandToTableUpdate", {
+      card: card,
+      username: username,
+    });
   });
 
-  socket.on("disconnect", () => {
-    // TODO: remove user from the user array
+  socket.on("cardTableToDeck", ({ username, roomID, card }) => {
+    // remove cardID
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].cards.splice(index, 1);
+    ALLROOMSDATA[roomID].deck.push(card);
+    io.to(roomID).emit("cardTableToDeckUpdate", {
+      card: card,
+      username: username,
+    });
+  });
+
+  socket.on("cardDeckToTable", ({ username, roomID, card }) => {
+    // add card
+    ALLROOMSDATA[roomID].cards.push(card);
+    // remove card from deck
+    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].deck.splice(index, 1);
+    io.to(roomID).emit("cardDeckToTableUpdate", {
+      card: card,
+      username: username,
+    });
+  });
+
+  socket.on("cardDeckToHand", ({ username, roomID, card }) => {
+    // add card
+    ALLROOMSDATA[roomID].hands[username].push(card);
+    // remove card from deck
+    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].deck.splice(index, 1);
+    io.to(roomID).emit("cardDeckToHandUpdate", {
+      card: card,
+      username: username,
+    });
+  });
+
+  socket.on("cardHandToDeck", ({ username, roomID, card }) => {
+    // add card
+    ALLROOMSDATA[roomID].deck.push(card);
+    // remove card from deck
+    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].hands[username].splice(index, 1);
+    io.to(roomID).emit("cardHandToDeckUpdate", {
+      card: card,
+      username: username,
+    });
+  });
+
+  socket.on("collectCards", ({ username, roomID, cards }) => {
+    // concat cards to deck
+    ALLROOMSDATA[roomID].deck = ALLROOMSDATA[roomID].deck.concat(cards);
+    ALLROOMSDATA[roomID].cards = [];
+    io.to(roomID).emit("collectCardsUpdate", {
+      username: username,
+      cards: cards
+    });
+  });
+
+  socket.on("shuffleCards", ({ username, roomID, cards }) => {
+    // concat cards to deck
+    ALLROOMSDATA[roomID].deck = cards;
+    io.to(roomID).emit("shuffleCardsUpdate", {
+      username: username,
+      cards: cards
+    });
   });
 });
 
@@ -88,7 +177,6 @@ io.on("connect_error", (err) => {
 });
 
 // Restful Apis
-
 // Rooms
 app.get("/api/rooms", async (req, res) => {
   try {
@@ -130,16 +218,21 @@ app.post("/api/room", async (req, res) => {
     if (!req.body) {
       throw new Error("Error: No room body provided");
     }
+    const allCards = await Card.find();
     const gameRoomData = new Room({
       id: roomID,
       password: req.body.password,
       name: req.body.name,
-      image: req.body.image
+      image: req.body.image,
+      deck: allCards,
+      hands: {},
+      cards: [],
     });
     const result = await gameRoomData.save();
     if (!result) {
       throw new Error("Error: Room not created");
     }
+    ALLROOMSDATA[roomID] = gameRoomData;
     res.json(result);
   } catch (err) {
     res.json({ status: "error", message: err });
@@ -180,66 +273,17 @@ app.post("/api/register", async (req, res) => {
       res.status(200).json({ message: { msgBody: "Account successfully created", msgError: false } });
     }
   });
-
-  /*
-  if (queryData.length === 0) {
-    queryData.save().
-      then((result) => {
-        console.log(result);
-        res.json({ registerSuccess: "true" });
-      }).
-      catch((err) => {
-        console.log(err);
-        res.status(500).json({ error: err });
-      });
-
-  } else if (queryData.length > 0) {
-    let matchQueryEmails = [];
-    let matchQueryUsername = [];
-
-    for (let i = 0; i < queryData.length; i++) {
-      if (queryData[i].email === queryData.email) {
-        matchQueryEmails.push(queryData[i].email);
-      }
-      if (queryData[i].username === queryData.username) {
-        matchQueryUsername.push(queryData[i].username);
-      }
-    }
-
-    let emailMatchresult = matchQueryEmails.filter(emailMatch => emailMatch === queryData.email);
-    let usernameMatchResult = matchQueryUsername.filter(usernameMatch => usernameMatch === queryData.username);
-    console.log(emailMatchresult);
-    console.log(usernameMatchResult);
-  }
-
-  if (usernameMatchResult.length > 0 && emailMatchresult.length > 0) {
-    return res.render(createAccount, { registerError: "Username and email already exist" });
-  }
-  else if (usernameMatch.length > 0) {
-    return res.render(createAccount, { registerError: "Username already exist" });
-  } else if (emailmatch.length > 0) {
-    return res.render(createAccount, { registerError: "Email already exist" });
-  }
-  */
-}
-);
+});
 
 // Session
-
 app.post('/api/login', async (req, res) => {
-  await User.find({ "username": req.body.username }).then((response) => {
-    if (response.length > 1) {
-      res.status(400).json({ "status": "more than 1 user with the same username" })
-    } else {
-      if (response[0].password === req.body.password) {
-        res.status(200).json({ username: req.body.username })
-      } else {
-        res.status(400).json({ "status": "password doesn't match" })
-      }
-    }
-  })
-})
-
+  const user = await User.findOne({ "username": req.body.username, "password": req.body.password });
+  if (user) {
+    res.status(200).json({ username: req.body.username })
+  } else {
+    res.status(401).json({ message: { msgBody: "Invalid username or password", msgError: true } });
+  }
+});
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);

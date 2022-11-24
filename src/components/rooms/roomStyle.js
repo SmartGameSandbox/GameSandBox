@@ -17,12 +17,11 @@ const styles = {
         pl: 5
     },
     board: {
-        width: "900px",
-        height: "500px",
+        width: "800px",
+        height: "400px",
         position: "absolute",
-        marginLeft: "calc(50% - 450px)",
-        marginTop: "60px",
-        zIndex: -1,
+        marginLeft: "calc(50% - 400px)",
+        marginTop: "40px",
         borderRadius: "5px"
     },
     createRoomButtonStyle: {

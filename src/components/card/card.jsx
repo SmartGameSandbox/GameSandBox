@@ -5,8 +5,9 @@ import * as Constants from '../../util/constants';
 class Card extends React.Component {
   state = {
     image: null,
+    imageNode: null
   };
-  
+
   componentDidMount() {
     this.loadImage();
   }
@@ -22,30 +23,36 @@ class Card extends React.Component {
   }
 
   loadImage() {
-    // save to "this" to remove "load" handler on unmount
     this.image = new window.Image();
     this.image.src = this.props.src;
     this.image.addEventListener('load', this.handleLoad);
   }
 
-  /**
-   * After setState react-konva will update canvas and redraw the layer
-   * because "image" property is changed.
-   * if you keep same image object during source updates you will have to update layer manually:
-   * this.imageNode.getLayer().batchDraw();
-   */
   handleLoad = () => {
     this.setState(() => ({ image: this.image }));
   };
 
+  bringToTop = (e) => {
+    const position = e.target.attrs;
+    if (position.y <= Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT) {
+      this.imageNode.moveToTop();
+    }
+  }
+
   render() {
     return (
       <Image
+        key={this.props.id}
         x={this.props.x}
         y={this.props.y}
         height={Constants.CARD_HEIGHT}
         width={Constants.CARD_WIDTH}
         image={this.state.image}
+        draggable
+        onDragMove={(e) => this.props.onDragMove(e, this.props.id)}
+        onDragStart={(e) => {this.props.onDragStart(e, this.props.id); this.bringToTop(e);}}
+        onClick={(e) => {this.props.onClick(e, this.props.id); this.bringToTop(e)}}
+        onDragEnd={(e) => this.props.onDragEnd(e, this.props.id)}
         ref={(node) => {
           this.imageNode = node;
         }}
