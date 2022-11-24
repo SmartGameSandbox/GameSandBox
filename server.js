@@ -34,6 +34,10 @@ io.on("connection", async (socket) => {
           ALLROOMSDATA[roomID] = roomData;
         }
         socket.join(roomID);
+        if (!ALLROOMSDATA[roomID].hands) {
+          ALLROOMSDATA[roomID].hands = {};
+        }
+        ALLROOMSDATA[roomID].hands[username] = [];
         io.to(socket.id).emit('roomCardData', ALLROOMSDATA[roomID]);
         // add user to the user array here
         console.log(`User ${username} joined room ${roomID}`);
@@ -43,33 +47,31 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("cardMove", ({ x, y, username, roomID, cardID }) => {
-    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === cardID);
-    ALLROOMSDATA[roomID].cards[index].x = x;
-    ALLROOMSDATA[roomID].cards[index].y = y;
-    ALLROOMSDATA[roomID].cards.push(ALLROOMSDATA[roomID].cards[index]);
+  socket.on("cardChangeOnTable", ({ username, roomID, card }) => {
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);   
     ALLROOMSDATA[roomID].cards.splice(index, 1);
-    io.to(roomID).emit("cardPositionUpdate", {
-      cardID: cardID,
-      x: x,
-      y: y,
+    ALLROOMSDATA[roomID].cards.push(card);
+    io.to(roomID).emit("cardChangeOnTableUpdate", {
+      card,
       username: username
     });
   });
 
-  socket.on("cardFlip", ({ isFlipped, imageSource, username, roomID, cardID }) => {
-    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === cardID);
-    ALLROOMSDATA[roomID].cards[index].isFlipped = isFlipped;
-    ALLROOMSDATA[roomID].cards[index].imageSource = imageSource;
-    ALLROOMSDATA[roomID].cards.push(ALLROOMSDATA[roomID].cards[index]);
-    ALLROOMSDATA[roomID].cards.splice(index, 1);
-    io.to(roomID).emit("cardFlipUpdate", {
-      cardID: cardID,
-      isFlipped: isFlipped,
-      imageSource: imageSource,
-      username: username,
-    });
-  });
+  // socket.on("cardFlipOnDeck", ({ username, roomID, card }) => {
+  //   let index = ALLROOMSDATA[roomID].decks.findIndex((c) => c.id === card.id);
+  //   ALLROOMSDATA[roomID].decks.push(ALLROOMSDATA[roomID].decks[index]);
+  //   ALLROOMSDATA[roomID].decks.splice(index, 1);
+  //   io.to(roomID).emit("cardFlipOnDeckUpdate", {
+  //     card: card,
+  //     username: username,
+  //   });
+  // });
+
+  // socket.on("cardFlipOnHand", ({ username, roomID, card }) => {
+  //   let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
+  //   ALLROOMSDATA[roomID].hands[username].push(ALLROOMSDATA[roomID].hands[username][index]);
+  //   ALLROOMSDATA[roomID].hands[username].splice(index, 1);
+  // });
 
   socket.on("mouseMove", ({ x, y, username, roomID }) => {
     io.to(roomID).emit("mousePositionUpdate", {
@@ -79,25 +81,75 @@ io.on("connection", async (socket) => {
     });
   });
   
-  socket.on("cardDraw", ({ username, roomID, cardID }) => {
-    // remove cardID
-    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === cardID);
-    ALLROOMSDATA[roomID].cards.splice(index, 1);
-    io.to(roomID).emit("cardDrawUpdate", {
-      cardID: cardID,
-      username: username,
-    });
-  });
+  // socket.on("cardTableToHand", ({ username, roomID, card }) => {
+  //   // remove cardID
+  //   ALLROOMSDATA[roomID].hands[username].push(card);
+  //   let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
+  //   ALLROOMSDATA[roomID].cards.splice(index, 1);
+  //   io.to(roomID).emit("cardTableToHandUpdate", {
+  //     card: card,
+  //     username: username,
+  //   });
+  // });
 
-  //socket for playerDiscardCard
-  socket.on("cardDiscard", ({ username, roomID, card }) => {
+  // socket.on("cardHandToTable", ({ username, roomID, card }) => {
+  //   // add card
+  //   ALLROOMSDATA[roomID].cards.push(card);
+  //   // remove card from hand
+  //   let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
+  //   ALLROOMSDATA[roomID].hands[username].splice(index, 1);
+  //   io.to(roomID).emit("cardHandToTableUpdate", {
+  //     card: card,
+  //     username: username,
+  //   });
+  // });
+
+  // socket.on("cardTableToDeck", ({ username, roomID, card }) => {
+  //   // remove cardID
+  //   ALLROOMSDATA[roomID].deck.push(card);
+  //   let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
+  //   ALLROOMSDATA[roomID].cards.splice(index, 1);
+  //   io.to(roomID).emit("cardTableToDeckUpdate", {
+  //     card: card,
+  //     username: username,
+  //   });
+  // });
+
+  socket.on("cardDeckToTable", ({ username, roomID, card }) => {
     // add card
     ALLROOMSDATA[roomID].cards.push(card);
-    io.to(roomID).emit("cardDiscardUpdate", {
+    // remove card from hand
+    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
+    ALLROOMSDATA[roomID].deck.splice(index, 1);
+    io.to(roomID).emit("cardDeckToTableUpdate", {
       card: card,
       username: username,
     });
   });
+
+  // socket.on("cardDeckToHand", ({ username, roomID, card }) => {
+  //   // add card
+  //   ALLROOMSDATA[roomID].hands[username].push(card);
+  //   // remove card from hand
+  //   let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
+  //   ALLROOMSDATA[roomID].deck.splice(index, 1);
+  //   io.to(roomID).emit("cardDeckToTableUpdate", {
+  //     card: card,
+  //     username: username,
+  //   });
+  // });
+
+  // socket.on("cardDeckToTable", ({ username, roomID, card }) => {
+  //   // add card
+  //   ALLROOMSDATA[roomID].cards.push(card);
+  //   // remove card from hand
+  //   let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
+  //   ALLROOMSDATA[roomID].deck.splice(index, 1);
+  //   io.to(roomID).emit("cardDeckToTableUpdate", {
+  //     card: card,
+  //     username: username,
+  //   });
+  // });
 });
 
 io.on("connect_error", (err) => {
@@ -152,7 +204,9 @@ app.post("/api/room", async (req, res) => {
       password: req.body.password,
       name: req.body.name,
       image: req.body.image,
-      cards: allCards,
+      deck: allCards,
+      hands: {},
+      cards: [],
     });
     const result = await gameRoomData.save();
     if (!result) {

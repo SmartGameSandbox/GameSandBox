@@ -4,7 +4,7 @@ import Card from '../card/card'
 import * as Constants from '../../util/constants';
 
 // deck data
-const Hand = ({ cardsInHand, username, roomID, playerDiscardCard, socket }) => {
+const Hand = ({ cardsInHand, username, roomID, cardHandToTable, socket }) => {
     const [hands, setHands] = React.useState(cardsInHand);
 
     React.useEffect(() => {
@@ -37,7 +37,7 @@ const Hand = ({ cardsInHand, username, roomID, playerDiscardCard, socket }) => {
                     return c.id !== cardID;
                 });
             });
-            playerDiscardCard(targetCard, e.target.attrs.x, e.target.attrs.y);
+            cardHandToTable(targetCard, e.target.attrs.x, e.target.attrs.y);
             socket.emit("cardDiscard",
                 { username: username, roomID: roomID, card: targetCard }, (err) => {
                     if (err) {
@@ -76,9 +76,10 @@ const Hand = ({ cardsInHand, username, roomID, playerDiscardCard, socket }) => {
                     x={card.x}
                     y={card.y}
                     socket={socket}
-                    isInHand={true}
+                    isOnTable={false}
                     isFlipped={card.isFlipped}
                     onClick={onClickCard}
+                    onDragStart={() => {}}
                     onDragEnd={onDragEndCard}
                     onDragMove={() => {}}
                     draggable

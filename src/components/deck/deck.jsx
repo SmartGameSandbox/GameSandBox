@@ -1,39 +1,96 @@
 import React from 'react';
-import { Image } from 'react-konva';
-import useImage from 'use-image';
+import Card from '../card/card'
+import * as Constants from '../../util/constants';
+import { Rect } from 'react-konva';
 
-const deckData = {
-    x: 250,
-    y: 250,
-}
+// deck data
+const Deck = ({ socket, cardsInDeck, playerDrawCardFromDeck, roomID, username }) => {
+    const [deck, setDeck] = React.useState(cardsInDeck);
 
-const deckRef = React.createRef();
-const Deck = ({ socket }) => {
-    // const socketSetting = socket.socket;
-    const [image] = useImage(`${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`);
-    const handleDragMove = (data) => {
-        // TODO: Send data to server
-        // socketSetting.emit("cardMove",
-        //     { x: data.evt.offsetX, y: data.evt.offsetY, username: Math.random().toString(), roomID: "9HQT" }, (err) => {
-        //         if (err) {
-        //             alert(err);
-        //         }
-        //     });
+    React.useEffect(() => {
+        setDeck(cardsInDeck.map((card) => {
+            card.x = Constants.DECK_STARTING_POSITION_X;
+            card.y = Constants.DECK_STARTING_POSITION_Y;
+            return card;
+        }));
+    }, [cardsInDeck]);
+
+    const onClickCard = (e, cardID) => {
+        setDeck((prevCards) => {
+            return prevCards.map((card) => {
+                if (card.id === cardID) {
+                    card.isFlipped = !card.isFlipped;
+                    card.imageSource = card.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
+                        `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
+                }
+                return card;
+            });
+        });
     }
-    // socketSetting.on("cardPositionUpdate", (data) => {
-    //     // TODO: Get data to server
-    //     console.log("data", data);
-    //     deckRef.current.position(data);
-    // });
+
+    const onDragEnd = (e, cardID) => {
+        const position = e.target.attrs;
+        if (
+            position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
+            position.x <= Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
+            position.y >= Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT &&
+            position.y <= Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
+        ) {
+            setDeck([]);
+            setDeck(cardsInDeck);
+        } else {
+            const targetCard = deck.find((card) => card.id === cardID);
+            setDeck((prevCards) => {
+                // remove card from cardsInHand
+                return prevCards.filter((c) => {
+                    return c.id !== cardID;
+                });
+            });
+            playerDrawCardFromDeck(targetCard, e.target.attrs.x, e.target.attrs.y);
+
+            // Add card to cards)
+            socket.emit("cardDeckToTable",
+                { username: username, roomID: roomID, card: targetCard }, (err) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                }
+            );
+        }
+    }
+
     return (
-        <Image
-            ref={deckRef}
-            x={deckData.x}
-            y={deckData.y}
-            image={image}
-            onDragMove={handleDragMove}
-        />
+        <>
+            <Rect
+                x={Constants.DECK_STARTING_POSITION_X}
+                y={Constants.DECK_STARTING_POSITION_Y}
+                width={Constants.DECK_AREA_WIDTH}
+                height={Constants.DECK_AREA_HEIGHT}
+                cornerRadius={10}
+                fill={"rgba(177, 177, 177, 0.6)"}
+            />
+
+            { /*Map cards in hand to visible hand
+             TODO: make visible to player only */}
+
+            {deck.map((card) => (
+                <Card
+                    src={card.imageSource}
+                    id={card.id}
+                    x={Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING}
+                    y={Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING}
+                    socket={socket}
+                    isOnTable={false}
+                    isFlipped={card.isFlipped}
+                    onClick={onClickCard}
+                    onDragStart={() => { }}
+                    onDragEnd={onDragEnd}
+                    onDragMove={() => { }}
+                    draggable
+                />
+            ))}
+        </>
     );
-}
+};
 
 export default Deck;
