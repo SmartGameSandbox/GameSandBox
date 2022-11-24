@@ -6,13 +6,14 @@ import { Stage } from 'react-konva';
 import axios from 'axios';
 import styles from './roomStyle';
 import * as Constants from '../../util/constants';
+import { ReactSession } from "react-client-session";
+ReactSession.setStoreType("localStorage");
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
 const socket = io(url, { transports: ['websocket'] });
 let roomID = null;
 let roomPassword = null;
-let username = Date.now().toString();
-
+let username = ReactSession.get("username").username;
 const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
 
@@ -52,7 +53,7 @@ const Room = () => {
                         height={Constants.CANVAS_HEIGHT}
                         onMouseMove={(e) => handleMouseMove(e)}
                     >
-                        <Table socket={socket} username={username}/>
+                        <Table socket={socket} username={username} />
                     </Stage>
                 </div>
             </div>

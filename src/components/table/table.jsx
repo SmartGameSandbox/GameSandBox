@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layer, Rect } from 'react-konva';
+import { Layer, Rect, Text } from 'react-konva';
 import Card from '../card/card';
 import * as Constants from '../../util/constants'
 import Cursors from '../cursor/cursors';
@@ -95,7 +95,7 @@ const Table = ({ socket, username }) => {
                     return prevCards.filter((card) => card.id !== data.card.id);
                 });
             }
-        })
+        });
 
         socket.on('cardHandToTableUpdate', (data) => {
             if (data.username !== currentUsername) {
@@ -104,7 +104,26 @@ const Table = ({ socket, username }) => {
                     return prevCards.concat(data.card);
                 });
             }
-        })
+        });
+
+        socket.on('collectCardsUpdate', (data) => {
+            if (data.username !== currentUsername) {
+                // concat cards to cardsInDeck
+                setCardsInDeck((prevCards) => {
+                    return [...prevCards.concat(data.cards)];
+                });
+                // remove all cards from table
+                setCards([]);
+            }
+        });
+
+        socket.on('shuffleCardsUpdate', (data) => {
+            if (data.username !== currentUsername) {
+                //set cardsInDeck to data.cards
+                setCardsInDeck([...data.cards]);
+                alert("Deck shuffled!");
+            }
+        });
 
         return () => {
             socket.off("roomCardData");
@@ -117,6 +136,8 @@ const Table = ({ socket, username }) => {
             socket.off("cardDeckToHandUpdate");
             socket.off("cardHandToDeckUpdate");
             socket.off("mousePositionUpdate");
+            socket.off("collectCardsUpdate");
+            socket.off("shuffleCardsUpdate");
         }
     }, [socket, currentUsername]);
 
@@ -142,14 +163,14 @@ const Table = ({ socket, username }) => {
     }
 
     const onClickCard = (e, cardID) => {
-        let targetCard;
+        let targetCard = cards.find((card) => card.id === cardID);
+        targetCard.isFlipped = !targetCard.isFlipped;
+        targetCard.imageSource = targetCard.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
+            `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
         setCards((prevCards) => {
             return prevCards.map((card) => {
                 if (card.id === cardID) {
-                    card.isFlipped = !card.isFlipped;
-                    card.imageSource = card.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
-                        `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
-                    targetCard = card;
+                    return targetCard;
                 }
                 return card;
             });
@@ -280,6 +301,62 @@ const Table = ({ socket, username }) => {
         }
     }
 
+    const collectCards = () => {
+        // concat cards to cardsInDeck
+        setCardsInDeck((prevCards) => {
+            return [...prevCards, ...cards];
+        });
+        // set position to deck position for all cards
+        setCards((prevCards) => {
+            return prevCards.map((card) => {
+                card.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
+                card.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
+                card.isFlipped = true;
+                card.imageSource = `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`;
+                return card;
+            });
+        });
+        socket.emit("collectCards", { username: currentUsername, roomID: roomID, cards: cards }, (err) => {
+            if (err) {
+                console.error(err);
+            }
+        });
+        setCards([]);
+    }
+
+    const shuffle = (array) => {
+        let currentIndex = array.length, randomIndex;
+        // While there remain elements to shuffle.
+        while (currentIndex !== 0) {
+            // Pick a remaining element.
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            // And swap it with the current element.
+            [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    const shuffleCards = () => {
+        // shuffle cardsInDeck
+        const newCards = [].concat(cardsInDeck);
+        // set all cards to be flipped
+        newCards.map((card) => {
+            card.isFlipped = true;
+            card.imageSource = `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`;
+            return card;
+        });
+        shuffle(newCards);
+        setCardsInDeck(newCards);
+        socket.emit("shuffleCards", { username: currentUsername, roomID: roomID, cards: newCards }, (err) => {
+            if (err) {
+                console.error(err);
+            }
+        });
+        alert("Deck shuffled!");
+    }
+
     return (
         <>
             <Layer>
@@ -327,6 +404,12 @@ const Table = ({ socket, username }) => {
                 />
             </Layer>
             <Layer>
+                <Text x={0} y={0} padding={10} key={`collect_btn`} fill={"black"} fontSize={20} text={"Collect Cards"}
+                    onClick={() => collectCards()}
+                />
+                <Text x={150} y={0} padding={10} key={`shuffle_btn`} fill={"black"} fontSize={20} text={"Shuffle Cards"}
+                    onClick={() => shuffleCards()}
+                />
                 <Cursors key={`cursor_${currentUsername}`} cursors={cursors} username={currentUsername} />
             </Layer>
         </>

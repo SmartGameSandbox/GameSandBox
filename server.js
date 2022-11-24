@@ -26,7 +26,7 @@ const ALLROOMSDATA = {};
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
-  socket.on("joinRoom", async ({ roomID, password, username}) => {
+  socket.on("joinRoom", async ({ roomID, password, username }) => {
     if (roomID) {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
@@ -37,18 +37,20 @@ io.on("connection", async (socket) => {
         if (!ALLROOMSDATA[roomID].hands) {
           ALLROOMSDATA[roomID].hands = {};
         }
-        ALLROOMSDATA[roomID].hands[username] = [];
+        if (ALLROOMSDATA[roomID].hands[username] === undefined) {
+          ALLROOMSDATA[roomID].hands[username] = [];
+        }
         io.to(socket.id).emit('roomCardData', ALLROOMSDATA[roomID]);
         // add user to the user array here
         console.log(`User ${username} joined room ${roomID}`);
       }
     } else {
-      res.json({ error: "Room not found" });
+      console.error("Room Invalid");
     }
   });
 
   socket.on("cardChangeOnTable", ({ username, roomID, card }) => {
-    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);   
+    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
     ALLROOMSDATA[roomID].cards.splice(index, 1);
     ALLROOMSDATA[roomID].cards.push(card);
     io.to(roomID).emit("cardChangeOnTableUpdate", {
@@ -58,7 +60,7 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("cardChangeOnDeck", ({ username, roomID, card }) => {
-    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);   
+    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
     ALLROOMSDATA[roomID].deck.splice(index, 1);
     ALLROOMSDATA[roomID].deck.push(card);
     io.to(roomID).emit("cardChangeOnDeckUpdate", {
@@ -69,8 +71,7 @@ io.on("connection", async (socket) => {
 
   socket.on("cardChangeOnHand", ({ username, roomID, card }) => {
     let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].hands[username].push(ALLROOMSDATA[roomID].hands[username][index]);
-    ALLROOMSDATA[roomID].hands[username].splice(index, 1);
+    ALLROOMSDATA[roomID].hands[username][index] = card;
   });
 
   socket.on("mouseMove", ({ x, y, username, roomID }) => {
@@ -80,7 +81,7 @@ io.on("connection", async (socket) => {
       username: username,
     });
   });
-  
+
   socket.on("cardTableToHand", ({ username, roomID, card }) => {
     // remove cardID
     ALLROOMSDATA[roomID].hands[username].push(card);
@@ -148,6 +149,25 @@ io.on("connection", async (socket) => {
     io.to(roomID).emit("cardHandToDeckUpdate", {
       card: card,
       username: username,
+    });
+  });
+
+  socket.on("collectCards", ({ username, roomID, cards }) => {
+    // concat cards to deck
+    ALLROOMSDATA[roomID].deck = ALLROOMSDATA[roomID].deck.concat(cards);
+    ALLROOMSDATA[roomID].cards = [];
+    io.to(roomID).emit("collectCardsUpdate", {
+      username: username,
+      cards: cards
+    });
+  });
+
+  socket.on("shuffleCards", ({ username, roomID, cards }) => {
+    // concat cards to deck
+    ALLROOMSDATA[roomID].deck = cards;
+    io.to(roomID).emit("shuffleCardsUpdate", {
+      username: username,
+      cards: cards
     });
   });
 });
@@ -242,9 +262,9 @@ app.post("/api/register", async (req, res) => {
   });
   // const result = await newUserModel.save();
 
-  //queryData = newUserModel(req.body.username, req.body.email, req.body.password);
-  //let queryData = await newUserModel.find({ $or: [{ username: queryData.username }, { email: queryData.email }, { password: queryData.password }] });
-  //console.log(queryData);
+  // queryData = newUserModel(req.body.username, req.body.email, req.body.password);
+  // let queryData = await newUserModel.find({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+  // console.log(queryData);
   newUserModel.save((err, data) => {
     if (err) {
       console.log(err);
@@ -253,101 +273,17 @@ app.post("/api/register", async (req, res) => {
       res.status(200).json({ message: { msgBody: "Account successfully created", msgError: false } });
     }
   });
-
-  /*
-  if (queryData.length === 0) {
-    queryData.save().
-      then((result) => {
-        console.log(result);
-        res.json({ registerSuccess: "true" });
-      }).
-      catch((err) => {
-        console.log(err);
-        res.status(500).json({ error: err });
-      });
-
-  } else if (queryData.length > 0) {
-    let matchQueryEmails = [];
-    let matchQueryUsername = [];
-
-    for (let i = 0; i < queryData.length; i++) {
-      if (queryData[i].email === queryData.email) {
-        matchQueryEmails.push(queryData[i].email);
-      }
-      if (queryData[i].username === queryData.username) {
-        matchQueryUsername.push(queryData[i].username);
-      }
-    }
-
-    let emailMatchresult = matchQueryEmails.filter(emailMatch => emailMatch === queryData.email);
-    let usernameMatchResult = matchQueryUsername.filter(usernameMatch => usernameMatch === queryData.username);
-    console.log(emailMatchresult);
-    console.log(usernameMatchResult);
-  }
-
-  if (usernameMatchResult.length > 0 && emailMatchresult.length > 0) {
-    return res.render(createAccount, { registerError: "Username and email already exist" });
-  }
-  else if (usernameMatch.length > 0) {
-    return res.render(createAccount, { registerError: "Username already exist" });
-  } else if (emailmatch.length > 0) {
-    return res.render(createAccount, { registerError: "Email already exist" });
-  }
-  */
-}
-);
+});
 
 // Session
-
-// const session = require('express-session');
-// const MongoDBStore = require('session-file-store')(session);
-// const MONGODB_URI = "http://localhost:5000"
-
-// const mongoDBStore = new MongoDBStore({
-//   uri: process.env.MONGODB_URI,
-//   collection: 'sessions'
-// });
-
-// app.use(
-//   session({
-//     httpOnly: true,
-//     secure: true,
-//     secret: 'secret key',
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       httpOnly: true,
-//       secure: true,
-//     },
-//     store: mongoDBStore,
-//   }
-//   ));
-// app.use(cors(corsOptions));
-// app.use(express.json());
-
-// const loginRouter = require('./routes/login');
-// const { Router } = require('express');
-// app.use("/api", loginRouter);
-
-// app.listen(port, () => console.log(`Server started on port ${port}`));
-
-
-// Router.post('/login', async (req, res) => {
-//   const { username, email, password } = req.body;
-//   if (!email || !password) {
-//     res.status(400).json({ message: { msgBody: "All fields are required", msgError: true } });
-//   }
-//   const user = await User.findOne({ username });
-//   if (!user) {
-//     return res.status(400).json({ message: { msgBody: "Username is not found", msgError: true } });
-//   }
-//   if (user.password !== password) {
-//     return res.status(400).json({ message: { msgBody: "Password is incorrect", msgError: true } });
-//   }
-//   req.session.user = user;
-//   res.status(200).json({ message: { msgBody: "Login successful", msgError: false } });
-// });
-
+app.post('/api/login', async (req, res) => {
+  const user = await User.findOne({ "username": req.body.username, "password": req.body.password });
+  if (user) {
+    res.status(200).json({ username: req.body.username })
+  } else {
+    res.status(401).json({ message: { msgBody: "Invalid username or password", msgError: true } });
+  }
+});
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);

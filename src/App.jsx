@@ -1,10 +1,10 @@
 import React from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
 import JoinRoom from "./components/rooms/joinRoom";
-import LoginComponent from "./components/loginComponent/loginComponent";
+import LoginComponent from "./components/login/login";
 import CreateNewAccountComponent from "./components/createAccountComponent/createAccountComponent";
 
 import AppBar from "@mui/material/AppBar";
@@ -13,10 +13,11 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
 import CycloneIcon from "@mui/icons-material/Cyclone";
 import FaceIcon from "@mui/icons-material/Face";
+import { ReactSession } from "react-client-session";
+ReactSession.setStoreType("localStorage");
 
 const App = () => {
   const navigateCreateRoom = () => {
@@ -27,7 +28,16 @@ const App = () => {
     window.location.href = "/joinroom";
   };
 
-  const navigateLogin = () => {
+  const isAuthed = () => {
+    if (ReactSession.get("username")) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const logout = () => {
+    localStorage.clear();
     window.location.href = "/login";
   };
 
@@ -42,32 +52,44 @@ const App = () => {
               color="inherit"
               aria-label="menu"
               sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
+            ></IconButton>
+
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Smart Game SandBox
             </Typography>
-            <Button color="inherit" onClick={() => navigateCreateRoom()}>
-              <AddIcon />
-              &nbsp;Create Room
-            </Button>
-            <Button color="inherit" onClick={() => navigateJoinRoom()}>
-              <CycloneIcon />
-              &nbsp;Join Room
-            </Button>
-            <Button color="inherit" onClick={() => navigateLogin()}>
-              <FaceIcon />
-              &nbsp;Login
-            </Button>
+            {isAuthed() && (
+              <Button color="inherit" onClick={() => navigateCreateRoom()}>
+                <AddIcon />
+                &nbsp;Create Room
+              </Button>
+            )}
+            {isAuthed() && (
+              <Button color="inherit" onClick={() => navigateJoinRoom()}>
+                <CycloneIcon />
+                &nbsp;Join Room
+              </Button>
+            )}
+
+            {isAuthed() && (
+              <Button color="inherit" onClick={() => logout()}>
+                <FaceIcon />
+                &nbsp;Logout
+              </Button>
+            )}
           </Toolbar>
         </AppBar>
       </Box>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LoginComponent />} />
-          <Route path="/createroom" element={<RoomCreation />} />
-          <Route path="/joinroom" element={<JoinRoom />} />
+          <Route
+            path="/createroom"
+            element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/joinroom"
+            element={isAuthed() ? <JoinRoom /> : <Navigate to="/login" />}
+          />
           <Route path="/room" element={<Room />} />
           <Route path="/login" element={<LoginComponent />} />
           <Route path="/newaccount" element={<CreateNewAccountComponent />} />
