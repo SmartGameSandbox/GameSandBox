@@ -189,9 +189,9 @@ const Table = ({ socket, username }) => {
     }
 
     const cardHandToTable = (card, positionX, positionY) => {
+        card.x = positionX;
+        card.y = positionY;
         setCards((prevCards) => {
-            card.x = positionX;
-            card.y = positionY;
             return [...prevCards, card];
         });
 
@@ -204,9 +204,9 @@ const Table = ({ socket, username }) => {
     }
 
     const cardDeckToTable = (card, positionX, positionY) => {
+        card.x = positionX;
+        card.y = positionY;
         setCards((prevCards) => {
-            card.x = positionX;
-            card.y = positionY;
             return [...prevCards, card];
         });
 

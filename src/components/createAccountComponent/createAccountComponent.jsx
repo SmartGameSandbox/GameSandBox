@@ -3,8 +3,6 @@ import styles from "./createAccountStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import e from "cors";
-import { ConstructionOutlined } from "@mui/icons-material";
 import axios from 'axios';
 
 const CreateNewAccountComponent = () => {
