@@ -16,8 +16,6 @@ let roomPassword = null;
 var username = null;
 if (ReactSession.get("username")) {
     username = ReactSession.get("username").username;
-} else {
-    window.location.href = "/login";
 }
 const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
