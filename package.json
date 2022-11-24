@@ -41,11 +41,11 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "npm i --legacy-peer-deps && npm run build && node server.js",
+    "start": "node server.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "client": "react-scripts start",
     "server": "nodemon server.js",
-    "build": "react-scripts --max_old_space_size=4096 build",
+    "build": "npm i --legacy-peer-deps && react-scripts --max_old_space_size=4096 build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
