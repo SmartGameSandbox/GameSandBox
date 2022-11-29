@@ -4,8 +4,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
 import JoinRoom from "./components/rooms/joinRoom";
-import LoginComponent from "./components/login/login";
-import CreateNewAccountComponent from "./components/createAccountComponent/createAccountComponent";
+import Login from "./components/login/login";
+import Register from "./components/register/register";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -57,6 +57,7 @@ const App = () => {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Smart Game SandBox
             </Typography>
+
             {isAuthed() && (
               <Button color="inherit" onClick={() => navigateCreateRoom()}>
                 <AddIcon />
@@ -81,7 +82,7 @@ const App = () => {
       </Box>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LoginComponent />} />
+          <Route path="/" element={<Login />} />
           <Route
             path="/createroom"
             element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
@@ -91,8 +92,8 @@ const App = () => {
             element={isAuthed() ? <JoinRoom /> : <Navigate to="/login" />}
           />
           <Route path="/room" element={<Room />} />
-          <Route path="/login" element={<LoginComponent />} />
-          <Route path="/newaccount" element={<CreateNewAccountComponent />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/newaccount" element={<Register />} />
         </Routes>
       </BrowserRouter>
     </>

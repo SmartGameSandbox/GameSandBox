@@ -1,12 +1,13 @@
 import React from "react";
-import styles from "./createAccountStyle";
+import styles from "./registerStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from 'axios';
 
-const CreateNewAccountComponent = () => {
+const Register = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
+  const [errorMessage, setErrorMessage] = React.useState("");
   const handleUsernameTextInputChange = (event) => {
     setUsernameInputText(event.target.value);
   };
@@ -33,19 +34,22 @@ const CreateNewAccountComponent = () => {
     let confirmPw = confirmPasswordInputText;
 
     if (password !== confirmPw) {
-      console.log("no matcing pw");
-      // probably better to show a modal
+      setErrorMessage("Passwords do not match");
     } else {
-      console.log("password matches");
       const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
       axios.post(`${url}/api/register`, {
         username: username,
         email: email,
         password: password
       }).then((response) => {
-        console.log(response);
-      }).catch((error) => {
-        console.log(error);
+        if (response.status === 200) {
+          setErrorMessage("");
+          window.location.href = "/login";
+        } else {
+          setErrorMessage(response.data.message);
+        }
+      }).catch((errResponse) => {
+        setErrorMessage(errResponse.response.data.message);
       });
     }
   };
@@ -111,12 +115,13 @@ const CreateNewAccountComponent = () => {
               size="large"
             />
           </div>
+          <p style={styles.errorMessageStyle}>{errorMessage}</p>
           <div sx={styles.forgotPasswordStyle}>
             <Button
               variant="contained"
               sx={styles.signInButtonStyle}
-              href="/login"
               onClick={handleSubmit}
+              disabled={usernameInputText === "" || emailInputText === "" || passwordInputText === "" || confirmPasswordInputText === "" || passwordInputText !== confirmPasswordInputText}
             >
               Submit
             </Button>
@@ -125,4 +130,4 @@ const CreateNewAccountComponent = () => {
     </>
   );
 };
-export default CreateNewAccountComponent;
+export default Register;

@@ -7,12 +7,12 @@ const styles = {
         width: 300
     },
     roomBoxStyle: {
-        height: 420,
-        width: 400,
-        ml: "calc(50% - 250px)",
+        height: "420px",
+        width: "400px",
+        ml: "calc(50% - 200px)",
         border: "2px solid lightseagreen",
         borderRadius: 10,
-        mt: 15,
+        mt: 10,
         pt: 3,
         pl: 5
     },

@@ -26,6 +26,12 @@ const styles = {
         width: 200,
         ml: 6,
         mb: 2
+    },
+    errorMessageStyle: {
+        color: "red",
+        marginLeft: 5,
+        marginBottom: 0,
+        marginTop: 0,
     }
 }
 

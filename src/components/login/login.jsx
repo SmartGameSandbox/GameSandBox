@@ -7,8 +7,9 @@ import axios from "axios";
 import { ReactSession } from "react-client-session";
 ReactSession.setStoreType("localStorage");
 
-const LoginComponent = () => {
+const Login = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
+  const [errorMessage, setErrorMessage] = React.useState("");
   const handleUsernameTextInputChange = (event) => {
     setUsernameInputText(event.target.value);
   };
@@ -20,7 +21,6 @@ const LoginComponent = () => {
   const handleSubmit = () => {
     let username = usernameInputText;
     let password = passwordInputText;
-    console.log("password matches");
     const url =
       process.env.NODE_ENV === "production"
         ? "https://smartgamesandbox.herokuapp.com"
@@ -31,16 +31,14 @@ const LoginComponent = () => {
         password: password,
       })
       .then((response) => {
-        console.log(response);
         if (response.status === 200) {
+          setErrorMessage("");
           ReactSession.set("username", response.data);
           window.location.href = "/createroom";
-        } else {
-          window.location.href = "/login";
         }
       })
       .catch((error) => {
-        console.log(error);
+        setErrorMessage(error.response.data.message);
       });
   };
 
@@ -81,10 +79,11 @@ const LoginComponent = () => {
           />
         </div>
         <div>
-          <Button sx={styles.forgotPasswordStyle}>Forgot password?</Button>
+          <p style={styles.errorMessageStyle}>{errorMessage}</p>
           <br />
           <Button
             variant="contained"
+            disabled={usernameInputText === "" || passwordInputText === ""}
             sx={styles.signInButtonStyle}
             onClick={handleSubmit}
           >
@@ -101,4 +100,4 @@ const LoginComponent = () => {
   );
 };
 
-export default LoginComponent;
+export default Login;

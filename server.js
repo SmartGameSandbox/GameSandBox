@@ -249,39 +249,39 @@ if (process.env.NODE_ENV === "production") {
 
 
 // Register
-const { check, validationResult } = require('express-validator');
 const { User } = require("./schemas/user");
 
 // createAccount 
-app.get("/api/register", (req, res) => res.render('createAccount'));
 app.post("/api/register", async (req, res) => {
-  const newUserModel = new User({
+  const newUser = new User({
     username: req.body.username,
     email: req.body.email,
     password: req.body.password
   });
-  // const result = await newUserModel.save();
-
-  // queryData = newUserModel(req.body.username, req.body.email, req.body.password);
-  // let queryData = await newUserModel.find({ $or: [{ username: req.body.username }, { email: req.body.email }] });
-  // console.log(queryData);
-  newUserModel.save((err, data) => {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ message: { msgBody: "Error has occured", msgError: true } });
-    } else {
-      res.status(200).json({ message: { msgBody: "Account successfully created", msgError: false } });
+  try {
+    if (await User.findOne({ username: req.body.username })) {
+      throw new Error("Username already exists");
     }
-  });
+    const result = await newUser.save();
+    if (!result) {
+      throw new Error("Error: User failed to be created");
+    }
+    res.json({"status": "success", "message": "User login successful"});
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 // Session
 app.post('/api/login', async (req, res) => {
-  const user = await User.findOne({ "username": req.body.username, "password": req.body.password });
-  if (user) {
-    res.status(200).json({ username: req.body.username })
-  } else {
-    res.status(401).json({ message: { msgBody: "Invalid username or password", msgError: true } });
+  try {
+    const user = await User.findOne({ "username": req.body.username, "password": req.body.password });
+    if (!user) {
+      throw new Error("Invalid username or password");
+    }
+    res.json({"status": "success", "message": "User created"});
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 });
 
