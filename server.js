@@ -5,12 +5,14 @@ const cors = require('cors');
 var http = require("http").Server(app);
 
 var io;
-if (process.env.NODE_ENV !== "production") {
-  app.use(cors());
-  io = require("socket.io")(http, { cors: { origin: "*" } });
-} else {
-  io = require("socket.io")(http);
-}
+app.use(cors());
+io = require("socket.io")(http, { cors: { origin: "*" } });
+// if (process.env.NODE_ENV !== "production") {
+//   app.use(cors());
+//   io = require("socket.io")(http, { cors: { origin: "*" } });
+// } else {
+//   io = require("socket.io")(http);
+// }
 const path = require("path");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
