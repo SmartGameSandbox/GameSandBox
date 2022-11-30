@@ -21,9 +21,14 @@ const { cardSchema, Card } = require("./schemas/card");
 const idGenerator = require("./utils/id_generator");
 app.use(express.json());
 
-// later need to reset this
-// TODO: Need to track user's hand and deck
-const ALLROOMSDATA = {};
+let ALLROOMSDATA = {};
+var cron = require('node-cron');
+cron.schedule('00 04 * * *', () => {
+    ALLROOMSDATA = {};
+}, {
+    scheduled: true,
+    timezone: "America/Vancouver"
+});
 
 // Web sockets
 io.on("connection", async (socket) => {

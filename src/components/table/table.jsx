@@ -51,7 +51,6 @@ const Table = ({ socket, username }) => {
         });
 
         socket.on("mousePositionUpdate", (data) => {
-            console.log(data)
             if (data.username !== username) {
                 // update cursor position in object inside cursors
                 setCursors((prevCursors) => {
@@ -65,7 +64,7 @@ const Table = ({ socket, username }) => {
                             return cursor;
                         });
                     } else {
-                       return prevCursors.concat([{ username: data.username, x: data.x, y: data.y }]);
+                        return prevCursors.concat([{ username: data.username, x: data.x, y: data.y }]);
                     }
                 });
             }
@@ -237,7 +236,7 @@ const Table = ({ socket, username }) => {
                 <Text x={150} y={0} padding={10} key={`shuffle_btn`} fill={"black"} fontSize={20} text={"Shuffle Cards"}
                     onClick={() => shuffleCards()}
                 />
-                <Cursors key={`cursor_${username}`} cursors={cursors}/>
+                <Cursors key={`cursor_${username}`} cursors={cursors} />
             </Layer>
         </>
     );
