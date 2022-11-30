@@ -64,8 +64,7 @@ const Table = ({ socket, username }) => {
                             return cursor;
                         });
                     } else {
-                        prevCursors.push({ username: data.username, x: data.x, y: data.y });
-                        return prevCursors;
+                       return prevCursors.concat([{ username: data.username, x: data.x, y: data.y }]);
                     }
                 });
             }
@@ -237,7 +236,7 @@ const Table = ({ socket, username }) => {
                 <Text x={150} y={0} padding={10} key={`shuffle_btn`} fill={"black"} fontSize={20} text={"Shuffle Cards"}
                     onClick={() => shuffleCards()}
                 />
-                <Cursors key={`cursor_${username}`} cursors={cursors} username={username} />
+                <Cursors key={`cursor_${username}`} cursors={cursors}/>
             </Layer>
         </>
     );
