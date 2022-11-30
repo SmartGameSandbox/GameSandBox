@@ -21,13 +21,20 @@ const { cardSchema, Card } = require("./schemas/card");
 const idGenerator = require("./utils/id_generator");
 app.use(express.json());
 
-let ALLROOMSDATA = {};
+const ALLROOMSDATA = {};
 var cron = require('node-cron');
-cron.schedule('00 04 * * *', () => {
-    ALLROOMSDATA = {};
+cron.schedule('00 04 * * *', async () => {
+  // find room with id in ALLROOMSDATA index
+  const rooms = await Room.find({ id: { $in: Object.keys(ALLROOMSDATA) } });
+  for (const roomID in ALLROOMSDATA) {
+    const found = rooms.find(room => room.id === roomID);
+    if (!found) {
+      delete ALLROOMSDATA[roomID];
+    }
+  }
 }, {
-    scheduled: true,
-    timezone: "America/Vancouver"
+  scheduled: true,
+  timezone: "America/Vancouver"
 });
 
 // Web sockets
