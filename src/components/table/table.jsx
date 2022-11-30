@@ -9,74 +9,49 @@ import Deck from '../deck/deck';
 const search = window.location.search;
 const params = new URLSearchParams(search);
 const roomID = params.get('id');
-
+let canEmit = true;
 const Table = ({ socket, username }) => {
-    const [currentUsername] = React.useState(username);
-    const [cards, setCards] = React.useState([]);
-    const [cardsInDeck, setCardsInDeck] = React.useState([]);
+    const [tableData, setTableData] = React.useState(null);
     const [cursors, setCursors] = React.useState([]);
-    const [cardsInHand, setCardsInHand] = React.useState([]);
+    const setCanEmit = (value) => {
+        canEmit = value;
+    }
+    React.useEffect(() => {
+        if (canEmit && tableData) {
+            socket.emit("tableChange", {
+                username: username,
+                roomID: roomID,
+                tableData: tableData
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            });
+        }
+    }, [tableData, username, socket]);
 
     React.useEffect(() => {
-        socket.on("roomCardData", (data) => {
-            setCardsInDeck(data.deck);
-            setCards(data.cards);
-            setCardsInHand(data.hands[currentUsername]);
+        socket.on("tableReload", (data) => {
+            setTableData({
+                cards: data.cards,
+                deck: data.deck,
+                hand: data.hand,
+            });
         });
 
-        socket.on("cardChangeOnTableUpdate", (data) => {
-            if (data.username !== currentUsername) {
-                // update card position
-                setCards((prevCards) => {
-                    // remove target card from cards
-                    return prevCards.filter((card) => card.id !== data.card.id).concat(data.card);
-                });
-            }
-        });
-
-        socket.on("cardDeckToTableUpdate", (data) => {
-            if (data.username !== currentUsername) {
-                cardDeckToTable(data.card, data.card.x, data.card.y);
-            }
-        });
-
-        socket.on("cardDeckToHandUpdate", (data) => {
-            if (data.username !== currentUsername) {
-                // Remove card from hand
-                setCardsInDeck((prevCards) => {
-                    return prevCards.filter((element) => {
-                        return element.id !== data.card.id;
-                    });
-                });
-            }
-        });
-
-        socket.on("cardHandToDeckUpdate", (data) => {
-            if (data.username !== currentUsername) {
-                // add card to Deck
-                setCardsInDeck((prevCards) => {
-                    return [...prevCards, data.card];
-                });
-            }
-        });
-
-        socket.on("cardTableToDeckUpdate", (data) => {
-            if (data.username !== currentUsername) {
-                setCards((prevCards) => {
-                    return prevCards.concat(data.card);
-                });
-        
-                // remove card from cardsInDeck
-                setCardsInDeck((prevCards) => {
-                    return prevCards.filter((c) => {
-                        return c.id !== data.card.id;
-                    });
+        socket.on("tableChangeUpdate", (data) => {
+            if (data.username !== username) {
+                canEmit = false;
+                setTableData((prevTable) => {
+                    prevTable.cards = data.tableData.cards;
+                    prevTable.deck = data.tableData.deck;
+                    return { ...prevTable };
                 });
             }
         });
 
         socket.on("mousePositionUpdate", (data) => {
-            if (data.username !== currentUsername) {
+            if (data.username !== username) {
                 // update cursor position in object inside cursors
                 setCursors((prevCursors) => {
                     const found = prevCursors.find((cursor) => cursor.username === data.username);
@@ -96,256 +71,120 @@ const Table = ({ socket, username }) => {
             }
         });
 
-        socket.on('cardTableToHandUpdate', (data) => {
-            if (data.username !== currentUsername) {
-                // remove card from deck
-                setCards((prevCards) => {
-                    return prevCards.filter((card) => card.id !== data.card.id);
-                });
-            }
-        });
-
-        socket.on('cardHandToTableUpdate', (data) => {
-            if (data.username !== currentUsername) {
-                // add card in data to cards
-                setCards((prevCards) => {
-                    return prevCards.concat(data.card);
-                });
-            }
-        });
-
-        socket.on('collectCardsUpdate', (data) => {
-            if (data.username !== currentUsername) {
-                // concat cards to cardsInDeck
-                setCardsInDeck((prevCards) => {
-                    return [...prevCards.concat(data.cards)];
-                });
-                // remove all cards from table
-                setCards([]);
-            }
-        });
-
-        socket.on('shuffleCardsUpdate', (data) => {
-            if (data.username !== currentUsername) {
-                //set cardsInDeck to data.cards
-                setCardsInDeck([...data.cards]);
-            }
-        });
-
         return () => {
             socket.off("roomCardData");
-            socket.off("cardChangeOnDeckUpdate");
-            socket.off("cardChangeOnTableUpdate");
-            socket.off("cardDeckToTableUpdate");
-            socket.off("cardTableToDeckUpdate");
-            socket.off("cardTableToHandUpdate");
-            socket.off("cardHandToTableUpdate");
-            socket.off("cardDeckToHandUpdate");
-            socket.off("cardHandToDeckUpdate");
+            socket.off("tableChangeUpdate");
             socket.off("mousePositionUpdate");
-            socket.off("collectCardsUpdate");
-            socket.off("shuffleCardsUpdate");
         }
-    }, [socket, currentUsername]);
+    }, [socket, username]);
 
-    const onDragMoveCard = (e, cardID) => {
-        const targetCard = cards.find((card) => card.id === cardID);
-        targetCard.x = e.target.attrs.x;
-        targetCard.y = e.target.attrs.y;
-        socket.emit("cardChangeOnTable",
-            {
-                username: currentUsername,
-                roomID: roomID,
-                card: targetCard
-            }, (err) => {
-                if (err) {
-                    console.log(err);
-                }
-            });
-        socket.emit("mouseMove", { x: e.evt.offsetX, y: e.evt.offsetY, username: currentUsername, roomID: roomID }, (err) => {
+    const emitMouseChange = (e) => {
+        socket.emit("mouseMove", { x: e.evt.offsetX, y: e.evt.offsetY, username: username, roomID: roomID }, (err) => {
             if (err) {
                 alert(err);
             }
         });
     }
 
+    const onDragMoveCard = (e, cardID) => {
+        canEmit = true;
+        setTableData((prevTable) => {
+            // find card in cards array
+            const found = prevTable.cards.find((card) => card.id === cardID);
+            found.x = e.target.attrs.x;
+            found.y = e.target.attrs.y;
+            // move found to the last index of cards array
+            prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
+            prevTable.cards = [...prevTable.cards, found];
+            return { ...prevTable };
+        });
+        emitMouseChange(e);
+    }
+
     const onClickCard = (e, cardID) => {
-        let targetCard = cards.find((card) => card.id === cardID);
-        targetCard.isFlipped = !targetCard.isFlipped;
-        targetCard.imageSource = targetCard.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
-            `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
-        setCards((prevCards) => {
-            return prevCards.map((card) => {
-                if (card.id === cardID) {
-                    return targetCard;
-                }
-                return card;
-            });
-        });
-        socket.emit("cardChangeOnTable",
-            {
-                username: currentUsername,
-                roomID: roomID,
-                card: targetCard
-            }, (err) => {
-                if (err) {
-                    console.error(err);
-                }
-            }
-        );
-    }
-
-    const cardHandToTable = (card, positionX, positionY) => {
-        card.x = positionX;
-        card.y = positionY;
-        setCards((prevCards) => {
-            return [...prevCards, card];
-        });
-
-        // Remove card from cardsInHand
-        setCardsInHand((prevCards) => {
-            return prevCards.filter((c) => {
-                return c.id !== card.id;
-            });
-        });
-    }
-
-    const cardDeckToTable = (card, positionX, positionY) => {
-        card.x = positionX;
-        card.y = positionY;
-        console.log(cards);
-        setCards((prevCards) => {
-            return prevCards.concat(card);
-        });
-        console.log(cards);
-
-        // remove card from cardsInDeck
-        setCardsInDeck((prevCards) => {
-            return prevCards.filter((c) => {
-                return c.id !== card.id;
-            });
-        });
-    }
-
-    const cardDeckToHand = (card) => {
-        setCardsInHand((prevCards) => {
-            return [...prevCards, card];
-        });
-
-        // Remove card from deck
-        setCardsInDeck((prevCards) => {
-            return prevCards.filter((element) => {
-                return element.id !== card.id;
-            });
-        });
-    }
-
-    const cardHandToDeck = (card) => {
-        setCardsInDeck((prevCards) => {
-            return [...prevCards, card];
-        });
-
-        // Remove card from deck
-        setCardsInHand((prevCards) => {
-            return prevCards.filter((element) => {
-                return element.id !== card.id;
-            });
-        });
-    }
-
-    const cardTableToDeck = (card) => {
-        setCardsInDeck((prevCards) => {
-            return [...prevCards, card];
-        });
-
-        // Remove card from cards
-        setCards((prevCards) => {
-            return prevCards.filter((element) => {
-                return element.id !== card.id;
-            });
+        // flip card
+        canEmit = true;
+        setTableData((prevTable) => {
+            const found = prevTable.cards.find((card) => card.id === cardID);
+            found.isFlipped = !found.isFlipped;
+            found.imageSource = found.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
+                `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
+            // move found to the last index of cards array
+            prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
+            prevTable.cards = [...prevTable.cards, found];
+            return { ...prevTable };
         });
     }
 
     const onDragEndCard = (e, cardID) => {
-        const targetCard = cards.find((card) => card.id === cardID);
         const position = e.target.attrs;
-
+        canEmit = true;
         // Draw Card from table to hand
         if (position.y > Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT - 0.5 * Constants.CARD_HEIGHT) {
-            setCardsInHand((prevCards) => {
-                return [...prevCards, targetCard];
+            setTableData((prevTable) => {
+                // find card in tableData.cards
+                const found = prevTable.cards.find((card) => card.id === cardID);
+                prevTable.hand.push(found);
+                found.x = Constants.HAND_PADDING_X + (prevTable.hand.length - 1) * Constants.HAND_CARD_GAP;
+                found.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
+                // add card to hand
+                prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
+                return { ...prevTable };
             });
-
-            // Remove card from cards
-            setCards((prevCards) => {
-                return prevCards.filter((element) => {
-                    return element.id !== cardID;
-                });
-            });
-
-            socket.emit("cardTableToHand",
-                { username: currentUsername, roomID: roomID, card: targetCard }, (err) => {
-                    if (err) {
-                        console.error(err);
-                    }
-                }
-            );
         }
 
-        // Put card to deck
+        // card from table to deck
         else if (
             position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
             position.x <= Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
             position.y >= Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT &&
             position.y <= Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
         ) {
-            targetCard.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
-            targetCard.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
-            cardTableToDeck(targetCard);
-            socket.emit("cardTableToDeck", { username: currentUsername, roomID: roomID, card: targetCard }, (err) => {
-                if (err) {
-                    console.error(err);
-                }
+            setTableData((prevTable) => {
+                // find card in tableData.cards
+                const found = prevTable.cards.find((card) => card.id === cardID);
+                found.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
+                found.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
+                // add card to deck
+                prevTable.deck.push(found);
+                prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
+                return { ...prevTable };
             });
         }
     }
 
     const collectCards = () => {
-        // concat cards to cardsInDeck
-        setCardsInDeck((prevCards) => {
-            return [...prevCards, ...cards];
-        });
-        // set position to deck position for all cards
-        setCards((prevCards) => {
-            return prevCards.map((card) => {
+        canEmit = true;
+        setTableData((prevTable) => {
+            // put cards to deck
+            prevTable.deck = prevTable.deck.concat(prevTable.cards);
+            // set cards in deck to starting position
+            prevTable.deck = prevTable.deck.map((card) => {
                 card.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
                 card.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
+                return card;
+            });
+            prevTable.cards = [];
+            // flip all deck
+            prevTable.deck = prevTable.deck.map((card) => {
                 card.isFlipped = true;
                 card.imageSource = `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`;
                 return card;
             });
+            return { ...prevTable };
         });
-        socket.emit("collectCards", { username: currentUsername, roomID: roomID, cards: cards }, (err) => {
-            if (err) {
-                console.error(err);
-            }
-        });
-        setCards([]);
     }
 
     const shuffleCards = () => {
-        setCardsInDeck(prevCards => {
-            return prevCards.map((card) => {
+        canEmit = true;
+        setTableData((prevTable) => {
+            prevTable.deck = prevTable.deck.map((card) => {
                 card.isFlipped = true;
                 card.imageSource = `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`;
                 return card;
-            }).sort(() => Math.random() - 0.5);
-        });
-
-        socket.emit("shuffleCards", { username: currentUsername, roomID: roomID, cards: cardsInDeck }, (err) => {
-            if (err) {
-                console.error(err);
-            }
+            });
+            prevTable.deck = prevTable.deck.sort(() => Math.random() - 0.5);
+            return { ...prevTable };
         });
     }
 
@@ -361,18 +200,15 @@ const Table = ({ socket, username }) => {
                 />
 
                 <Deck
-                    cardDeckToTable={cardDeckToTable}
-                    cardDeckToHand={cardDeckToHand}
-                    cardsInDeck={cardsInDeck}
-                    socket={socket}
-                    username={currentUsername}
-                    roomID={roomID}
-                    onDragMove={onDragMoveCard}
+                    tableData={tableData}
+                    setCanEmit={setCanEmit}
+                    setTableData={setTableData}
+                    canEmit={canEmit}
+                    emitMouseChange={emitMouseChange}
                 />
-                {cards.map((card) => (
+                {tableData && tableData.cards && tableData.cards.map((card) => (
                     <Card
-                        socket={socket}
-                        username={currentUsername}
+                        username={username}
                         roomID={roomID}
                         key={`card_${card.id}`}
                         src={card.imageSource}
@@ -387,12 +223,11 @@ const Table = ({ socket, username }) => {
                     />
                 ))}
                 <Hand
-                    cardHandToTable={cardHandToTable}
-                    cardHandToDeck={cardHandToDeck}
-                    username={currentUsername}
-                    roomID={roomID}
-                    cardsInHand={cardsInHand}
-                    socket={socket}
+                    tableData={tableData}
+                    setCanEmit={setCanEmit}
+                    setTableData={setTableData}
+                    canEmit={canEmit}
+                    emitMouseChange={emitMouseChange}
                 />
             </Layer>
             <Layer>
@@ -402,7 +237,7 @@ const Table = ({ socket, username }) => {
                 <Text x={150} y={0} padding={10} key={`shuffle_btn`} fill={"black"} fontSize={20} text={"Shuffle Cards"}
                     onClick={() => shuffleCards()}
                 />
-                <Cursors key={`cursor_${currentUsername}`} cursors={cursors} username={currentUsername} />
+                <Cursors key={`cursor_${username}`} cursors={cursors} username={username} />
             </Layer>
         </>
     );

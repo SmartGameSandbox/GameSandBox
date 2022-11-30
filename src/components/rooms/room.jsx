@@ -19,7 +19,6 @@ if (ReactSession.get("username")) {
 }
 const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
-
     const handleMouseMove = (data) => {
         socket.emit("mouseMove", { x: data.evt.offsetX, y: data.evt.offsetY, username: username, roomID: roomID }, (err) => {
             if (err) {

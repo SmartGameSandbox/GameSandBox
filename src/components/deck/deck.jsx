@@ -3,79 +3,41 @@ import Card from '../card/card'
 import * as Constants from '../../util/constants';
 import { Rect } from 'react-konva';
 
-// deck data
-const Deck = ({ socket, cardsInDeck, cardDeckToTable, cardDeckToHand, roomID, username }) => {
-    const [deck, setDeck] = React.useState(cardsInDeck);
-
-    React.useEffect(() => {
-        socket.on("cardChangeOnDeckUpdate", (data) => {
-            if (data.username !== username) {
-                // update card position
-                setDeck((prevCards) => {
-                    // remove target card from cards
-                    const newCards = prevCards.filter((card) => card.id !== data.card.id);
-                    return [...newCards, data.card];
-                });
-            }
+// deck data 
+const Deck = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
+    const onDragMoveCard = (e, cardID) => {
+        setCanEmit(true);
+        setTableData((prevTable) => {
+            // find card in cards array
+            const found = prevTable.deck.find((card) => card.id === cardID);
+            found.x = e.target.attrs.x;
+            found.y = e.target.attrs.y;
+            // move found to the last index of cards array
+            prevTable.deck = prevTable.deck.filter((card) => card.id !== cardID);
+            prevTable.deck = [...prevTable.deck, found];
+            return { ...prevTable };
         });
-
-        return () => {
-            socket.off("cardChangeOnDeckUpdate");
-        }
-    }, [socket, username]);
-
-    React.useEffect(() => {
-        setDeck(cardsInDeck);
-    }, [cardsInDeck]);
-
-    const onClickCard = (e, cardID) => {
-        const targetCard = deck.find((card) => card.id === cardID);
-        targetCard.isFlipped = !targetCard.isFlipped;
-        targetCard.imageSource = targetCard.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
-            `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
-        setDeck((prevCards) => {
-            return prevCards.map((card) => {
-                if (card.id === cardID) {
-                    return targetCard;
-                }
-                return card;
-            });
-        });
-        socket.emit("cardChangeOnDeck",
-            {
-                username: username,
-                roomID: roomID,
-                card: targetCard
-            }, (err) => {
-                if (err) {
-                    console.log(err);
-                }
-            });
+        emitMouseChange(e);
     }
 
-    const onDragMoveCard = (e, cardID) => {
-        const targetCard = deck.find((card) => card.id === cardID);
-        targetCard.x = e.target.attrs.x;
-        targetCard.y = e.target.attrs.y;
-        socket.emit("cardChangeOnDeck",
-            {
-                username: username,
-                roomID: roomID,
-                card: targetCard
-            }, (err) => {
-                if (err) {
-                    console.log(err);
-                }
-            });
-        socket.emit("mouseMove", { x: e.evt.offsetX, y: e.evt.offsetY, username: username, roomID: roomID }, (err) => {
-            if (err) {
-                alert(err);
-            }
+    const onClickCard = (e, cardID) => {
+        // flip card
+        setCanEmit(true);
+        setTableData((prevTable) => {
+            const found = prevTable.deck.find((card) => card.id === cardID);
+            found.isFlipped = !found.isFlipped;
+            found.imageSource = found.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
+            `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
+            // move found to the last index of cards array
+            prevTable.deck = prevTable.deck.filter((card) => card.id !== cardID);
+            prevTable.deck = [...prevTable.deck, found];
+            return { ...prevTable };
         });
     }
 
     const onDragEnd = (e, cardID) => {
         const position = e.target.attrs;
+        setCanEmit(true);
         if (
             position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
             position.x <= Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
@@ -83,45 +45,39 @@ const Deck = ({ socket, cardsInDeck, cardDeckToTable, cardDeckToHand, roomID, us
             position.y <= Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
         ) {
             // deck area movement
-            const targetCard = deck.find((card) => card.id === cardID);
-            targetCard.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
-            targetCard.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
-            const newCards = deck.filter((card) => card.id !== cardID);
-            setDeck([]);
-            setDeck([...newCards, targetCard]);
-            socket.emit("cardChangeOnDeck",
-                {
-                    username: username,
-                    roomID: roomID,
-                    card: targetCard
-                }, (err) => {
-                    if (err) {
-                        console.log(err);
+            setTableData((prevTable) => {
+                prevTable.deck = prevTable.deck.map((card) => {
+                    if (card.id === cardID) {
+                        card.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
+                        card.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
                     }
+                    return card;
                 });
+                return { ...prevTable };
+            });
         } else if (position.y > Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT - 0.5 * Constants.CARD_HEIGHT) {
-            // deck to hand
-            const targetCard = deck.find((card) => card.id === cardID);
-            cardDeckToHand(targetCard);
-            socket.emit("cardDeckToHand",
-                { username: username, roomID: roomID, card: targetCard }, (err) => {
-                    if (err) {
-                        console.error(err);
-                    }
-                }
-            );
+            setTableData((prevTable) => {
+                // find card in tableData.deck
+                const found = prevTable.deck.find((card) => card.id === cardID);
+                // add card to hand
+                prevTable.hand.push(found);
+                found.x = Constants.HAND_PADDING_X + (prevTable.hand.length - 1) * Constants.HAND_CARD_GAP;
+                found.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
+                prevTable.deck = prevTable.deck.filter((card) => card.id !== cardID);
+                return { ...prevTable };
+            });
         } else {
             // deck to table
-            const targetCard = deck.find((card) => card.id === cardID);
-            cardDeckToTable(targetCard, position.x, position.y);
-            // Add card to cards)
-            socket.emit("cardDeckToTable",
-                { username: username, roomID: roomID, card: targetCard }, (err) => {
-                    if (err) {
-                        console.error(err);
-                    }
-                }
-            );
+            setTableData((prevTable) => {
+                // find card in tableData.deck
+                const found = prevTable.deck.find((card) => card.id === cardID);
+                found.x = position.x;
+                found.y = position.y;
+                // add card to hand
+                prevTable.cards.push(found);
+                prevTable.deck = prevTable.deck.filter((card) => card.id !== cardID);
+                return { ...prevTable };
+            });
         }
     }
 
@@ -137,14 +93,13 @@ const Deck = ({ socket, cardsInDeck, cardDeckToTable, cardDeckToHand, roomID, us
                 fill={"rgba(177, 177, 177, 0.6)"}
             />
 
-            {deck.map((card) => (
+            {tableData && tableData.deck && tableData.deck.map((card) => (
                 <Card
                     key={"deck_card_" + card.id}
                     src={card.imageSource}
                     id={card.id}
                     x={card.x}
                     y={card.y}
-                    socket={socket}
                     isFlipped={card.isFlipped}
                     onClick={onClickCard}
                     onDragStart={() => { }}

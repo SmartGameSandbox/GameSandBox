@@ -22,7 +22,7 @@ const idGenerator = require("./utils/id_generator");
 app.use(express.json());
 
 // later need to reset this
-// TODO: Need to track user's hands and deck
+// TODO: Need to track user's hand and deck
 const ALLROOMSDATA = {};
 
 // Web sockets
@@ -32,17 +32,21 @@ io.on("connection", async (socket) => {
     if (roomID) {
       const roomData = await Room.findOne({ id: roomID, password: password });
       if (roomData) {
-        if (!ALLROOMSDATA[roomID]) {
+        if (ALLROOMSDATA[roomID] === undefined) {
           ALLROOMSDATA[roomID] = roomData;
         }
         socket.join(roomID);
-        if (!ALLROOMSDATA[roomID].hands) {
-          ALLROOMSDATA[roomID].hands = {};
+        if (ALLROOMSDATA[roomID].hand === undefined) {
+          ALLROOMSDATA[roomID].hand = {};
         }
-        if (ALLROOMSDATA[roomID].hands[username] === undefined) {
-          ALLROOMSDATA[roomID].hands[username] = [];
+        if (ALLROOMSDATA[roomID].hand[username] === undefined) {
+          ALLROOMSDATA[roomID].hand[username] = [];
         }
-        io.to(socket.id).emit('roomCardData', ALLROOMSDATA[roomID]);
+        io.to(socket.id).emit('tableReload', {
+          cards: ALLROOMSDATA[roomID].cards,
+          deck: ALLROOMSDATA[roomID].deck,
+          hand: ALLROOMSDATA[roomID].hand[username] ? ALLROOMSDATA[roomID].hand[username] : []
+        });
         // add user to the user array here
         console.log(`User ${username} joined room ${roomID}`);
       }
@@ -51,29 +55,19 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("cardChangeOnTable", ({ username, roomID, card }) => {
-    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].cards.splice(index, 1);
-    ALLROOMSDATA[roomID].cards.push(card);
-    io.to(roomID).emit("cardChangeOnTableUpdate", {
-      card,
-      username: username
-    });
-  });
-
-  socket.on("cardChangeOnDeck", ({ username, roomID, card }) => {
-    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].deck.splice(index, 1);
-    ALLROOMSDATA[roomID].deck.push(card);
-    io.to(roomID).emit("cardChangeOnDeckUpdate", {
-      card,
-      username: username
-    });
-  });
-
-  socket.on("cardChangeOnHand", ({ username, roomID, card }) => {
-    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].hands[username][index] = card;
+  socket.on("tableChange", ({ username, roomID, tableData }) => {
+    if (ALLROOMSDATA[roomID] && tableData) {
+      ALLROOMSDATA[roomID].cards = tableData.cards;
+      ALLROOMSDATA[roomID].deck = tableData.deck;
+      ALLROOMSDATA[roomID].hand[username] = tableData.hand;
+      io.to(roomID).emit("tableChangeUpdate", {
+        username: username,
+        tableData: {
+          cards: ALLROOMSDATA[roomID].cards,
+          deck: ALLROOMSDATA[roomID].deck,
+        }
+      });
+    }
   });
 
   socket.on("mouseMove", ({ x, y, username, roomID }) => {
@@ -81,95 +75,6 @@ io.on("connection", async (socket) => {
       x: x,
       y: y,
       username: username,
-    });
-  });
-
-  socket.on("cardTableToHand", ({ username, roomID, card }) => {
-    // remove cardID
-    ALLROOMSDATA[roomID].hands[username].push(card);
-    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].cards.splice(index, 1);
-    io.to(roomID).emit("cardTableToHandUpdate", {
-      card: card,
-      username: username,
-    });
-  });
-
-  socket.on("cardHandToTable", ({ username, roomID, card }) => {
-    // add card
-    ALLROOMSDATA[roomID].cards.push(card);
-    // remove card from hand
-    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].hands[username].splice(index, 1);
-    io.to(roomID).emit("cardHandToTableUpdate", {
-      card: card,
-      username: username,
-    });
-  });
-
-  socket.on("cardTableToDeck", ({ username, roomID, card }) => {
-    // remove cardID
-    let index = ALLROOMSDATA[roomID].cards.findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].cards.splice(index, 1);
-    ALLROOMSDATA[roomID].deck.push(card);
-    io.to(roomID).emit("cardTableToDeckUpdate", {
-      card: card,
-      username: username,
-    });
-  });
-
-  socket.on("cardDeckToTable", ({ username, roomID, card }) => {
-    // add card
-    ALLROOMSDATA[roomID].cards.push(card);
-    // remove card from deck
-    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].deck.splice(index, 1);
-    io.to(roomID).emit("cardDeckToTableUpdate", {
-      card: card,
-      username: username,
-    });
-  });
-
-  socket.on("cardDeckToHand", ({ username, roomID, card }) => {
-    // add card
-    ALLROOMSDATA[roomID].hands[username].push(card);
-    // remove card from deck
-    let index = ALLROOMSDATA[roomID].deck.findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].deck.splice(index, 1);
-    io.to(roomID).emit("cardDeckToHandUpdate", {
-      card: card,
-      username: username,
-    });
-  });
-
-  socket.on("cardHandToDeck", ({ username, roomID, card }) => {
-    // add card
-    ALLROOMSDATA[roomID].deck.push(card);
-    // remove card from deck
-    let index = ALLROOMSDATA[roomID].hands[username].findIndex((c) => c.id === card.id);
-    ALLROOMSDATA[roomID].hands[username].splice(index, 1);
-    io.to(roomID).emit("cardHandToDeckUpdate", {
-      card: card,
-      username: username,
-    });
-  });
-
-  socket.on("collectCards", ({ username, roomID, cards }) => {
-    // concat cards to deck
-    ALLROOMSDATA[roomID].deck = ALLROOMSDATA[roomID].deck.concat(cards);
-    ALLROOMSDATA[roomID].cards = [];
-    io.to(roomID).emit("collectCardsUpdate", {
-      username: username,
-      cards: cards
-    });
-  });
-
-  socket.on("shuffleCards", ({ username, roomID, cards }) => {
-    // concat cards to deck
-    ALLROOMSDATA[roomID].deck = cards;
-    io.to(roomID).emit("shuffleCardsUpdate", {
-      username: username,
-      cards: cards
     });
   });
 });
@@ -221,16 +126,17 @@ app.post("/api/room", async (req, res) => {
       throw new Error("Error: No room body provided");
     }
     const allCards = await Card.find();
-    const gameRoomData = new Room({
+    const gameRoomData = {
       id: roomID,
       password: req.body.password,
       name: req.body.name,
       image: req.body.image,
       deck: allCards,
-      hands: {},
+      hand: {},
       cards: [],
-    });
-    const result = await gameRoomData.save();
+    }
+    const room = new Room(gameRoomData);
+    const result = await room.save();
     if (!result) {
       throw new Error("Error: Room not created");
     }
@@ -267,7 +173,7 @@ app.post("/api/register", async (req, res) => {
     if (!result) {
       throw new Error("Error: User failed to be created");
     }
-    res.json({"status": "success", "message": "User login successful"});
+    res.json({ "status": "success", "message": "User login successful" });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -280,7 +186,7 @@ app.post('/api/login', async (req, res) => {
     if (!user) {
       throw new Error("Invalid username or password");
     }
-    res.json({"status": "success", "message": "User created", "user": user});
+    res.json({ "status": "success", "message": "User created", "user": user });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

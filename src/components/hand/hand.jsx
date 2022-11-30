@@ -3,122 +3,93 @@ import Card from '../card/card'
 import * as Constants from '../../util/constants';
 
 // deck data
-const Hand = ({ cardsInHand, username, roomID, cardHandToTable, cardHandToDeck, socket }) => {
-    const [hands, setHands] = React.useState(cardsInHand);
-
-    React.useEffect(() => {
-        setHands(cardsInHand.map((card, index) => {
-            card.x = 30 + (Constants.HAND_CARD_GAP * (index + 1));
-            card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + 15;
-            return card;
-        }));
-    }, [cardsInHand]);
-
+const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
     const onClickCard = (e, cardID) => {
-        const targetCard = hands.find((card) => card.id === cardID);
-        targetCard.isFlipped = !targetCard.isFlipped;
-        targetCard.imageSource = targetCard.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
-            `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
-        setHands((prevCards) => {
-            return prevCards.map((card) => {
+        // flip card
+        setCanEmit(true);
+        setTableData((prevTable) => {
+            prevTable.hand = prevTable.hand.map((card) => {
                 if (card.id === cardID) {
-                    return targetCard;
+                    card.isFlipped = !card.isFlipped;
+                    card.imageSource = card.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
+                        `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
                 }
                 return card;
             });
-        });
-        socket.emit("cardChangeOnHand",
-            {
-                username: username,
-                roomID: roomID,
-                card: targetCard
-            }, (err) => {
-                if (err) {
-                    console.log(err);
-                }
-        });
-    }
-    
-    const onDragMoveCard = (e, cardID) => {
-        const targetCard = hands.find((card) => card.id === cardID);
-        targetCard.x = e.target.attrs.x;
-        targetCard.y = e.target.attrs.y;
-        socket.emit("cardChangeOnHand",
-            {
-                username: username,
-                roomID: roomID,
-                card: targetCard
-            }, (err) => {
-                if (err) {
-                    console.log(err);
-                }
-            });
-        socket.emit("mouseMove", { x: e.evt.offsetX, y: e.evt.offsetY, username: username, roomID: roomID }, (err) => {
-            if (err) {
-                alert(err);
-            }
+            return { ...prevTable };
         });
     }
 
     const onDragEndCard = (e, cardID) => {
         const position = e.target.attrs;
+        setCanEmit(true);
         if (
             position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
             position.x <= Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
             position.y >= Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT &&
             position.y <= Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
         ) {
-            // card hand to deck
-            const targetCard = hands.find((card) => card.id === cardID);
-            targetCard.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
-            targetCard.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
-            cardHandToDeck(targetCard);
-            socket.emit("cardHandToDeck",
-                { username: username, roomID: roomID, card: targetCard }, (err) => {
-                    if (err) {
-                        console.error(err);
-                    }
-                }
-            );
+            // hand to deck
+            setTableData((prevTable) => {
+                // find card
+                const found = prevTable.hand.find((card) => card.id === cardID);
+                found.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
+                found.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
+                prevTable.hand = prevTable.hand.filter((card) => card.id !== cardID);
+                prevTable.deck = [...prevTable.deck, found];
+                return { ...prevTable };
+            });
         } else if (position.y < Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT - 0.8 * Constants.CARD_HEIGHT) {
-            // card hand to table
-            const targetCard = hands.find((card) => card.id === cardID);
-            cardHandToTable(targetCard, e.target.attrs.x, e.target.attrs.y);
-            socket.emit("cardHandToTable",
-                { username: username, roomID: roomID, card: targetCard }, (err) => {
-                    if (err) {
-                        console.error(err);
-                    }
-                }
-            );
+            // hand to table
+            setTableData((prevTable) => {
+                // find card
+                const found = prevTable.hand.find((card) => card.id === cardID);
+                found.x = position.x;
+                found.y = position.y;
+                prevTable.hand = prevTable.hand.filter((card) => card.id !== cardID);
+                prevTable.cards = [...prevTable.cards, found];
+                return { ...prevTable };
+            });
         } else {
-            // card table to hand
-            setHands([]);
-            setHands(
-                cardsInHand.map((card, index) => {
+            // deck area movement
+            setTableData((prevTable) => {
+                prevTable.hand.map((card, index) => {
                     if (card.id === cardID) {
-                        card.x = 30 + (Constants.HAND_CARD_GAP * (index + 1));
-                        card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + 15;
+                        card.x = Constants.HAND_PADDING_X + index * Constants.HAND_CARD_GAP;
+                        card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
                     }
                     return card;
-                })
-            );
+                });
+                return { ...prevTable };
+            });
         }
+    }
+
+    const onDragMoveCard = (e, cardID) => {
+        setCanEmit(false);
+        setTableData((prevTable) => {
+            // find card in cards array
+            const found = prevTable.hand.find((card) => card.id === cardID);
+            found.x = e.target.attrs.x;
+            found.y = e.target.attrs.y;
+            // move found to the last index of cards array
+            return { ...prevTable };
+        });
+        emitMouseChange(e);
     }
 
     return (
         <>
-            {hands.map((card) => (
+            {tableData && tableData.hand && tableData.hand.map((card) => (
                 <Card
                     key={"hand_" + card.id}
                     src={card.imageSource}
                     id={card.id}
                     x={card.x}
                     y={card.y}
-                    socket={socket}
                     isFlipped={card.isFlipped}
                     onClick={onClickCard}
-                    onDragStart={() => {}}
+                    onDragStart={() => { }}
                     onDragEnd={onDragEndCard}
                     onDragMove={onDragMoveCard}
                     draggable
