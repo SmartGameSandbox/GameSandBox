@@ -51,6 +51,7 @@ const Table = ({ socket, username }) => {
         });
 
         socket.on("mousePositionUpdate", (data) => {
+            console.log(data)
             if (data.username !== username) {
                 // update cursor position in object inside cursors
                 setCursors((prevCursors) => {
