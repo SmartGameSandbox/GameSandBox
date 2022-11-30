@@ -48,7 +48,7 @@ const JoinRoom = () => {
                         onChange={handleRoomIDTextInputChange}
                         className="text-field"
                         required
-                        label="Room Name"
+                        label="Room Code"
                         size="large"
                     />
                     <br />
