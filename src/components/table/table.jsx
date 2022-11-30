@@ -29,8 +29,7 @@ const Table = ({ socket, username }) => {
                 // update card position
                 setCards((prevCards) => {
                     // remove target card from cards
-                    const newCards = prevCards.filter((card) => card.id !== data.card.id);
-                    return [...newCards, data.card];
+                    return prevCards.filter((card) => card.id !== data.card.id).concat(data.card);
                 });
             }
         });
@@ -63,7 +62,16 @@ const Table = ({ socket, username }) => {
 
         socket.on("cardTableToDeckUpdate", (data) => {
             if (data.username !== currentUsername) {
-                cardTableToDeck(data.card);
+                setCards((prevCards) => {
+                    return prevCards.concat(data.card);
+                });
+        
+                // remove card from cardsInDeck
+                setCardsInDeck((prevCards) => {
+                    return prevCards.filter((c) => {
+                        return c.id !== data.card.id;
+                    });
+                });
             }
         });
 
@@ -121,7 +129,6 @@ const Table = ({ socket, username }) => {
             if (data.username !== currentUsername) {
                 //set cardsInDeck to data.cards
                 setCardsInDeck([...data.cards]);
-                alert("Deck shuffled!");
             }
         });
 
@@ -206,9 +213,11 @@ const Table = ({ socket, username }) => {
     const cardDeckToTable = (card, positionX, positionY) => {
         card.x = positionX;
         card.y = positionY;
+        console.log(cards);
         setCards((prevCards) => {
-            return [...prevCards, card];
+            return prevCards.concat(card);
         });
+        console.log(cards);
 
         // remove card from cardsInDeck
         setCardsInDeck((prevCards) => {
@@ -324,37 +333,20 @@ const Table = ({ socket, username }) => {
         setCards([]);
     }
 
-    const shuffle = (array) => {
-        let currentIndex = array.length, randomIndex;
-        // While there remain elements to shuffle.
-        while (currentIndex !== 0) {
-            // Pick a remaining element.
-            randomIndex = Math.floor(Math.random() * currentIndex);
-            currentIndex--;
-            // And swap it with the current element.
-            [array[currentIndex], array[randomIndex]] = [
-                array[randomIndex], array[currentIndex]];
-        }
-        return array;
-    }
-
     const shuffleCards = () => {
-        // shuffle cardsInDeck
-        const newCards = [].concat(cardsInDeck);
-        // set all cards to be flipped
-        newCards.map((card) => {
-            card.isFlipped = true;
-            card.imageSource = `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`;
-            return card;
+        setCardsInDeck(prevCards => {
+            return prevCards.map((card) => {
+                card.isFlipped = true;
+                card.imageSource = `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png`;
+                return card;
+            }).sort(() => Math.random() - 0.5);
         });
-        shuffle(newCards);
-        setCardsInDeck(newCards);
-        socket.emit("shuffleCards", { username: currentUsername, roomID: roomID, cards: newCards }, (err) => {
+
+        socket.emit("shuffleCards", { username: currentUsername, roomID: roomID, cards: cardsInDeck }, (err) => {
             if (err) {
                 console.error(err);
             }
         });
-        alert("Deck shuffled!");
     }
 
     return (

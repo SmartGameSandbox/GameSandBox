@@ -33,7 +33,7 @@ const Login = () => {
       .then((response) => {
         if (response.status === 200) {
           setErrorMessage("");
-          ReactSession.set("username", response.data);
+          ReactSession.set("username", response.data.user.username);
           window.location.href = "/createroom";
         }
       })

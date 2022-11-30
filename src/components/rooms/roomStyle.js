@@ -20,9 +20,9 @@ const styles = {
         width: "800px",
         height: "400px",
         position: "absolute",
-        marginLeft: "calc(50% - 400px)",
-        marginTop: "40px",
-        borderRadius: "5px"
+        borderRadius: "5px",
+        marginLeft: `${0.5 * Constants.CANVAS_WIDTH - 400}px`,
+        marginTop: `${0.5 * (Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT) - 200}px`,
     },
     createRoomButtonStyle: {
         bgcolor: 'lightseagreen',
@@ -33,6 +33,7 @@ const styles = {
         width: Constants.CANVAS_WIDTH + "px",
         height: Constants.CANVAS_HEIGHT + "px",
         display: "block",
+        position: "relative",
     },
     roomWrapper: {
         backgroundColor: "rgba(0, 150, 136, 0.3)",

@@ -49,10 +49,10 @@ class Card extends React.Component {
         width={Constants.CARD_WIDTH}
         image={this.state.image}
         draggable
-        onDragMove={(e) => this.props.onDragMove(e, this.props.id)}
+        onDragMove={(e) => {this.props.onDragMove(e, this.props.id); this.bringToTop(e);}}
         onDragStart={(e) => {this.props.onDragStart(e, this.props.id); this.bringToTop(e);}}
-        onClick={(e) => {this.props.onClick(e, this.props.id); this.bringToTop(e)}}
-        onDragEnd={(e) => this.props.onDragEnd(e, this.props.id)}
+        onClick={(e) => {this.props.onClick(e, this.props.id); this.bringToTop(e);}}
+        onDragEnd={(e) => {this.props.onDragEnd(e, this.props.id);}}
         ref={(node) => {
           this.imageNode = node;
         }}

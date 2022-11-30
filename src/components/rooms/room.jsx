@@ -15,7 +15,7 @@ let roomID = null;
 let roomPassword = null;
 var username = null;
 if (ReactSession.get("username")) {
-    username = ReactSession.get("username").username;
+    username = ReactSession.get("username");
 }
 const Room = () => {
     const [imageUrl, setImageUrl] = React.useState('');
