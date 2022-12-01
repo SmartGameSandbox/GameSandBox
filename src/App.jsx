@@ -96,8 +96,8 @@ const App = () => {
             element={isAuthed() ? <JoinRoom /> : <Navigate to="/login" />}
           />
           <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
-          <Route path="/login" element={<Login /> } />
-          <Route path="/newaccount" element={isAuthed() ? <Register /> : <Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/newaccount" element={<Register />} />
         </Routes>
       </BrowserRouter>
     </>
