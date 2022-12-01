@@ -5,10 +5,10 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import FileBase64 from 'react-file-base64';
-
 const CreateRoom = () => {
   const [item, setItem] = React.useState({ imageUrl: '' });
   const [roomNameInputText, setRoomNameInputText] = React.useState('Card Game Sandbox');
+  const [errorMsg, setErrorMsg] = React.useState('');
   const handleRoomNameTextInputChange = event => {
     setRoomNameInputText(event.target.value);
   };
@@ -20,7 +20,6 @@ const CreateRoom = () => {
 
   const createRoom = () => {
     const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
-
     axios.post(`${url}/api/room`, {
       name: roomNameInputText,
       password: passwordInputText,
@@ -28,6 +27,7 @@ const CreateRoom = () => {
     }).then((response) => {
       window.location.href = `/room?id=${response.data.id}&password=${response.data.password}`;
     }).catch((error) => {
+      setErrorMsg(error.response.statusText);
       console.log(error);
     });
   }
@@ -70,6 +70,7 @@ const CreateRoom = () => {
             onDone={({ base64 }) => setItem({ ...item, imageUrl: base64 })}
           />
         </div>
+        <p style={styles.createRoomErrorStyle}>{errorMsg}</p>
         <Button variant="contained" sx={styles.createRoomButtonStyle} onClick={() => { createRoom(); }}>Create Room</Button>
       </Box>
     </>

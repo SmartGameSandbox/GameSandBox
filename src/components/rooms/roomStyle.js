@@ -46,6 +46,11 @@ const styles = {
         paddingBottom: "50px",
         minHeight: "calc(100% - 64px)",
         boxSizing: "border-box"
+    },
+    createRoomErrorStyle: {
+        color: "red",
+        fontSize: "12px",
+        marginBottom: "0px",
     }
 }
 
