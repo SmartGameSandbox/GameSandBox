@@ -1,0 +1,63 @@
+.navbar {
+    color: #fff;
+    display: grid;
+    grid-template-columns: 3.5rem auto;
+    grid-template-rows: 5rem 3.5rem auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+    min-height: 100vh;
+    width: 40vh;
+}
+
+#options {
+    background-color: #163B6E;
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    display: grid;
+    grid-template-rows: 5rem 3.5rem 3.5rem auto 3.5rem 5rem;
+}
+
+#close-open {
+    grid-column: 1;
+    grid-row: 2;
+    background-color: #163B6E;
+    border-radius: 50% 0% 0% 50%;
+    display: grid;
+    grid-template-columns: 20% auto 20%;
+    grid-template-rows: 15% auto 15%;
+}
+
+.items {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    align-items: center;
+}
+
+img {
+    filter: invert(100%);
+    width: 2.2em;
+    margin: auto 0% auto auto;
+}
+
+#close-arrow {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#profile {
+    grid-row: 2;
+}
+
+#settings {
+    grid-row: 3;
+}
+
+#logout {
+    grid-row: 5;
+}
+
+p {
+    margin: auto auto auto 10%;
+}
+
