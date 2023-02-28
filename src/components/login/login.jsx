@@ -5,7 +5,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
 import { ReactSession } from "react-client-session";
-import {SMARTButton} from '../button/button';
+import {SMARTButton, SMARTIconButton} from '../button/button';
+import CasinoIcon from '@mui/icons-material/Casino';
 ReactSession.setStoreType("localStorage");
 
 const Login = () => {
@@ -83,7 +84,7 @@ const Login = () => {
           <p style={styles.errorMessageStyle}>{errorMessage}</p>
           <br />
           <SMARTButton
-            theme="secondary"
+            theme="primary"
             size='large'
             variant="contained"
             disabled={usernameInputText === "" || passwordInputText === ""}
