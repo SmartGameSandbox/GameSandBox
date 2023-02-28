@@ -7,8 +7,6 @@ import axios from 'axios';
 import styles from './roomStyle';
 import * as Constants from '../../util/constants';
 import { ReactSession } from "react-client-session";
-import { Profiler } from 'react';
-import onRenderCallback from './prof.js';
 ReactSession.setStoreType("localStorage");
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
@@ -57,9 +55,7 @@ const Room = () => {
                         height={Constants.CANVAS_HEIGHT}
                         onMouseMove={(e) => handleMouseMove(e)}
                     >
-                        <Profiler id="Main" onRender={onRenderCallback}>
                         <Table socket={socket} username={username} />
-                        </Profiler>
                     </Stage>
                 </div>
             </div>

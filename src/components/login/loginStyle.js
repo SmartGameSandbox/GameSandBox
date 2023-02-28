@@ -25,7 +25,8 @@ const styles = {
         bgcolor: "lightseagreen",
         width: 200,
         ml: 6,
-        mb: 2
+        mb: 2,
+        fontSize: "1.5em"
     },
     errorMessageStyle: {
         color: "red",

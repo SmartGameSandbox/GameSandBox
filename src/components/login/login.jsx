@@ -5,6 +5,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
 import { ReactSession } from "react-client-session";
+import {SMARTButton} from '../button/button';
 ReactSession.setStoreType("localStorage");
 
 const Login = () => {
@@ -81,14 +82,16 @@ const Login = () => {
         <div>
           <p style={styles.errorMessageStyle}>{errorMessage}</p>
           <br />
-          <Button
+          <SMARTButton
+            theme="secondary"
+            size='large'
             variant="contained"
             disabled={usernameInputText === "" || passwordInputText === ""}
             sx={styles.signInButtonStyle}
             onClick={handleSubmit}
           >
             Sign in
-          </Button>
+          </SMARTButton>
         </div>
 
         <div>

@@ -4,6 +4,7 @@ import styles from './roomStyle';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import {SMARTButton} from '../button/button';
 
 const JoinRoom = () => {
     const [roomIDInputText, setRoomIDInputText] = React.useState('');
@@ -64,7 +65,7 @@ const JoinRoom = () => {
                         size="large"
                     />
                 </div>
-                <Button variant="contained" sx={{bgcolor: 'lightseagreen'}} onClick={() => { joinRoom(); }}>Join Room</Button>
+                <SMARTButton theme='secondary' size='large' variant="contained" sx={{bgcolor: 'lightseagreen'}} onClick={() => { joinRoom(); }}>Join Room</SMARTButton>
             </Box>
         </>
     );

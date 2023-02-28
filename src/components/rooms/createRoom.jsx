@@ -3,8 +3,10 @@ import axios from 'axios';
 import styles from './roomStyle';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+// import Button from '@mui/material/Button';
 import FileBase64 from 'react-file-base64';
+// import buttonStyles from '../button/button';
+import {SMARTButton} from '../button/button';
 const CreateRoom = () => {
   const [item, setItem] = React.useState({ imageUrl: '' });
   const [roomNameInputText, setRoomNameInputText] = React.useState('Card Game Sandbox');
@@ -71,7 +73,7 @@ const CreateRoom = () => {
           />
         </div>
         <p style={styles.createRoomErrorStyle}>{errorMsg}</p>
-        <Button variant="contained" sx={styles.createRoomButtonStyle} onClick={() => { createRoom(); }}>Create Room</Button>
+        <SMARTButton theme='secondary' size='large' variant="contained" sx={styles.createRoomButtonStyle} onClick={() => { createRoom(); }}>Create Room</SMARTButton>
       </Box>
     </>
   );

@@ -3,6 +3,7 @@ import styles from "./registerStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import {SMARTButton} from '../button/button';
 import axios from 'axios';
 
 const Register = () => {
@@ -117,14 +118,16 @@ const Register = () => {
           </div>
           <p style={styles.errorMessageStyle}>{errorMessage}</p>
           <div sx={styles.forgotPasswordStyle}>
-            <Button
+            <SMARTButton
+              size='large'
+              theme='secondary'
               variant="contained"
               sx={styles.signInButtonStyle}
               onClick={handleSubmit}
               disabled={usernameInputText === "" || emailInputText === "" || passwordInputText === "" || confirmPasswordInputText === "" || passwordInputText !== confirmPasswordInputText}
             >
               Submit
-            </Button>
+            </SMARTButton>
           </div>
       </Box>
     </>

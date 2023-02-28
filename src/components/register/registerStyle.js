@@ -18,9 +18,9 @@ const styles = {
     },
     signInButtonStyle: {
         mt: 2,
-        ml: 29,
+        ml: 24,
         bgcolor: "lightseagreen",
-
+        fontSize: '1.5em'
     },
     errorMessageStyle: {
         color: "red",

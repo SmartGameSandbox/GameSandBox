@@ -14,7 +14,9 @@ const styles = {
         borderRadius: 10,
         mt: 10,
         pt: 3,
-        pl: 5
+        pl: 5,
+
+        // backgroundColor: Constants.COLOR_PRIMARY
     },
     board: {
         width: "800px",
@@ -25,7 +27,6 @@ const styles = {
         marginTop: `${0.5 * (Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT) - 200}px`,
     },
     createRoomButtonStyle: {
-        bgcolor: 'lightseagreen',
         mt: "20px",
     },
     stageWrapper: {
