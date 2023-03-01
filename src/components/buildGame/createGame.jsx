@@ -5,7 +5,7 @@ const BuildGame = () => {
     return (
   
         <div className={classes.input}>
-            <h1>Create Game</h1>
+            <h1>Build Game</h1>
             <form>
                 <label >Create Game</label>
                 <input

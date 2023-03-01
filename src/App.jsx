@@ -6,7 +6,7 @@ import Room from "./components/rooms/room";
 import JoinRoom from "./components/rooms/joinRoom";
 import Login from "./components/login/login";
 import Register from "./components/register/register";
-import Test from "./components/test";
+import BuildGamePage from "./components/buildGame/buildGamePage";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -18,7 +18,6 @@ import AddIcon from "@mui/icons-material/Add";
 import CycloneIcon from "@mui/icons-material/Cyclone";
 import FaceIcon from "@mui/icons-material/Face";
 import { ReactSession } from "react-client-session";
-// import { Modal } from "@mui/material";
 ReactSession.setStoreType("localStorage");
 
 const App = () => {
@@ -100,8 +99,7 @@ const App = () => {
           <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/newaccount" element={<Register />} />
-          
-          <Route path="/testing" element={<Test />} />
+          <Route path="/buildgame" element={<BuildGamePage />} />
         </Routes>
       </BrowserRouter>
     </>
