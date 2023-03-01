@@ -9,9 +9,9 @@ import $ from "jquery";
 let open = true;
 
 const hideSidebar = () => {
-  $("#profile").fadeToggle(500);
-  $("#settings").fadeToggle(500);
-  $("#logout").fadeToggle(500);
+  $("#profile").fadeToggle(300);
+  $("#settings").fadeToggle(300);
+  $("#logout").fadeToggle(300);
 
   if (open) {
     $("#close-arrow").css({

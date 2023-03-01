@@ -46,7 +46,7 @@ const App = () => {
     <>
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static" sx={{ bgcolor: "lightseagreen" }}>
-          {/* <Sidebar></Sidebar> */}
+          <Sidebar></Sidebar>
           {/* <Toolbar>
             <IconButton
               size="large"
