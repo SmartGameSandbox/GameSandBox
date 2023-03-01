@@ -7,6 +7,7 @@ import axios from "axios";
 import { ReactSession } from "react-client-session";
 import {SMARTButton, SMARTIconButton} from '../button/button';
 import CasinoIcon from '@mui/icons-material/Casino';
+import logo from "../icons/Group_89.png";
 ReactSession.setStoreType("localStorage");
 
 const Login = () => {
@@ -46,60 +47,64 @@ const Login = () => {
 
   return (
     <>
-      <Box
-        sx={styles.roomBoxStyle}
-        id="login-container"
-        component="form"
-        autoComplete="off"
-      >
-        <h1>Login to your account</h1>
-        <h4>Hey, good to see you again!</h4>
-        <div>
-          <TextField
-            id="username-input"
-            sx={styles.textFieldStyle}
-            placeholder="Please enter your username"
-            value={usernameInputText}
-            onChange={handleUsernameTextInputChange}
-            className="text-field"
-            required
-            label="Username"
-            size="large"
-          />
-          <br />
-          <TextField
-            id="password-input"
-            sx={styles.textFieldStyle}
-            placeholder="Please enter your password"
-            value={passwordInputText}
-            onChange={handlePasswordTextInputChange}
-            className="text-field"
-            required
-            label="Password"
-            type={"password"}
-            size="large"
-          />
-        </div>
-        <div>
-          <p style={styles.errorMessageStyle}>{errorMessage}</p>
-          <br />
-          <SMARTButton
-            theme="primary"
-            size='large'
-            variant="contained"
-            disabled={usernameInputText === "" || passwordInputText === ""}
-            sx={styles.signInButtonStyle}
-            onClick={handleSubmit}
+      <div id="main" style={styles.main}>
+        <div id="left" style={styles.left}>
+          <Box
+            sx={styles.roomBoxStyle}
+            id="login-container"
+            component="form"
+            autoComplete="off"
           >
-            Sign in
-          </SMARTButton>
+            <h1>Login</h1>
+            <div>
+              <TextField
+                id="username-input"
+                sx={styles.textFieldStyle}
+                placeholder="Please enter your username"
+                value={usernameInputText}
+                onChange={handleUsernameTextInputChange}
+                className="text-field"
+                required
+                label="Username"
+                size="large"
+              />
+              <br />
+              <TextField
+                id="password-input"
+                sx={styles.textFieldStyle}
+                placeholder="Please enter your password"
+                value={passwordInputText}
+                onChange={handlePasswordTextInputChange}
+                className="text-field"
+                required
+                label="Password"
+                type={"password"}
+                size="large"
+              />
+            </div>
+            <div>
+              <p style={styles.errorMessageStyle}>{errorMessage}</p>
+              <div>
+                <span> Don't have an account?</span>
+                <Button href="/newaccount">Sign up</Button>
+              </div>
+              <SMARTButton
+                theme="secondary"
+                size="large"
+                variant="contained"
+                disabled={usernameInputText === "" || passwordInputText === ""}
+                sx={styles.signInButtonStyle}
+                onClick={handleSubmit}
+              >
+                Sign in
+              </SMARTButton>
+            </div>
+          </Box>
         </div>
-
-        <div>
-          <span> Not registered yet?</span>
-          <Button href="/newaccount">Create an Account</Button>
+        <div id="right" style={styles.right}>
+          <img src={logo} style={{width: "200px"}}/>
         </div>
-      </Box>
+      </div>
     </>
   );
 };

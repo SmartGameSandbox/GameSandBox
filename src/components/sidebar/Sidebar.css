@@ -1,4 +1,6 @@
 .navbar {
+    font-family: Nunito;
+    font-weight: bold;
     color: #fff;
     display: grid;
     grid-template-columns: 3.5rem auto;
