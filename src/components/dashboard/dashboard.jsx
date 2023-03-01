@@ -6,15 +6,17 @@ import styles from './dashboardStyle';
 
 const Dashboard = () => {
     return (
+        <div style={styles.main}>
             <div style={styles.btnGroup}>
-                <div>
+                <div style={styles.joinRoom}>
                     <SMARTButton theme="secondary" variant="contained" size="large">Join Room</SMARTButton>
                     <TextField id="roomlink" variant="filled" label="Enter link"/>
                 </div>
-                <SMARTButton theme="primary" variant="contained" size="large">Host Room</SMARTButton>
-                <SMARTButton theme="primary" variant="contained" size="large">Build Room</SMARTButton>
-                <SMARTButton theme="primary" variant="contained" size="large">My Games</SMARTButton>
+                <SMARTButton sx={styles.hostRoom} theme="primary" variant="contained" size="large">Host Room</SMARTButton>
+                <SMARTButton sx={styles.buildRoom} theme="primary" variant="contained" size="large">Build Games</SMARTButton>
+                <SMARTButton sx={styles.myGames} theme="primary" variant="contained" size="large">My Games</SMARTButton>
             </div>
+        </div>
     )
 }
 
