@@ -8,39 +8,43 @@ import $ from "jquery";
 
 let open = true;
 
-const hideSidebar = () => {
-  $("#profile").fadeToggle(300);
-  $("#settings").fadeToggle(300);
-  $("#logout").fadeToggle(300);
-
+const hideSidebar = () => {  
   if (open) {
-    $("#close-arrow").css({
-      animation: "rotation 1s forwards",
-    });
-
+    $("#profile").slideToggle();
+    $("#settings").slideToggle();
+    $("#logout").slideToggle();
     setTimeout(() => {
-      $("#options").css({
-        display: "none",
+      $("#close-arrow").css({
+        animation: "rotation 1s forwards",
       });
-    }, 1000);
+      setTimeout(() => {
+        $("#options").css({
+          display: "none",
+        });
+      }, 1000);
 
-    $(".navbar").css({
-      animation: "closingColumns 1s forwards",
-    });
-    open = false;
+      $(".navbar").css({
+        animation: "closingColumns 1s forwards",
+      });
+      open = false;
+    }, 300);
   } else {
     $("#close-arrow").css({
       animation: "rotationBackwards 1s forwards",
     });
-
     $("#options").css({
       display: "grid",
     });
-
     $(".navbar").css({
       animation: "closingColumnsBackwards 1s forwards",
     });
     open = true;
+
+    setTimeout(() => {
+      $("#profile").slideToggle();
+      $("#settings").slideToggle();
+      $("#logout").slideToggle();
+    }, 800)
   }
 }
 
