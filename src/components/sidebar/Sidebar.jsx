@@ -1,14 +1,53 @@
 import React from "react";
 import "./Sidebar.css";
-import profileIcon from "/Users/abdullahhanani/Desktop/GameSandBox/public/assets/images/icons/account_circle_FILL0_wght400_GRAD0_opsz48.png";
-import settingsIcon from "/Users/abdullahhanani/Desktop/GameSandBox/public/assets/images/icons/settings_FILL0_wght400_GRAD0_opsz48.png";
-import logoutIcon from "/Users/abdullahhanani/Desktop/GameSandBox/public/assets/images/icons/power_settings_new_FILL0_wght400_GRAD0_opsz48.png";
-import arrowIcon from "/Users/abdullahhanani/Desktop/GameSandBox/public/assets/images/icons/arrow_forward_ios_FILL0_wght400_GRAD0_opsz48.png";
+import profileIcon from "../icons/account_circle_FILL0_wght400_GRAD0_opsz48.png";
+import settingsIcon from "../icons/settings_FILL0_wght400_GRAD0_opsz48.png";
+import logoutIcon from "../icons/power_settings_new_FILL0_wght400_GRAD0_opsz48.png";
+import arrowIcon from "../icons/arrow_forward_ios_FILL0_wght400_GRAD0_opsz48.png";
+import $ from "jquery";
+
+let open = true;
+
+const hideSidebar = () => {
+  $("#profile").fadeToggle(500);
+  $("#settings").fadeToggle(500);
+  $("#logout").fadeToggle(500);
+
+  if (open) {
+    $("#close-arrow").css({
+      animation: "rotation 1s forwards",
+    });
+
+    setTimeout(() => {
+      $("#options").css({
+        display: "none",
+      });
+    }, 1000);
+
+    $(".navbar").css({
+      animation: "closingColumns 1s forwards",
+    });
+    open = false;
+  } else {
+    $("#close-arrow").css({
+      animation: "rotationBackwards 1s forwards",
+    });
+
+    $("#options").css({
+      display: "grid",
+    });
+
+    $(".navbar").css({
+      animation: "closingColumnsBackwards 1s forwards",
+    });
+    open = true;
+  }
+}
 
 function Sidebar() {
   return (
     <nav className="navbar">
-      <div id="close-open">
+      <div id="close-open" onClick={hideSidebar}>
         <img id="close-arrow" src={arrowIcon} alt="Close" />
       </div>
       <div id="options">

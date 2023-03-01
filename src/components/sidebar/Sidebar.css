@@ -61,3 +61,42 @@ p {
     margin: auto auto auto 10%;
 }
 
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(180deg);
+    }
+}
+
+@keyframes rotationBackwards {
+    from {
+        transform: rotate(180deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes closingColumns {
+    from {
+        width: 40vh;
+    }
+
+    to {
+        width: 3.5rem;
+    }
+}
+
+@keyframes closingColumnsBackwards {
+    from {
+        width: 3.5rem;
+    }
+
+    to {
+        width: 40vh;
+    }
+}

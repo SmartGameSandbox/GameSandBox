@@ -1,5 +1,6 @@
 import {Button, IconButton} from '@mui/material';
 import buttonThemes from './buttonThemes';
+import React from "react";
 
 // Styles specific to the SMART buttons 
 const buttonStyles = {

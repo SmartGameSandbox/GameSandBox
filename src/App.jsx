@@ -17,6 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CycloneIcon from "@mui/icons-material/Cyclone";
 import FaceIcon from "@mui/icons-material/Face";
 import { ReactSession } from "react-client-session";
+import Sidebar from "./components/sidebar/Sidebar";
 ReactSession.setStoreType("localStorage");
 
 const App = () => {
@@ -45,6 +46,7 @@ const App = () => {
     <>
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static" sx={{ bgcolor: "lightseagreen" }}>
+          <Sidebar></Sidebar>
           <Toolbar>
             <IconButton
               size="large"
