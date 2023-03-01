@@ -1,0 +1,22 @@
+.tb-container {
+    border-radius: 1%;
+    padding: 10px;
+    align-items: center;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.bt-IconBtnContainer {
+    margin: 10px;
+}
+
+.plus-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.plus-container .card {
+    flex: 0 0 auto;
+} 

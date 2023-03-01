@@ -6,6 +6,7 @@ import Room from "./components/rooms/room";
 import JoinRoom from "./components/rooms/joinRoom";
 import Login from "./components/login/login";
 import Register from "./components/register/register";
+import BuildGamePage from "./components/buildGame/buildGamePage";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -100,6 +101,7 @@ const App = () => {
           <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/newaccount" element={<Register />} />
+          <Route path="/buildgame" element={<BuildGamePage />} />
         </Routes>
       </BrowserRouter>
     </>
