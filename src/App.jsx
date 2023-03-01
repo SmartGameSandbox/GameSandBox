@@ -17,6 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CycloneIcon from "@mui/icons-material/Cyclone";
 import FaceIcon from "@mui/icons-material/Face";
 import { ReactSession } from "react-client-session";
+import Dashboard from './components/dashboard/dashboard';
 ReactSession.setStoreType("localStorage");
 
 const App = () => {
@@ -84,9 +85,13 @@ const App = () => {
         <Routes>
           <Route path="/" element={
             isAuthed()
-              ? <Navigate to='/createroom' />
+              ? <Navigate to='/dashboard' />
               : <Navigate to='/login' />
           } />
+          <Route 
+            path="/dashboard"
+            element={isAuthed() ? <Dashboard /> : <Navigate to="/login" />}
+          />
           <Route
             path="/createroom"
             element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
