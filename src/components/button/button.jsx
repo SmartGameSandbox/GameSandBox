@@ -16,6 +16,10 @@ const buttonStyles = {
 
         '&:hover': {
             backgroundColor: "#DBDBDB"
+        },
+        '&:disabled': {
+            backgroundColor: '#f0f0f0',
+            opacity: 0.8
         }
     },
     smartIconBtn: {
