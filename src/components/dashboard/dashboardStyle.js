@@ -24,6 +24,12 @@ const styles = {
         gridColumn: "1 / span 2",
         gridRow: "1 / span 1"
     },
+    joinBtn: {
+
+    },
+    linkField: {
+        borderTopRightRadius: "0px"
+    },
     hostRoom: {
         gridColumn: "1 / span 1",
         gridRow: "2 / span 2",
