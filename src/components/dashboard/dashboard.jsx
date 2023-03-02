@@ -10,7 +10,7 @@ const Dashboard = () => {
             <div style={styles.btnGroup}>
                 <div style={styles.joinRoom}>
                     <SMARTButton theme="secondary" variant="contained" size="large" sx={styles.joinBtn}>Join Room</SMARTButton>
-                    <TextField id="roomlink" variant="filled" label="Enter link" sx={styles.linkField}/>
+                    <TextField id="roomlink" variant="filled" label="Enter link" sx={styles.linkField} fullwidth InputProps={{ disableUnderline: true }}/>
                 </div>
                 <SMARTButton sx={styles.hostRoom} theme="primary" variant="contained" size="large">Host Room</SMARTButton>
                 <SMARTButton sx={styles.buildRoom} theme="primary" variant="contained" size="large">Build Games</SMARTButton>
