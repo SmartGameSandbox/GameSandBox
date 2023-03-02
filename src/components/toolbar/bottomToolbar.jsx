@@ -5,13 +5,15 @@ import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../button/button";
 import { FaChessPawn, FaPlus } from "react-icons/fa";
 import Modal from "../modal/modal";
-
+import BuildGameForm from '../buildGame/buildGameForm'
+import ImageUploadForm from '../buildGame/imageUploadForm'
 import "./bottomToolbar.css";
 
 function BottomToolbar() {
   const [show, setShow] = useState(false);
-
   const [showModal2, setShowModal2] = React.useState(false);
+
+  const [showModal3, setShowModal3] = React.useState(false);
 
   function handleSave() {
     console.log("Save");
@@ -40,6 +42,18 @@ function BottomToolbar() {
               size="large"
               variant="contained"
               onClick={() => setShow(true)}
+              style={{
+                marginLeft: "20px",
+              }}
+            >
+              <FaChessPawn />
+            </SMARTIconButton>
+
+            <SMARTIconButton
+              theme="secondary"
+              size="large"
+              variant="contained"
+              onClick={() => setShowModal3(true)}
               style={{
                 marginLeft: "20px",
               }}
@@ -89,22 +103,24 @@ function BottomToolbar() {
         </div>
 
         <Modal
-          title="Nada"
+          title="Upload Card Deck"
           onClose={() => setShowModal2(false)}
           show={showModal2}
         >
-          <p>This is modal body</p>
-
-          <SMARTButton
-            theme="secondary"
-            size="large"
-            variant="contained"
-            onClick={() => setShowModal2(false)}
-          >
-            Create Deck
-          </SMARTButton>
-
+          <ImageUploadForm closePopup={() => setShowModal2(false)}/>
         </Modal>
+      </Modal>
+
+      <Modal
+        title="Build Game"
+        onClose={() => setShowModal3(false)}
+        show={showModal3}
+        style={{
+          height: "500px",
+          width: "700px",
+        }}
+      >
+        <BuildGameForm closePopup={() => setShowModal3(false)}/>
       </Modal>
     </>
   );
