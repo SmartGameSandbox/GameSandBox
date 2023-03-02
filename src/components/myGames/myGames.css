@@ -1,0 +1,35 @@
+#my-page-body{
+    margin-left: 5%;
+    margin-right: 5%;
+}
+.mygameslistitem{
+    /* height: 20%; */
+    width: 80%;
+    /* margin-left: 10%; */
+    /* margin-top:1em; */
+    background-color:#163B6E;
+    /* color: #FDF551; */
+    /* font-size: 2em; */
+    /* border: none; */
+}
+
+#my-games-list{
+    /* width: 100% */
+}
+#logo{
+    margin-left : 50%
+}
+#title{
+    font: 30px
+}
+#my-games-more-games{
+    height: 20%;
+    width: 80%;
+    margin-left: 10%;
+    margin-top:1em;
+    background-color:#163B6E;
+    color: #FDF551;
+    font-size: 2em;
+    text-align: right;
+    border: none
+}
