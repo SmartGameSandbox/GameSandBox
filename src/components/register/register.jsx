@@ -123,7 +123,7 @@ const Register = () => {
             <div sx={styles.forgotPasswordStyle}>
               <div>
                 <span> Have an account?</span>
-                <Button href="/newaccount">Login</Button> {/** change the route */}
+                <Button href="/login">Login</Button> {/** change the route */}
               </div>
               <SMARTButton
                 size="large"
