@@ -1,23 +1,15 @@
 import React from 'react';
 import {SMARTButton} from '../button/button';
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { blue, yellow, red } from '@mui/material/colors';
 import logo from "../icons/Group_89.png";
 import "./myGames.css";
+import Themes from "./myGamesTheme"
 
-const theme = createTheme({
-    palette: {
-      primary: blue,
-      secondary: yellow
-    }
-  });
-
-const games_list = ["Game 1","Game 2","Game 3"];
+const games_list = ["Settlers of Catan","Risk","Small World","Mice and Mystics","Ascension","Unstable Unicorns","Cards Against Humanity"];
 const MyGames = () => {
 
     const listItems = games_list.map((games) =>
         <SMARTButton
-        className = "mygameslistitem"
+        sx = {Themes.item}
         >
             {games}
         </SMARTButton>
@@ -25,20 +17,32 @@ const MyGames = () => {
 
     return(
         <div id = "my-page-body"> 
-            <div id = "logo">
-                <img src={logo}/>
-            </div>       
+            <div id="right" style={Themes.logo}>
+                <img src={logo} style={{width: "200px"}}/>
+            </div> 
+            <div id="my-games-title">
+                    My Games
+            </div>   
             <div id = "my-games-list">
-                <ThemeProvider theme={theme}>
+                
                     {listItems}
-                </ThemeProvider>
                 <SMARTButton
                     id = "my-games-more-games"
                     variant="contained"
+                    sx={Themes.item}
                 >
                     ... More Games
                 </SMARTButton>
             </div>
+            <div id = "my-games-create-new-game-box">
+                <SMARTButton
+                    id = "my-games-more-games"
+                    variant="contained"
+                    sx={Themes.create}
+                >
+                    Create New Game
+                </SMARTButton></div>
+
         </div>
     )
 }
