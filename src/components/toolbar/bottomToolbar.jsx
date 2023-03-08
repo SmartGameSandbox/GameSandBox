@@ -5,8 +5,8 @@ import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../button/button";
 import { FaChessPawn, FaPlus } from "react-icons/fa";
 import Modal from "../modal/modal";
-import BuildGameForm from '../buildGame/buildGameForm'
-import ImageUploadForm from '../buildGame/imageUploadForm'
+import BuildGameForm from "../buildGame/buildGameForm";
+import ImageUploadForm from "../buildGame/imageUploadForm";
 import "./bottomToolbar.css";
 
 function BottomToolbar() {
@@ -25,7 +25,7 @@ function BottomToolbar() {
     <>
       <AppBar
         position="static"
-        style={{ backgroundColor: "#163B6E", borderRadius: "5%" }}
+        style={{ backgroundColor: "#163B6E", borderRadius: "20px" }}
       >
         <div className="tb-container">
           <div className="bt-IconBtnContainer">
@@ -107,7 +107,7 @@ function BottomToolbar() {
           onClose={() => setShowModal2(false)}
           show={showModal2}
         >
-          <ImageUploadForm closePopup={() => setShowModal2(false)}/>
+          <ImageUploadForm closePopup={() => setShowModal2(false)} />
         </Modal>
       </Modal>
 
@@ -120,7 +120,7 @@ function BottomToolbar() {
           width: "700px",
         }}
       >
-        <BuildGameForm closePopup={() => setShowModal3(false)}/>
+        <BuildGameForm closePopup={() => setShowModal3(false)} />
       </Modal>
     </>
   );
