@@ -1,8 +1,9 @@
 import React from "react";
-import { Stage, Layer, Ellipse } from "react-konva";
+import { Stage, Layer, Rect } from "react-konva";
 import { FaArrowLeft, FaEdit } from "react-icons/fa";
 import "./buildGamePage.css";
 import BottomToolbar from "../toolbar/bottomToolbar";
+import Sidebar from "../sidebar/Sidebar";
 
 
 import { SMARTButton } from "../button/button";
@@ -19,6 +20,7 @@ const BuildGamePage = () => {
   };
   return (
     <>
+      <Sidebar></Sidebar>
       <div className="bgame-container"></div>
       <div className="bgame-header">
         <SMARTButton
@@ -26,8 +28,8 @@ const BuildGamePage = () => {
           onClick={goBack}
           style={{
             height: "2em",
-            background:"transparent",
-            border: "none"
+            background: "transparent",
+            border: "none",
           }}
         >
           <FaArrowLeft
@@ -45,8 +47,8 @@ const BuildGamePage = () => {
           style={{
             height: "2em",
             marginLeft: "2%",
-            background:"transparent",
-            border: "none"
+            background: "transparent",
+            border: "none",
           }}
         >
           <FaEdit
@@ -58,20 +60,23 @@ const BuildGamePage = () => {
       </div>
 
       <div className="bgame-tabletop">
-        <Stage width={window.innerWidth} height={window.innerHeight*0.64}>
+        <Stage width={window.innerWidth} height={window.innerHeight * 0.64}>
           <Layer>
-            <Ellipse
-            x = {window.innerWidth/ 2}
-            y = {window.innerHeight/ 3}
-            radiusX = {window.innerWidth/ 3}
-            radiusY = {window.innerHeight/ 4}
-            fill = '#FDF551'
+            <Rect
+              x={window.innerWidth / 5}
+              y={window.innerHeight / 20}
+              width={window.innerWidth / 1.7}
+              height={window.innerHeight / 2}
+              cornerRadius={200}
+              stroke="#163B6E"
+              strokeWidth={5}
+              fill="#EBEBEB"
             />
           </Layer>
         </Stage>
       </div>
       <div className="bgame-toolbar">
-      <BottomToolbar />
+        <BottomToolbar />
       </div>
     </>
   );

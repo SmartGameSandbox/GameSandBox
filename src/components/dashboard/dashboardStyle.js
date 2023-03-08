@@ -57,7 +57,7 @@ const styles = {
         gridRow: "2 / span 2",
         width: "100%", height: "100%",
 
-        fontSize: '8em'
+        fontSize: '6em'
     },
     buildRoom: {
         gridColumn: "2 / span 1",
@@ -65,7 +65,7 @@ const styles = {
         width: "100%", height: "100%",
         justifySelf: 'left',
 
-        fontSize: '6em'
+        fontSize: '4em'
     },
     myGames: {
         gridColumn: "2 / span 1",
@@ -73,7 +73,7 @@ const styles = {
         width: "100%", height: "100%",
         justifySelf: 'left',
 
-        fontSize: '6em'
+        fontSize: '3em'
     }
 }
 
