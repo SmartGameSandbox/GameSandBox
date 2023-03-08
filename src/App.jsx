@@ -5,6 +5,7 @@ import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
 import JoinRoom from "./components/rooms/joinRoom";
 import Login from "./components/login/login";
+import Logout from "./components/logout/logout";
 import Register from "./components/register/register";
 import BuildGamePage from "./components/buildGame/buildGamePage";
 
@@ -40,8 +41,13 @@ const App = () => {
   };
 
   const logout = () => {
-    localStorage.clear();
-    window.location.href = "/login";
+    console.log("?")
+    try {
+      localStorage.clear();
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   return (
@@ -107,6 +113,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/newaccount" element={<Register />} />
           <Route path="/buildgame" element={<BuildGamePage />} />
+          <Route path="/logout" element={<Logout />} />
         </Routes>
       </BrowserRouter>
     </>
