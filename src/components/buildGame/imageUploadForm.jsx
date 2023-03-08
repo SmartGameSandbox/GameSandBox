@@ -1,10 +1,17 @@
 import "./imageUploadForm.css";
 
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SMARTButton } from "../button/button";
 
-const ImageUploadForm = ({ closePopup }) => {
+const ImageUploadForm = ( props ) => {
+
+  let closePopup = props.closePopup;
+  let images = props.images;
+  let onImageChange = props.onImageChange;
+  let imageURLs = props.imageURLs;
+  let setImageURLs = props.setImageURLs;
+
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
 
@@ -30,6 +37,18 @@ const ImageUploadForm = ({ closePopup }) => {
   return (
     <div className="bg-form">
       <form onSubmit={handleSubmit}>
+
+      <div className="row">
+          <label>Upload Image Grid (front page):</label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            name="numAcross"
+            onChange={onImageChange}
+          />
+        </div>
+
         <div className="row">
           <label>Number of Cards Across:</label>
           <input

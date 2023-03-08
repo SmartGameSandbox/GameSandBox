@@ -1,12 +1,12 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../button/button";
 import { FaChessPawn, FaPlus } from "react-icons/fa";
 import Modal from "../modal/modal";
-import BuildGameForm from '../buildGame/buildGameForm'
-import ImageUploadForm from '../buildGame/imageUploadForm'
+import BuildGameForm from "../buildGame/buildGameForm";
+import ImageUploadForm from "../buildGame/imageUploadForm";
 import "./bottomToolbar.css";
 
 function BottomToolbar() {
@@ -15,11 +15,23 @@ function BottomToolbar() {
 
   const [showModal3, setShowModal3] = React.useState(false);
 
+  const [images, setImages] = useState([]);
+  const [imageURLs, setImageURLs] = useState([]);
+
+  useEffect(() => {
+    if (images.length < 1) return;
+    const newImageURLs = [];
+    images.forEach((image) => newImageURLs.push(URL.createObjectURL(image)));
+    setImageURLs(newImageURLs);
+  }, [images]);
+
+  const onImageChange = (e) => {
+    setImages([...e.target.files]);
+  };
+
   function handleSave() {
     console.log("Save");
   }
-
-  let displayImagegrids = [];
 
   return (
     <>
@@ -86,28 +98,56 @@ function BottomToolbar() {
           width: "700px",
         }}
       >
-        <div className="plus-container">
-          <SMARTIconButton
-            className="card"
-            size="large"
-            variant="contained"
-            onClick={() => setShowModal2(true)}
-            style={{
-              height: "160px",
-              width: "120px",
-              background: "#C7C7C7",
-            }}
-          >
-            <FaPlus />
-          </SMARTIconButton>
-        </div>
+        <div className="wrapper">
+          <div className="upload-container">
+            <div className="plus-container">
+              <SMARTIconButton
+                className="card"
+                size="large"
+                variant="contained"
+                onClick={() => setShowModal2(true)}
+                style={{
+                  height: "160px",
+                  width: "120px",
+                  background: "#C7C7C7",
+                }}
+              >
+                <FaPlus />
+              </SMARTIconButton>
+            </div>
+
+            <div className="image-preview">
+              {imageURLs.map((imageSrc, key) => (
+                <img key={key} src={imageSrc} />
+              ))}
+            </div>
+          </div>
+
+          <SMARTButton
+              theme="secondary"
+              size="large"
+              variant="contained"
+              onClick={handleSave}
+              style={{
+                marginTop: "15px",
+              }}
+            >
+              SAVE
+            </SMARTButton>
+            </div>
 
         <Modal
           title="Upload Card Deck"
           onClose={() => setShowModal2(false)}
           show={showModal2}
         >
-          <ImageUploadForm closePopup={() => setShowModal2(false)}/>
+          <ImageUploadForm
+            closePopup={() => setShowModal2(false)}
+            images={images}
+            onImageChange={onImageChange}
+            imageURLs={imageURLs}
+            setImageURLs={setImageURLs}
+          />
         </Modal>
       </Modal>
 
@@ -120,7 +160,7 @@ function BottomToolbar() {
           width: "700px",
         }}
       >
-        <BuildGameForm closePopup={() => setShowModal3(false)}/>
+        <BuildGameForm closePopup={() => setShowModal3(false)} />
       </Modal>
     </>
   );

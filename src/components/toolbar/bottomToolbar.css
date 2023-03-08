@@ -7,8 +7,32 @@
     justify-content: space-between;
 }
 
+.wrapper {
+    text-align: center;
+}
+
 .bt-IconBtnContainer {
     margin: 10px;
+}
+
+.upload-container {
+    display: grid;
+    grid-template-columns: 0.5fr 1.5fr;
+}
+
+.image-preview {
+    display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.image-preview img {
+    flex: 0 0 auto;
+    margin-left: 10px;
+    border-radius: 10px;
+    height: 160px;
+    width: 120px;
+    /* background: "#C7C7C7", */
 }
 
 .plus-container {
