@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import {SMARTButton} from '../button/button';
 import axios from 'axios';
 import logo from "../icons/Group_89.png";
+import { ReactSession } from "react-client-session";
 
 const Register = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
@@ -46,7 +47,8 @@ const Register = () => {
       }).then((response) => {
         if (response.status === 200) {
           setErrorMessage("");
-          window.location.href = "/login";
+          ReactSession.set("username", response.data.user.username);
+          window.location.href = "/dashboard";
         } else {
           setErrorMessage(response.data.message);
         }
