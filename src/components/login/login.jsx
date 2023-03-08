@@ -27,7 +27,7 @@ const Login = () => {
     const url =
       process.env.NODE_ENV === "production"
         ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:5000";
+        : "http://localhost:8000";
     axios
       .post(`${url}/api/login`, {
         username: username,

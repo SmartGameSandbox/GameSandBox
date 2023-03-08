@@ -9,7 +9,7 @@ import * as Constants from '../../util/constants';
 import { ReactSession } from "react-client-session";
 ReactSession.setStoreType("localStorage");
 
-const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
+const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
 const socket = io(url, { transports: ['websocket'] });
 let roomID = null;
 let roomPassword = null;

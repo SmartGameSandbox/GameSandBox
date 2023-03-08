@@ -14,7 +14,7 @@ io = require("socket.io")(http, { cors: { origin: "*" } });
 //   io = require("socket.io")(http);
 // }
 const path = require("path");
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 const mongoose = require("mongoose");
 const { roomSchema, Room } = require("./schemas/room");
 const { cardSchema, Card } = require("./schemas/card");

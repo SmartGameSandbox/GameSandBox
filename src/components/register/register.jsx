@@ -38,7 +38,7 @@ const Register = () => {
     if (password !== confirmPw) {
       setErrorMessage("Passwords do not match");
     } else {
-      const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
+      const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
       axios.post(`${url}/api/register`, {
         username: username,
         email: email,
