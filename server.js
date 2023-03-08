@@ -18,6 +18,7 @@ const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 const { roomSchema, Room } = require("./schemas/room");
 const { cardSchema, Card } = require("./schemas/card");
+
 const idGenerator = require("./utils/id_generator");
 app.use(express.json());
 
@@ -204,6 +205,10 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+//Image Upload REST APIs
+
+
+
 http.listen(port, async (err) => {
   if (err) return console.loge(err);
   try {
@@ -215,3 +220,7 @@ http.listen(port, async (err) => {
   }
   console.log("Server running on port: ", port);
 });
+
+
+
+

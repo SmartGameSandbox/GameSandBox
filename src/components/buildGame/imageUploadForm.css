@@ -1,0 +1,73 @@
+
+.bg-form form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    width: 100%;
+    max-width: 650px;
+  }
+  
+  .bg-form label {
+    text-align: end;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .bg-form input {
+    border-radius: 10px;
+    border: none;
+    height: 34px;
+    width: 60px;
+    margin-left: 15px;
+    padding-left: 15px;
+    font: inherit;
+  }
+  
+  .bg-form input:focus {
+    outline: none;
+    border-color: #4f005f;
+  }
+
+  .btnContainer {
+    grid-column-start: 1;
+    grid-column-end: 3; 
+  }
+
+  .btnContainer .bg-createGameBtn {
+    width: 50%;
+    margin-left: 25%;
+  }
+
+  .checkbox-wrapper label span {
+    height: 30px;
+  }
+
+  .checkbox-wrapper input[type="checkbox"] {
+    /* removing default appearance */
+    -webkit-appearance: none;
+    appearance: none;
+    /* creating a custom design */
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 0.15em;
+    border: 0.15em solid #000;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input.checked {
+    background-color: transparent;
+    position: relative;
+  }
+
+  input.checked::before {
+    content: "\2714";
+    font-size: 1.5em;
+    color: black;
+    background: transparent;
+    position: absolute;
+    right: 1px;
+    top: -5px;
+  }
