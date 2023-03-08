@@ -186,7 +186,7 @@ app.post("/api/register", async (req, res) => {
     if (!result) {
       throw new Error("Error: User failed to be created");
     }
-    res.json({ "status": "success", "message": "User login successful" });
+    res.json({ "status": "success", "message": "User created", "user": newUser });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -199,7 +199,7 @@ app.post('/api/login', async (req, res) => {
     if (!user) {
       throw new Error("Invalid username or password");
     }
-    res.json({ "status": "success", "message": "User created", "user": user });
+    res.json({ "status": "success", "message": "User login successful", "user": user });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
