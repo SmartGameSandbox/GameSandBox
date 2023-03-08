@@ -27,7 +27,7 @@
     background-color: #E8EBF0;
     transition: all 0.3s ease-in-out;
     transform: translateY(-200px);
-    border-radius: 5%;
+    border-radius: 25px;
   }
   
   .modal.enter-done .modal-content {
@@ -54,6 +54,7 @@
   .modal-title {
     padding-left: 1em;
     font-size: 34px;
+    font-family: Nunito;
     font-weight: bold;
     color: #163B6E;
   }
@@ -64,7 +65,8 @@
   }
 
   .CloseModalBtnIcon {
-    height: fit-content;
+    height: 30px;
+    width: 30px;
     font-size: 24px;
     background-color: white;
     border-radius: 50%;
