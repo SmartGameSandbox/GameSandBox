@@ -11,9 +11,7 @@ const styles = {
     gridColumn: 1,
   },
   right: {
-    backgroundColor: "black",
     gridColumn: 2,
-    filter: "invert(100%)",
     size: "100%",
     margin: "auto"
   },

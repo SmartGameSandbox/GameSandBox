@@ -35,7 +35,7 @@
     cursor: pointer;
 }
 
-img {
+.navbar img {
     filter: invert(100%);
     width: 2.2em;
     margin: auto 0% auto auto;

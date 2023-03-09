@@ -8,16 +8,6 @@ import Login from "./components/login/login";
 import Logout from "./components/logout/logout";
 import Register from "./components/register/register";
 import BuildGamePage from "./components/buildGame/buildGamePage";
-
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import AddIcon from "@mui/icons-material/Add";
-import CycloneIcon from "@mui/icons-material/Cyclone";
-import FaceIcon from "@mui/icons-material/Face";
 import { ReactSession } from "react-client-session";
 import Dashboard from './components/dashboard/dashboard';
 ReactSession.setStoreType("localStorage");
@@ -39,55 +29,8 @@ const App = () => {
     }
   };
 
-  const logout = () => {
-    console.log("?")
-    try {
-      localStorage.clear();
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   return (
     <>
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static" sx={{ bgcolor: "lightseagreen" }}>
-          {/* <Toolbar>
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 2 }}
-            ></IconButton>
-
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Smart Game SandBox
-            </Typography>
-
-            {isAuthed() && (
-              <Button color="inherit" onClick={() => navigateCreateRoom()}>
-                <AddIcon />
-                &nbsp;Create Room
-              </Button>
-            )}
-            {isAuthed() && (
-              <Button color="inherit" onClick={() => navigateJoinRoom()}>
-                <CycloneIcon />
-                &nbsp;Join Room
-              </Button>
-            )}
-
-            {isAuthed() && (
-              <Button color="inherit" onClick={() => logout()}>
-                <FaceIcon />
-                &nbsp;Logout
-              </Button>
-            )}
-          </Toolbar> */}
-        </AppBar>
-      </Box>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={
