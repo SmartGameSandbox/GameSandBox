@@ -80,6 +80,19 @@ const Register = () => {
                 required
                 label="Username"
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
               <br />
               <TextField
@@ -93,6 +106,19 @@ const Register = () => {
                 label="Email Address"
                 type={"email"}
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
               <br />
               <TextField
@@ -106,6 +132,19 @@ const Register = () => {
                 label="Password"
                 type={"password"}
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
               <br />
               <TextField
@@ -119,6 +158,19 @@ const Register = () => {
                 label="Confirm Password"
                 type={"password"}
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
             </div>
             <p style={styles.errorMessageStyle}>{errorMessage}</p>

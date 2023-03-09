@@ -21,7 +21,7 @@ const styles = {
     mb: 2.0,
     mt: 1.5,
     width: 300,
-    backgroundColor: "white",
+    // backgroundColor: "white",
   },
   roomBoxStyle: {
     width: 300,

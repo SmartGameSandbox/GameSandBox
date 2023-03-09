@@ -67,6 +67,19 @@ const Login = () => {
                 required
                 label="Username"
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
               <br />
               <TextField
@@ -80,6 +93,19 @@ const Login = () => {
                 label="Password"
                 type={"password"}
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
             </div>
             <div>
@@ -102,7 +128,7 @@ const Login = () => {
           </Box>
         </div>
         <div id="right" style={styles.right}>
-          <img src={logo} style={{width: "200px"}}/>
+          <img src={logo} style={{ width: "200px" }} />
         </div>
       </div>
     </>

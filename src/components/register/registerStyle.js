@@ -19,14 +19,13 @@ const styles = {
     mb: 2.0,
     mt: 1.5,
     width: 300,
-    backgroundColor: "white",
   },
   loginBoxStyle: {
     width: 300,
     color: "white",
     fontFamily: "Nunito",
     m: "auto",
-    pt: "15%",
+    pt: "3%",
   },
   signInButtonStyle: {
     bgcolor: "lightseagreen",
