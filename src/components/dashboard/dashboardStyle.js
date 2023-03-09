@@ -1,8 +1,12 @@
 const styles = {
+    body: {
+        display: "flex",
+        flexDirection: 'column',
+        height: "100%",
+    },
     main: {
         width: "100%",
         height: "100%",
-        // backgroundColor: 'burlywood',
 
         display: 'flex',
         justifyContent: 'center',
@@ -10,7 +14,6 @@ const styles = {
     },
     btnGroup: {
         boxSizing: "border-box",
-        // backgroundColor: 'white',
         width: "80%",
         height: "80%",
         display: 'grid',

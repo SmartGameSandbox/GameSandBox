@@ -5,6 +5,7 @@ import styles from './dashboardStyle';
 import Sidebar from "../sidebar/Sidebar";
 import Modal from "../modal/modal";
 import BuildGameForm from "../buildGame/buildGameForm";
+import Header from "../header/header";
 import axios from 'axios';
 
 const Dashboard = () => {
@@ -32,71 +33,74 @@ const Dashboard = () => {
     }
     
     return (
-        <div style={styles.main}>
-            <Sidebar />
-            <div style={styles.btnGroup}>
-                <div style={styles.joinRoom}>
-                    <SMARTButton
-                        theme="secondary"
-                        variant="contained"
-                        size="large"
-                        sx={styles.joinBtn}
-                        onClick={() => {joinRoom();}}
-                    >
-                    Join Room
-                    </SMARTButton>
-                    <TextField
-                        id="roomlink"
-                        variant="filled"
-                        label="Enter link"
-                        sx={styles.linkField}
-                        fullwidth
-                        required
-                        InputProps={{ disableUnderline: true }}
-                        value={roomLink}
-                        onChange={handleRoomLinkTextInputChange}
-                    />
+        <div style={styles.body}>
+            <Header />
+            <div style={styles.main}>
+                <Sidebar />
+                <div style={styles.btnGroup}>
+                    <div style={styles.joinRoom}>
+                        <SMARTButton
+                            theme="secondary"
+                            variant="contained"
+                            size="large"
+                            sx={styles.joinBtn}
+                            onClick={() => {joinRoom();}}
+                        >
+                        Join Room
+                        </SMARTButton>
+                        <TextField
+                            id="roomlink"
+                            variant="filled"
+                            label="Enter link"
+                            sx={styles.linkField}
+                            fullwidth
+                            required
+                            InputProps={{ disableUnderline: true }}
+                            value={roomLink}
+                            onChange={handleRoomLinkTextInputChange}
+                        />
+                    </div>
+                <SMARTButton
+                    sx={styles.hostRoom}
+                    theme="primary"
+                    variant="contained"
+                    size="large"
+                >
+                    Host Room
+                </SMARTButton>
+                <SMARTButton
+                    sx={styles.buildRoom}
+                    theme="primary"
+                    variant="contained"
+                    size="large"
+                    onClick={() => setBuildGameModal(true)}
+                >
+                    Build Games
+                </SMARTButton>
+                <SMARTButton
+                    sx={styles.myGames}
+                    theme="primary"
+                    variant="contained"
+                    size="large"
+                    onClick={() => window.location.href = '/mygames'}
+                >
+                    My Games
+                </SMARTButton>
                 </div>
-            <SMARTButton
-                sx={styles.hostRoom}
-                theme="primary"
-                variant="contained"
-                size="large"
-            >
-                Host Room
-            </SMARTButton>
-            <SMARTButton
-                sx={styles.buildRoom}
-                theme="primary"
-                variant="contained"
-                size="large"
-                onClick={() => setBuildGameModal(true)}
-            >
-                Build Games
-            </SMARTButton>
-            <SMARTButton
-                sx={styles.myGames}
-                theme="primary"
-                variant="contained"
-                size="large"
-                onClick={() => window.location.href = '/mygames'}
-            >
-                My Games
-            </SMARTButton>
-            </div>
 
-            {/* Modals */}
-            <Modal
-                title="Build Game"
-                onClose={() => setBuildGameModal(false)}
-                show={showBuildGameModal}
-                style={{
-                height: "500px",
-                width: "700px",
-                }}
-            >
-                <BuildGameForm closePopup={() => setBuildGameModal(false)} />
-            </Modal>
+                {/* Modals */}
+                <Modal
+                    title="Build Game"
+                    onClose={() => setBuildGameModal(false)}
+                    show={showBuildGameModal}
+                    style={{
+                    height: "500px",
+                    width: "700px",
+                    }}
+                >
+                    <BuildGameForm closePopup={() => setBuildGameModal(false)} />
+                </Modal>
+            </div>
         </div>
     );
 }
