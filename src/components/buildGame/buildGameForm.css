@@ -1,17 +1,17 @@
+.modal-body {
+  padding: 0%;
+}
 
-.bg-form form {
+#build-game-from {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    align-items: center;
     grid-gap: 20px;
-    padding: 1rem;
-    width: 80%;
-    max-width: 650px;
+    padding: 0%;
   }
   
   .bg-form label {
     text-align: end;
-    font-size: 16px;
+    font-family: Nunito;
     font-weight: bold;
   }
   
@@ -21,7 +21,8 @@
     height: 34px;
     width: fit-content;
     padding-left: 15px;
-    font: inherit;
+    font-family: Nunito;
+    font-weight: bold;
   }
   
   .bg-form input:focus {
