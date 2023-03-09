@@ -5,9 +5,18 @@ import settingsIcon from "../icons/settings_FILL0_wght400_GRAD0_opsz48.png";
 import logoutIcon from "../icons/power_settings_new_FILL0_wght400_GRAD0_opsz48.png";
 import arrowIcon from "../icons/arrow_forward_ios_FILL0_wght400_GRAD0_opsz48.png";
 import $ from "jquery";
+import { Navigate } from "react-router-dom";
 
 let open = false;
 let firstTime = true;
+
+const logout = () => {
+  // React.useEffect(() => {
+  //   localStorage.clear();
+  // }, []);
+
+  return <Navigate to="/login" />;
+};
 
 const hideSidebar = () => {
   if (open) {
@@ -42,9 +51,9 @@ const hideSidebar = () => {
       <img src=${settingsIcon} alt="Settings" />
       <p>Settings</p>
     </div>
-    <div id="logout" >
+    <div id="logout" onclick="${logout}">
       <img src=${logoutIcon} alt="Logout" />
-      <p>Logout</p>
+      <a href="/logout">Logout</a>
     </div>`);
 
       $("#profile").css({
@@ -68,9 +77,15 @@ const hideSidebar = () => {
         alignItems: "center",
         pl: "5%",
       });
+      $("a").css({
+        margin: "auto auto auto 10%",
+        color: "white",
+        textDecoration: "none"
+      });
       $("p").css({
         margin: "auto auto auto 10%",
       });
+
       firstTime = false;
     }
 
@@ -88,6 +103,7 @@ const hideSidebar = () => {
       $("#profile").slideToggle();
       $("#settings").slideToggle();
       $("#logout").slideToggle();
+
       $("#profile").css({
         display: "grid",
       });
