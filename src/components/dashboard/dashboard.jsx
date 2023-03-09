@@ -53,7 +53,7 @@ const Dashboard = () => {
                             variant="filled"
                             label="Enter link"
                             sx={styles.linkField}
-                            fullwidth
+                            fullwidth="true"
                             required
                             InputProps={{ disableUnderline: true }}
                             value={roomLink}

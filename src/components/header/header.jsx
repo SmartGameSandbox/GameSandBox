@@ -7,7 +7,11 @@ const Header = () => {
         <Box sx={{ flexGrow: 1 }}>
             <AppBar position="static" sx={{boxShadow: "none", backgroundColor: "unset"}}>
             <div>
-                <img src={`${process.env.PUBLIC_URL}/assets/images/logo.png`} style={{width: "200px", margin: '1em'}}/>
+                <img 
+                    src={`${process.env.PUBLIC_URL}/assets/images/logo.png`} 
+                    style={{width: "200px", margin: '1em'}}
+                    onClick={() => {window.location.href="/dashboard"}}
+                />
             </div> 
             </AppBar>
         </Box>
