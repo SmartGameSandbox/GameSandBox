@@ -9,7 +9,8 @@ const Header = () => {
             <div>
                 <img 
                     src={`${process.env.PUBLIC_URL}/assets/images/logo.png`} 
-                    style={{width: "200px", marginLeft: '3em', marginTop: '3em'}}
+                    alt="BCIT SMART logo"
+                    style={{width: "200px", marginLeft: '3em', marginTop: '3em', cursor: 'pointer'}}
                     onClick={() => {window.location.href="/dashboard"}}
                 />
             </div> 
