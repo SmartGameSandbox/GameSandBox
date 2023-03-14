@@ -9,7 +9,7 @@ const Header = () => {
             <div>
                 <img 
                     src={`${process.env.PUBLIC_URL}/assets/images/logo.png`} 
-                    style={{width: "200px", margin: '1em'}}
+                    style={{width: "200px", marginLeft: '3em', marginTop: '3em'}}
                     onClick={() => {window.location.href="/dashboard"}}
                 />
             </div> 
