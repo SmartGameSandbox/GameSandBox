@@ -1,8 +1,11 @@
-require('dotenv').config()
+require("dotenv").config();
 const express = require("express");
 const app = express();
-const cors = require('cors');
+const cors = require("cors");
 var http = require("http").Server(app);
+const multer = require("multer");
+const fs = require('fs')
+const bodyParser = require('body-parser');
 
 var io;
 app.use(cors());
@@ -18,25 +21,40 @@ const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 const { roomSchema, Room } = require("./schemas/room");
 const { cardSchema, Card } = require("./schemas/card");
+const { gridSchema, Grid } = require("./schemas/grid");
 
 const idGenerator = require("./utils/id_generator");
 app.use(express.json());
 
-const ALLROOMSDATA = {};
-var cron = require('node-cron');
-cron.schedule('00 04 * * *', async () => {
-  // find room with id in ALLROOMSDATA index
-  const rooms = await Room.find({ id: { $in: Object.keys(ALLROOMSDATA) } });
-  for (const roomID in ALLROOMSDATA) {
-    const found = rooms.find(room => room.id === roomID);
-    if (!found) {
-      delete ALLROOMSDATA[roomID];
-    }
-  }
-}, {
-  scheduled: true,
-  timezone: "America/Vancouver"
+var storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname + "-" + Date.now());
+  },
 });
+var upload = multer({ storage: storage });
+
+const ALLROOMSDATA = {};
+var cron = require("node-cron");
+cron.schedule(
+  "00 04 * * *",
+  async () => {
+    // find room with id in ALLROOMSDATA index
+    const rooms = await Room.find({ id: { $in: Object.keys(ALLROOMSDATA) } });
+    for (const roomID in ALLROOMSDATA) {
+      const found = rooms.find((room) => room.id === roomID);
+      if (!found) {
+        delete ALLROOMSDATA[roomID];
+      }
+    }
+  },
+  {
+    scheduled: true,
+    timezone: "America/Vancouver",
+  }
+);
 
 // Web sockets
 io.on("connection", async (socket) => {
@@ -55,10 +73,12 @@ io.on("connection", async (socket) => {
         if (ALLROOMSDATA[roomID].hand[username] === undefined) {
           ALLROOMSDATA[roomID].hand[username] = [];
         }
-        io.to(socket.id).emit('tableReload', {
+        io.to(socket.id).emit("tableReload", {
           cards: ALLROOMSDATA[roomID].cards,
           deck: ALLROOMSDATA[roomID].deck,
-          hand: ALLROOMSDATA[roomID].hand[username] ? ALLROOMSDATA[roomID].hand[username] : []
+          hand: ALLROOMSDATA[roomID].hand[username]
+            ? ALLROOMSDATA[roomID].hand[username]
+            : [],
         });
         // add user to the user array here
         console.log(`User ${username} joined room ${roomID}`);
@@ -78,7 +98,7 @@ io.on("connection", async (socket) => {
         tableData: {
           cards: ALLROOMSDATA[roomID].cards,
           deck: ALLROOMSDATA[roomID].deck,
-        }
+        },
       });
     }
   });
@@ -147,7 +167,7 @@ app.post("/api/room", async (req, res) => {
       deck: allCards,
       hand: {},
       cards: [],
-    }
+    };
     const room = new Room(gameRoomData);
     const result = await room.save();
     if (!result) {
@@ -170,13 +190,14 @@ if (process.env.NODE_ENV === "production") {
 
 // Register
 const { User } = require("./schemas/user");
+const { constants } = require("buffer");
 
-// createAccount 
+// createAccount
 app.post("/api/register", async (req, res) => {
   const newUser = new User({
     username: req.body.username,
     email: req.body.email,
-    password: req.body.password
+    password: req.body.password,
   });
   try {
     if (await User.findOne({ username: req.body.username })) {
@@ -186,31 +207,62 @@ app.post("/api/register", async (req, res) => {
     if (!result) {
       throw new Error("Error: User failed to be created");
     }
-    res.json({ "status": "success", "message": "User login successful" });
+    res.json({ status: "success", message: "User login successful" });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
 // Session
-app.post('/api/login', async (req, res) => {
+app.post("/api/login", async (req, res) => {
   try {
-    const user = await User.findOne({ "username": req.body.username, "password": req.body.password });
+    const user = await User.findOne({
+      username: req.body.username,
+      password: req.body.password,
+    });
     if (!user) {
       throw new Error("Invalid username or password");
     }
-    res.json({ "status": "success", "message": "User created", "user": user });
+    res.json({ status: "success", message: "User created", user: user });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
+app.use(bodyParser.urlencoded({ extended: false }))
+// app.use(bodyParser.json())
+
 //Image Upload REST APIs
+app.post("/api/upload", upload.single("image"), async (req, res) => {
+  try {
+    var obj = {
+      name: "grid001",
+      img: {
+        data: fs.readFileSync(
+          path.join(__dirname + "/uploads/" + req.file.filename)
+        ),
+        contentType: "image/png",
+      },
+    };
+    console.log(obj);
+    Grid.create(obj, (err, item) => {
+      if (err) {
+          console.log(err);
+      }
+      else {
+          console.log("sucesssss!");
+      }
+  });
 
-
+    res.send("Success");
+  } catch (error) {
+    console.log("An error occured!", error);
+  }
+});
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);
+
   try {
     await mongoose.connect(
       "mongodb+srv://root:S4ndB0x@game-sandbox.altns89.mongodb.net/data?retryWrites=true&w=majority"
@@ -220,7 +272,3 @@ http.listen(port, async (err) => {
   }
   console.log("Server running on port: ", port);
 });
-
-
-
-

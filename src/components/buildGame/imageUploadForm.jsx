@@ -3,14 +3,12 @@ import "./imageUploadForm.css";
 import React from "react";
 import { useState, useEffect } from "react";
 import { SMARTButton } from "../button/button";
+import axios from "axios";
 
-const ImageUploadForm = ( props ) => {
-
+const ImageUploadForm = (props) => {
   let closePopup = props.closePopup;
   let images = props.images;
   let onImageChange = props.onImageChange;
-  let imageURLs = props.imageURLs;
-  let setImageURLs = props.setImageURLs;
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
@@ -21,33 +19,61 @@ const ImageUploadForm = ( props ) => {
     setInputs((values) => ({ ...values, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const form = event.target;
-    const formData = new FormData(form);
-    for (const [name, value] of formData.entries()) {
-      console.log(`${name}: ${value}`);
+    const formData = new FormData();
+    formData.append("image", images[0]);
+    formData.append("cardsAcross", inputs.numAcross);
+    formData.append("cardsDown", inputs.numDown);
+    formData.append("totalCards", inputs.numTotal);
+    formData.append("hasSameBack", isChecked);
+
+    const url =
+      process.env.NODE_ENV === "production"
+        ? "https://smartgamesandbox.herokuapp.com"
+        : "http://localhost:5000";
+
+    for (var pair of formData.entries()) {
+      console.log(pair[0] + ", " + pair[1]);
     }
-    form.reset(); // reset the form
-
-    closePopup();
+    axios
+      .post(`${url}/api/upload`, formData, {
+        headers: { 'Content-Type': "multipart/form-data" },
+      })
+      .then((res) => {
+        closePopup();
+        console.log(res);
+      })
+      .catch((err) => console.log(err));
   };
 
   return (
     <div className="bg-form">
       <form onSubmit={handleSubmit}>
+        <div className="row">
+          <label>Upload Image Grid:</label>
+          <input
+            type="file"
+            multiple
+            name="image"
+            id="image"
+            accept="image/*"
+            onChange={onImageChange}
+            required
+          />
+        </div>
 
-      <div className="row">
-          <label>Upload Image Grid (front page):</label>
+        {/* <div className="row">
+          <label>Upload Image Grid (back page):</label>
           <input
             type="file"
             multiple
             accept="image/*"
-            name="numAcross"
+            name="backFile"
             onChange={onImageChange}
           />
-        </div>
+        </div> */}
 
         <div className="row">
           <label>Number of Cards Across:</label>
@@ -80,17 +106,15 @@ const ImageUploadForm = ( props ) => {
         </div>
 
         <div className="checkbox-wrapper">
-          <label> 
-          <input
-            type="checkbox"
-            className={isChecked ? "checked" : ""}
-            checked={isChecked}
-            onChange={() => setIsChecked((prev) => !prev)}
-          />
-          <span>Same back for all cards? </span>
-        </label>
-          
-    
+          <label>
+            <input
+              type="checkbox"
+              className={isChecked ? "checked" : ""}
+              checked={isChecked}
+              onChange={() => setIsChecked((prev) => !prev)}
+            />
+            <span>Same back for all cards? </span>
+          </label>
         </div>
 
         <div className="row">

@@ -10,10 +10,9 @@ import ImageUploadForm from "../buildGame/imageUploadForm";
 import "./bottomToolbar.css";
 
 function BottomToolbar() {
-  const [show, setShow] = useState(false);
-  const [showModal2, setShowModal2] = React.useState(false);
-
-  const [showModal3, setShowModal3] = React.useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [showModal3, setShowModal3] = useState(false);
 
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
@@ -45,7 +44,7 @@ function BottomToolbar() {
               theme="secondary"
               size="large"
               variant="contained"
-              onClick={() => setShow(true)}
+              onClick={() => setShowUpload(true)}
             >
               <FaChessPawn />
             </SMARTIconButton>
@@ -53,7 +52,7 @@ function BottomToolbar() {
               theme="secondary"
               size="large"
               variant="contained"
-              onClick={() => setShow(true)}
+              onClick={() => setShowUpload(true)}
               style={{
                 marginLeft: "20px",
               }}
@@ -91,11 +90,11 @@ function BottomToolbar() {
       </AppBar>
       <Modal
         title="Card Decks"
-        onClose={() => setShow(false)}
-        show={show}
+        onClose={() => setShowUpload(false)}
+        show={showUpload}
         style={{
           height: "500px",
-          width: "700px",
+          width: "800px",
         }}
       >
         <div className="wrapper">
@@ -105,7 +104,7 @@ function BottomToolbar() {
                 className="card"
                 size="large"
                 variant="contained"
-                onClick={() => setShowModal2(true)}
+                onClick={() => setShowForm(true)}
                 style={{
                   height: "160px",
                   width: "120px",
@@ -127,7 +126,7 @@ function BottomToolbar() {
               theme="secondary"
               size="large"
               variant="contained"
-              onClick={handleSave}
+              onClick={() => setShowUpload(false)}
               style={{
                 marginTop: "15px",
               }}
@@ -138,11 +137,11 @@ function BottomToolbar() {
 
         <Modal
           title="Upload Card Deck"
-          onClose={() => setShowModal2(false)}
-          show={showModal2}
+          onClose={() => setShowForm(false)}
+          show={showForm}
         >
           <ImageUploadForm
-            closePopup={() => setShowModal2(false)}
+            closePopup={() => setShowForm(false)}
             images={images}
             onImageChange={onImageChange}
             imageURLs={imageURLs}
