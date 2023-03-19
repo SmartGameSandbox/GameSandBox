@@ -4,8 +4,10 @@ const app = express();
 const cors = require("cors");
 var http = require("http").Server(app);
 const multer = require("multer");
-const fs = require('fs')
-const bodyParser = require('body-parser');
+const fs = require("fs");
+const bodyParser = require("body-parser");
+const sharp = require("sharp");
+const { v4: uuidv4 } = require("uuid");
 
 var io;
 app.use(cors());
@@ -21,6 +23,7 @@ const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 const { roomSchema, Room } = require("./schemas/room");
 const { cardSchema, Card } = require("./schemas/card");
+const { cardv2Schema, CardV2 } = require("./schemas/cardv2");
 const { gridSchema, Grid } = require("./schemas/grid");
 
 const idGenerator = require("./utils/id_generator");
@@ -191,6 +194,7 @@ if (process.env.NODE_ENV === "production") {
 // Register
 const { User } = require("./schemas/user");
 const { constants } = require("buffer");
+const { assert } = require("console");
 
 // createAccount
 app.post("/api/register", async (req, res) => {
@@ -229,36 +233,101 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(bodyParser.json())
 
 //Image Upload REST APIs
 app.post("/api/upload", upload.single("image"), async (req, res) => {
   try {
-    var obj = {
-      name: "grid001",
-      img: {
-        data: fs.readFileSync(
-          path.join(__dirname + "/uploads/" + req.file.filename)
-        ),
+    const totalCards = parseInt(req.body.totalCards);
+    const cardDeckName = req.file.filename;
+    const imageData = fs.readFileSync(
+      path.join(__dirname + "/uploads/" + req.file.filename)
+    );
+
+    const numCols = parseInt(req.body.cardsAcross);
+    const numRows = parseInt(req.body.cardsDown);
+
+    cardArray = await sliceImages(imageData, numCols, numRows);
+
+    assert(cardArray.length == totalCards);
+
+    let cardDocuments = await createCardObjects(cardArray);
+
+    const cardDeck = {
+      name: cardDeckName,
+      numCards: totalCards,
+      imageGrid: {
+        data: imageData,
         contentType: "image/png",
       },
+      deck: cardDocuments,
     };
-    console.log(obj);
-    Grid.create(obj, (err, item) => {
-      if (err) {
-          console.log(err);
-      }
-      else {
-          console.log("sucesssss!");
-      }
-  });
 
-    res.send("Success");
+    const result = await Grid.create(cardDeck);
+    res.status(200).send("Grid inserted successfully");
   } catch (error) {
-    console.log("An error occured!", error);
+    console.error("Failed to insert grid", error);
+    res.status(500).send("Failed to insert grid");
   }
 });
+
+let sliceImages = async (BufferData, cols, rows) => {
+  cardArray = [];
+  const inputBuffer = Buffer.from(BufferData);
+  const numCols = cols;
+  const numRows = rows;
+
+  const inputImage = sharp(inputBuffer);
+  const metadata = await inputImage.metadata();
+
+  const cardWidth = Math.floor(metadata.width / numCols);
+  const cardHeight = Math.floor(metadata.height / numRows);
+
+  // extract the cards
+  for (let i = 0; i < numRows; i++) {
+    for (let j = 0; j < numCols; j++) {
+      const input = sharp(inputBuffer); //Need to create instance every time as extract alters the instance.
+      let x = j * cardWidth;
+      let y = i * cardHeight;
+
+      let cardImage;
+      if (
+        x + cardWidth <= metadata.width &&
+        y + cardHeight <= metadata.height
+      ) {
+        cardImage = await input
+          .extract({ left: x, top: y, width: cardWidth, height: cardHeight })
+          .toBuffer();
+        cardArray.push(cardImage);
+      }
+    }
+  }
+  return cardArray;
+};
+
+let createCardObjects = async (cardArray) => {
+  //Card Array consists of buffers for every card in the deck.
+  const cardObjects = [];
+
+  for (const buffer of cardArray) {
+    const cardObject = {
+      id: uuidv4(),
+      x: 600,
+      y: 200,
+      imageSource: {
+        data: buffer,
+        contentType: "image/png",
+      },
+      type: "front",
+      isFlipped: false,
+    };
+    await CardV2.create(cardObject);
+    cardObjects.push(cardObject);
+  }
+
+  return cardObjects;
+};
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);
