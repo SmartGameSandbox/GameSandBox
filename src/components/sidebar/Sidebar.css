@@ -31,7 +31,11 @@
     grid-template-rows: 15% auto 15%;
 }
 
-img {
+#logout:hover {
+    cursor: pointer;
+}
+
+.navbar img {
     filter: invert(100%);
     width: 2.2em;
     margin: auto 0% auto auto;

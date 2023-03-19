@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import {SMARTButton} from '../button/button';
 import axios from 'axios';
 import logo from "../icons/Group_89.png";
+import { ReactSession } from "react-client-session";
 
 const Register = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
@@ -38,7 +39,7 @@ const Register = () => {
     if (password !== confirmPw) {
       setErrorMessage("Passwords do not match");
     } else {
-      const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
+      const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
       axios.post(`${url}/api/register`, {
         username: username,
         email: email,
@@ -46,7 +47,8 @@ const Register = () => {
       }).then((response) => {
         if (response.status === 200) {
           setErrorMessage("");
-          window.location.href = "/login";
+          ReactSession.set("username", response.data.user.username);
+          window.location.href = "/dashboard";
         } else {
           setErrorMessage(response.data.message);
         }
@@ -78,6 +80,19 @@ const Register = () => {
                 required
                 label="Username"
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
               <br />
               <TextField
@@ -91,6 +106,19 @@ const Register = () => {
                 label="Email Address"
                 type={"email"}
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
               <br />
               <TextField
@@ -104,6 +132,19 @@ const Register = () => {
                 label="Password"
                 type={"password"}
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
               <br />
               <TextField
@@ -117,6 +158,19 @@ const Register = () => {
                 label="Confirm Password"
                 type={"password"}
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
             </div>
             <p style={styles.errorMessageStyle}>{errorMessage}</p>

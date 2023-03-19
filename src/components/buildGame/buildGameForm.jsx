@@ -29,7 +29,7 @@ const BuildGameForm = ({closePopup}) => {
 
   return (
     <div className="bg-form">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} id="build-game-from">
         <label>GAME NAME:</label>
         <input
           type="text"

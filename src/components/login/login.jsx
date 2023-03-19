@@ -27,7 +27,7 @@ const Login = () => {
     const url =
       process.env.NODE_ENV === "production"
         ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:5000";
+        : "http://localhost:8000";
     axios
       .post(`${url}/api/login`, {
         username: username,
@@ -37,7 +37,7 @@ const Login = () => {
         if (response.status === 200) {
           setErrorMessage("");
           ReactSession.set("username", response.data.user.username);
-          window.location.href = "/createroom";
+          window.location.href = "/dashboard";
         }
       })
       .catch((error) => {
@@ -67,6 +67,19 @@ const Login = () => {
                 required
                 label="Username"
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
               <br />
               <TextField
@@ -80,6 +93,19 @@ const Login = () => {
                 label="Password"
                 type={"password"}
                 size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
               />
             </div>
             <div>
@@ -102,7 +128,7 @@ const Login = () => {
           </Box>
         </div>
         <div id="right" style={styles.right}>
-          <img src={logo} style={{width: "200px"}}/>
+          <img src={logo} style={{ width: "200px" }} />
         </div>
       </div>
     </>

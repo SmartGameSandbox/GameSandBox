@@ -36,7 +36,7 @@ function BottomToolbar() {
     <>
       <AppBar
         position="static"
-        style={{ backgroundColor: "#163B6E", borderRadius: "5%" }}
+        style={{ backgroundColor: "#163B6E", borderRadius: "20px" }}
       >
         <div className="tb-container">
           <div className="bt-IconBtnContainer">

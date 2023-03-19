@@ -32,18 +32,14 @@ const ImageUploadForm = (props) => {
     const url =
       process.env.NODE_ENV === "production"
         ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:5000";
+        : "http://localhost:8000";
 
-    for (var pair of formData.entries()) {
-      console.log(pair[0] + ", " + pair[1]);
-    }
     axios
       .post(`${url}/api/upload`, formData, {
-        headers: { 'Content-Type': "multipart/form-data" },
+        headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => {
         closePopup();
-        console.log(res);
       })
       .catch((err) => console.log(err));
   };

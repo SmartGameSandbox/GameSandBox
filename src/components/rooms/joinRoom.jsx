@@ -18,7 +18,7 @@ const JoinRoom = () => {
     };
 
     const joinRoom = () => {
-        const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
+        const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
 
         axios.get(`${url}/api/room?id=${roomIDInputText}&password=${passwordInputText}`).then((response) => {
             console.log(response);
