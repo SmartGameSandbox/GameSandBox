@@ -31,7 +31,7 @@
     grid-template-rows: 15% auto 15%;
 }
 
-#logout:hover {
+#options div, #close-open {
     cursor: pointer;
 }
 
@@ -45,6 +45,41 @@
     transform: rotate(180deg);
     grid-column: 2;
     grid-row: 2;
+}
+
+#profile {
+    grid-row: 2;
+    display: none;
+    grid-template-columns: 30% 70%;
+    align-items: center;
+    padding-left: 5%;
+}
+#settings {
+    grid-row: 3;
+    display: none;
+    grid-template-columns: 30% 70%;
+    align-items: center;
+    padding-left: 5%;
+}
+#logout {
+    grid-row: 5;
+    display: none;
+    grid-template-columns: 30% 70%;
+    align-items: center;
+    padding-left: 5%;
+}
+#options {
+    display: none;
+    box-shadow: -.8em 0em 7em rgb(0, 0, 0);
+}
+
+.navbar a {
+    margin: auto auto auto 10%;
+    color: white;
+    text-decoration: none;
+}
+.navbar p {
+    margin: auto auto auto 10%;
 }
 
 @keyframes rotation {
