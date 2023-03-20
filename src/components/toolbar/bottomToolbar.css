@@ -18,6 +18,8 @@
 .upload-container {
     display: grid;
     grid-template-columns: 0.5fr 1.5fr;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
 
 .image-preview {
