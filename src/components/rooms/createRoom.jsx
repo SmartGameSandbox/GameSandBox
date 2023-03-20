@@ -24,10 +24,9 @@ const CreateRoom = () => {
     const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
     axios.post(`${url}/api/room`, {
       name: roomNameInputText,
-      password: passwordInputText,
       image: item.imageUrl === '' ? null : item.imageUrl
     }).then((response) => {
-      window.location.href = `/room?id=${response.data.id}&password=${response.data.password}`;
+      window.location.href = `/room?id=${response.data.id}`;
     }).catch((error) => {
       setErrorMsg(error.response.statusText);
       console.log(error);

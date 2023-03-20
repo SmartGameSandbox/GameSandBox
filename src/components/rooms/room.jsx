@@ -31,10 +31,9 @@ const Room = () => {
         const search = window.location.search;
         const params = new URLSearchParams(search);
         roomID = params.get('id');
-        roomPassword = params.get('password');
-        axios.get(`${url}/api/room?id=${roomID}&password=${roomPassword}`).then((response) => {
+        axios.get(`${url}/api/room?id=${roomID}`).then((response) => {
             setImageUrl(response.data.image);
-            socket.emit("joinRoom", { roomID: roomID, password: roomPassword, username: username }, () => { });
+            socket.emit("joinRoom", { roomID: roomID, username: username }, () => { });
         }).catch((error) => {
             console.log(error);
         });

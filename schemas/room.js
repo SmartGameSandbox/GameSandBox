@@ -17,7 +17,6 @@ const roomSchema = new Schema({
         expires: "24h", default: Date.now
     },
     image: String,
-    password: { type: String, min: [4, 'Password too short'], max: [20, 'Password too long'] },
 }, { timestamps: true });
 
 module.exports.roomSchema = roomSchema;

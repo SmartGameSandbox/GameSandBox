@@ -20,10 +20,10 @@ const JoinRoom = () => {
     const joinRoom = () => {
         const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
 
-        axios.get(`${url}/api/room?id=${roomIDInputText}&password=${passwordInputText}`).then((response) => {
+        axios.get(`${url}/api/room?id=${roomIDInputText}`).then((response) => {
             console.log(response);
             if (response.status === 200) {
-                window.location.href = `/room?id=${roomIDInputText}&password=${passwordInputText}`;
+                window.location.href = `/room?id=${roomIDInputText}`;
             } else {
                 alert("Room not found");
             }

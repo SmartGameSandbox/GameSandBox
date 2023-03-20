@@ -137,8 +137,7 @@ app.get("/api/room", async (req, res) => {
     if (!id) {
       throw new Error("Room ID is required");
     }
-    const password = req.query.password;
-    const roomData = await Room.findOne({ id: id, password: password });
+    const roomData = await Room.findOne({ id: id });
     if (roomData) {
       res.json(roomData);
     } else {
@@ -152,7 +151,7 @@ app.get("/api/room", async (req, res) => {
 
 //create room
 app.post("/api/room", async (req, res) => {
-  const ROOM_ID_LENGTH = 4;
+  const ROOM_ID_LENGTH = 10;
   let roomID = 0;
   try {
     do {
@@ -164,7 +163,6 @@ app.post("/api/room", async (req, res) => {
     const allCards = await Card.find();
     const gameRoomData = {
       id: roomID,
-      password: req.body.password,
       name: req.body.name,
       image: req.body.image,
       deck: allCards,

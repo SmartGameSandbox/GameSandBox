@@ -15,15 +15,12 @@ const Dashboard = () => {
         setroomLink(event.target.value);
     };
     const joinRoom = () => {
-        const splitLink = roomLink.split("&");
-        const code = splitLink[0];
-        const password = splitLink[1];
         const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
 
-        axios.get(`${url}/api/room?id=${code}&password=${password}`).then((response) => {
+        axios.get(`${url}/api/room?id=${roomLink}`).then((response) => {
             console.log(response);
             if (response.status === 200) {
-                window.location.href = `/room?id=${code}&password=${password}`;
+                window.location.href = `/room?id=${roomLink}`;
             } else {
                 alert("Room not found");
             }
