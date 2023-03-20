@@ -102,7 +102,7 @@ const ImageUploadForm = (props) => {
         </div>
 
         <div className="checkbox-wrapper">
-          <label>
+          <div>
             <input
               type="checkbox"
               className={isChecked ? "checked" : ""}
@@ -110,7 +110,7 @@ const ImageUploadForm = (props) => {
               onChange={() => setIsChecked((prev) => !prev)}
             />
             <span>Same back for all cards? </span>
-          </label>
+          </div>
         </div>
 
         <div className="row">
