@@ -5,11 +5,9 @@ import "./buildGamePage.css";
 import BottomToolbar from "../toolbar/bottomToolbar";
 import Sidebar from "../sidebar/Sidebar";
 
-
 import { SMARTButton } from "../button/button";
 
 const BuildGamePage = () => {
-
   const goBack = () => {
     console.log("Go Back");
     window.history.back();
@@ -24,38 +22,33 @@ const BuildGamePage = () => {
       <div className="bgame-container"></div>
       <div className="bgame-header">
         <SMARTButton
-          variant="contained"
+          variant="text"
           onClick={goBack}
           style={{
-            height: "2em",
+            height: "4em",
             background: "transparent",
-            border: "none",
+            borderRadius: '5em',
+            marginRight: "0.75em",
+            color: "#163B6E"
           }}
         >
-          <FaArrowLeft
-            style={{
-              height: "1.8em",
-            }}
-          />
+          <FaArrowLeft fontSize="large" />
         </SMARTButton>
 
-        <h4 className="bgame-heading">Game 123 Same</h4>
+        <h4 className="bgame-heading" style={{fontFamily: 'Nunito', fontSize: '2em', margin: '0px'}}>Game 123 Same</h4>
 
         <SMARTButton
-          variant="contained"
+          variant="text"
           onClick={editHeading}
           style={{
-            height: "2em",
-            marginLeft: "2%",
+            height: "4em",
+            marginLeft: "0.75em",
             background: "transparent",
-            border: "none",
+            borderRadius: '5em',
+            color: "#163B6E"
           }}
         >
-          <FaEdit
-            style={{
-              height: "1.8em",
-            }}
-          />
+          <FaEdit fontSize="large" />
         </SMARTButton>
       </div>
 
