@@ -15,11 +15,6 @@ const CreateRoom = () => {
     setRoomNameInputText(event.target.value);
   };
 
-  const [passwordInputText, setPasswordInputText] = React.useState('');
-  const handlePasswordTextInputChange = event => {
-    setPasswordInputText(event.target.value);
-  };
-
   const createRoom = () => {
     const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
     axios.post(`${url}/api/room`, {
@@ -54,17 +49,6 @@ const CreateRoom = () => {
             size="large"
           />
           <br />
-          <TextField
-            id="password-input"
-            sx={styles.textFieldStyle}
-            value={passwordInputText}
-            onChange={handlePasswordTextInputChange}
-            className="text-field"
-            required
-            label="Password"
-            type={"password"}
-            size="large"
-          />
           <FileBase64
             type="file"
             multiple={false}

@@ -3,7 +3,6 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
-import JoinRoom from "./components/rooms/joinRoom";
 import Login from "./components/login/login";
 import Logout from "./components/logout/logout";
 import Register from "./components/register/register";
@@ -13,14 +12,6 @@ import Dashboard from './components/dashboard/dashboard';
 ReactSession.setStoreType("localStorage");
 
 const App = () => {
-  const navigateCreateRoom = () => {
-    window.location.href = "/createroom";
-  };
-
-  const navigateJoinRoom = () => {
-    window.location.href = "/joinroom";
-  };
-
   const isAuthed = () => {
     if (ReactSession.get("username")) {
       return true;
@@ -45,10 +36,6 @@ const App = () => {
           <Route
             path="/createroom"
             element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/joinroom"
-            element={isAuthed() ? <JoinRoom /> : <Navigate to="/login" />}
           />
           <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
