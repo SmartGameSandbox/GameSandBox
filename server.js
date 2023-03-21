@@ -233,7 +233,7 @@ app.post("/api/login", async (req, res) => {
 
 app.get('/api/games', async (req, res) => {
   try{
-    let games = await Game.find({ id: req.query.id});
+    let games = await Game.find({ creator: req.query.id});
     if (!games) {
       throw new Error("No games");
     }
