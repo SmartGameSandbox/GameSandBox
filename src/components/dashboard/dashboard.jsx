@@ -11,6 +11,7 @@ import axios from 'axios';
 const Dashboard = () => {
     const [showBuildGameModal, setBuildGameModal] = React.useState(false);
     const [roomLink, setroomLink] = React.useState('');
+    const [errorMessage, setErrorMessage] = React.useState("");
     const handleRoomLinkTextInputChange = event => {
         setroomLink(event.target.value);
     };
@@ -18,14 +19,9 @@ const Dashboard = () => {
         const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
 
         axios.get(`${url}/api/room?id=${roomLink}`).then((response) => {
-            console.log(response);
-            if (response.status === 200) {
-                window.location.href = `/room?id=${roomLink}`;
-            } else {
-                alert("Room not found");
-            }
+            window.location.href = `/room?id=${roomLink}`;
         }).catch((error) => {
-            console.log(error);
+            setErrorMessage(error.response.data.message);
         });
     }
     
@@ -36,26 +32,29 @@ const Dashboard = () => {
                 <Sidebar />
                 <div style={styles.btnGroup}>
                     <div style={styles.joinRoom}>
-                        <SMARTButton
-                            theme="secondary"
-                            variant="contained"
-                            size="large"
-                            sx={styles.joinBtn}
-                            onClick={() => {joinRoom();}}
-                        >
-                        Join Room
-                        </SMARTButton>
-                        <TextField
-                            id="roomlink"
-                            variant="filled"
-                            label="Enter link"
-                            sx={styles.linkField}
-                            fullwidth="true"
-                            required
-                            InputProps={{ disableUnderline: true }}
-                            value={roomLink}
-                            onChange={handleRoomLinkTextInputChange}
-                        />
+                        <div style={styles.joinRoomInput}>
+                            <SMARTButton
+                                theme="secondary"
+                                variant="contained"
+                                size="large"
+                                sx={styles.joinBtn}
+                                onClick={() => {joinRoom();}}
+                            >
+                            Join Room
+                            </SMARTButton>
+                            <TextField
+                                id="roomlink"
+                                variant="filled"
+                                label="Enter link"
+                                sx={styles.linkField}
+                                fullwidth="true"
+                                required
+                                InputProps={{ disableUnderline: true }}
+                                value={roomLink}
+                                onChange={handleRoomLinkTextInputChange}
+                            />
+                        </div>
+                        <p style={styles.errorMessageStyle}>{errorMessage}</p>
                     </div>
                 <SMARTButton
                     sx={styles.hostRoom}

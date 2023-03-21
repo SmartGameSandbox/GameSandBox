@@ -26,9 +26,12 @@ const styles = {
     joinRoom: {
         gridColumn: "1 / span 2",
         gridRow: "1 / span 1",
-        display: 'flex',
+        
         width: "100%",
         height: "50%"
+    },
+    joinRoomInput: {
+        display: 'flex',
     },
     joinBtn: {
         borderTopRightRadius: "0px",
@@ -77,6 +80,12 @@ const styles = {
         justifySelf: 'left',
 
         fontSize: '3em'
+    },
+    errorMessageStyle: {
+        color: "red",
+        marginLeft: 5,
+        marginBottom: 0,
+        marginTop: 0,
     }
 }
 

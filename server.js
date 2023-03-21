@@ -141,11 +141,10 @@ app.get("/api/room", async (req, res) => {
     if (roomData) {
       res.json(roomData);
     } else {
-      res.json({ status: "error", message: "Invalid room ID or password" });
+      res.status(400).json({ status: "error", message: "Invalid room ID" });
     }
   } catch (err) {
-    res.json({ status: "error", message: err });
-    console.log(err);
+    res.status(404).json({ status: "error", message: err.message });
   }
 });
 
