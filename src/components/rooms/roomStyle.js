@@ -37,7 +37,9 @@ const styles = {
         position: "relative",
     },
     roomWrapper: {
+        boxSizing: "border-box",
         backgroundColor: "rgba(0, 150, 136, 0.3)",
+        height: "100%",
         width: "100%",
         minWidth: `${Constants.CANVAS_WIDTH}px`,
         paddingTop: "50px",

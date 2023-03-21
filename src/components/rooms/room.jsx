@@ -7,6 +7,7 @@ import axios from 'axios';
 import styles from './roomStyle';
 import * as Constants from '../../util/constants';
 import { ReactSession } from "react-client-session";
+import Sidebar from '../sidebar/Sidebar';
 ReactSession.setStoreType("localStorage");
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
@@ -57,6 +58,7 @@ const Room = () => {
                         <Table socket={socket} username={username} />
                     </Stage>
                 </div>
+                <Sidebar />
             </div>
         </>
     );
