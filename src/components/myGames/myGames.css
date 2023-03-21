@@ -1,0 +1,38 @@
+#my-page-body{
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+#my-games-list{
+    overflow-y:scroll;
+    height: 60vh;
+    /* width: 100% */
+}
+
+#my-games-title{
+    font-size: 4em;
+    font-family: "Nunito";
+    font-weight: bold;
+    margin-left: 10%;
+    /* color: #FDF551; */
+}
+
+#my-games-create-new-game-box{
+    text-align: right;
+    margin-right: 9.6vw;
+}
+
+div::-webkit-scrollbar {
+    width: 12px;               /* width of the entire scrollbar */
+}
+
+div::-webkit-scrollbar-track {
+    background: orange;        /* color of the tracking area */
+}
+
+div::-webkit-scrollbar-thumb {
+    background-color: blue;    /* color of the scroll thumb */
+    border-radius: 20px;       /* roundness of the scroll thumb */
+    border: 3px solid orange;  /* creates padding around scroll thumb */
+}
+  
