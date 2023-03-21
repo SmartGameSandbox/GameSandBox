@@ -3,11 +3,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
-<<<<<<< HEAD
-=======
-import JoinRoom from "./components/rooms/joinRoom";
 import MyGames from "./components/myGames/myGames";
->>>>>>> my_games
 import Login from "./components/login/login";
 import Logout from "./components/logout/logout";
 import Register from "./components/register/register";
@@ -42,17 +38,10 @@ const App = () => {
             path="/createroom"
             element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
           />
-<<<<<<< HEAD
-=======
-          <Route
-            path="/joinroom"
-            element={isAuthed() ? <JoinRoom /> : <Navigate to="/login" />}
-          />
           <Route
             path="/mygames"
             element={isAuthed() ? <MyGames /> : <Navigate to="/login" />}
           />
->>>>>>> my_games
           <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/newaccount" element={<Register />} />
