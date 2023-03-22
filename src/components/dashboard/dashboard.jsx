@@ -24,6 +24,10 @@ const Dashboard = () => {
             setErrorMessage(error.response.data.message);
         });
     }
+
+    const hostRoom = () => {
+        window.location.href = `/games`;
+    }
     
     return (
         <div style={styles.body}>
@@ -61,6 +65,7 @@ const Dashboard = () => {
                     theme="primary"
                     variant="contained"
                     size="large"
+                    onClick={() => window.location.href = '/games'}
                 >
                     Host Room
                 </SMARTButton>

@@ -25,6 +25,7 @@ const { roomSchema, Room } = require("./schemas/room");
 const { cardSchema, Card } = require("./schemas/card");
 const { cardv2Schema, CardV2 } = require("./schemas/cardv2");
 const { gridSchema, Grid } = require("./schemas/grid");
+const { gameSchema, Game } = require("./schemas/game");
 
 const idGenerator = require("./utils/id_generator");
 app.use(express.json());
@@ -228,6 +229,19 @@ app.post("/api/login", async (req, res) => {
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
+});
+
+app.get('/api/games', async (req, res) => {
+  try{
+    let games = await Game.find({ creator: req.query.id});
+    if (!games) {
+      throw new Error("No games");
+    }
+    res.status(200).json({ "status": "success", "message": "Games received", "games": games });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+
 });
 
 app.use(bodyParser.urlencoded({ extended: false }));

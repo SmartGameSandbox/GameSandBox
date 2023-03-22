@@ -16,7 +16,7 @@ const gameSchema = new Schema(
     creator: {
       type: mongoose.Schema.Types.ObjectId,
     },
-    cardDeck: [cardv2Schema],
+    cardDeck: [mongoose.Schema.Types.ObjectId],
   },
   { timestamps: true }
 );
