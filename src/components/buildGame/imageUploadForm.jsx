@@ -1,9 +1,12 @@
 import "./imageUploadForm.css";
 
 import React from "react";
+import { ReactSession } from "react-client-session";
 import { useState, useEffect } from "react";
 import { SMARTButton } from "../button/button";
 import axios from "axios";
+
+ReactSession.setStoreType("localStorage");
 
 const ImageUploadForm = (props) => {
   let closePopup = props.closePopup;
@@ -40,6 +43,7 @@ const ImageUploadForm = (props) => {
       })
       .then((res) => {
         closePopup();
+        ReactSession.set("newDeckId", res.data.newDeckId);
       })
       .catch((err) => console.log(err));
   };

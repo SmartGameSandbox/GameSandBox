@@ -1,14 +1,29 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-
+import { useLocation, useNavigate } from "react-router-dom";
 import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../button/button";
 import { FaChessPawn, FaPlus } from "react-icons/fa";
 import Modal from "../modal/modal";
+import { ReactSession } from "react-client-session";
 import ImageUploadForm from "../buildGame/imageUploadForm";
 import "./bottomToolbar.css";
+import axios from "axios";
+
+ReactSession.setStoreType("localStorage");
+
 
 function BottomToolbar() {
+
+
+
+  const url =
+    process.env.NODE_ENV === "production"
+      ? "https://smartgamesandbox.herokuapp.com"
+      : "http://localhost:8000";
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [showUpload, setShowUpload] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -28,7 +43,28 @@ function BottomToolbar() {
   };
 
   function handleSave() {
-    console.log("Save");
+    if (!ReactSession.get("newDeckId")) {
+      alert("Please upload a card deck to create a game.");
+      return;
+    }
+
+    let creatorId = ReactSession.get("id");
+    let newDeckId = ReactSession.get("newDeckId");
+    
+    const gameInfo = location.state;
+    gameInfo.creatorId = creatorId;
+    gameInfo.newDeckId = newDeckId;
+
+    axios
+    .post(`${url}/api/saveGame`, gameInfo, {
+      headers: { "Content-Type": "application/json" },
+    })
+    .then(async (res) => {
+      console.log("Game successfully created with card deck uploaded.");
+      await ReactSession.remove("newDeckId");
+      navigate("/dashboard");
+    })
+    .catch((err) => console.log(err));
   }
 
   return (
@@ -104,23 +140,23 @@ function BottomToolbar() {
 
             <div className="image-preview">
               {imageURLs.map((imageSrc, key) => (
-                <img key={key} src={imageSrc} />
+                <img key={key} alt="" src={imageSrc} />
               ))}
             </div>
           </div>
 
           <SMARTButton
-              theme="secondary"
-              size="large"
-              variant="contained"
-              onClick={() => setShowUpload(false)}
-              style={{
-                marginTop: "15px",
-              }}
-            >
-              SAVE
-            </SMARTButton>
-            </div>
+            theme="secondary"
+            size="large"
+            variant="contained"
+            onClick={() => setShowUpload(false)}
+            style={{
+              marginTop: "15px",
+            }}
+          >
+            SAVE
+          </SMARTButton>
+        </div>
 
         <Modal
           title="Upload Card Deck"

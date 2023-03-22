@@ -1,29 +1,29 @@
 import { React, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Stage, Layer, Rect, Image } from "react-konva";
 import { FaArrowLeft, FaEdit } from "react-icons/fa";
 import "./buildGamePage.css";
 import BottomToolbar from "../toolbar/bottomToolbar";
 import Sidebar from "../sidebar/Sidebar";
 import axios from "axios";
-import { useLocation } from 'react-router-dom';
 import { SMARTButton } from "../button/button";
-import { shape } from "@mui/system";
 const Buffer = require("buffer").Buffer;
 
 
 const BuildGamePage = () => {
-  const location = useLocation();
-  const gameInfo = location.state;
-  console.log(gameInfo);
 
-  
+  const location = useLocation();
+  const [header, setHeader] = useState("");
+  useEffect(() => {
+    setHeader(location.state.name);
+  }, [location]);
+
   const url =
     process.env.NODE_ENV === "production"
       ? "https://smartgamesandbox.herokuapp.com"
       : "http://localhost:8000";
 
   const goBack = () => {
-    console.log("Go Back");
     window.history.back();
   };
 
@@ -83,7 +83,7 @@ const BuildGamePage = () => {
           className="bgame-heading"
           style={{ fontFamily: "Nunito", fontSize: "2em", margin: "0px" }}
         >
-          Game 123 Same
+          {header}
         </h4>
 
         <SMARTButton
