@@ -326,6 +326,17 @@ let createCardObjects = async (cardArray) => {
   return cardObjects;
 };
 
+// load face of the cards
+app.post("/getUploadedCardFaces", async (req, res) => {
+  try {
+    const result = await Grid.findOne({ name: "image-1679264637177" });
+    res.json({file: result["deck"]});
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+
 http.listen(port, async (err) => {
   if (err) return console.loge(err);
 

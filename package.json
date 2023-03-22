@@ -30,6 +30,7 @@
     "multer-gridfs-storage": "^5.0.2",
     "node-cron": "^3.0.2",
     "nodemon": "^2.0.20",
+    "pngjs": "^7.0.0",
     "react": "^18.2.0",
     "react-client-session": "^0.0.8",
     "react-dom": "^18.2.0",
