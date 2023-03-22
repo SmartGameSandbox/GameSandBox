@@ -5,13 +5,18 @@ import "./buildGamePage.css";
 import BottomToolbar from "../toolbar/bottomToolbar";
 import Sidebar from "../sidebar/Sidebar";
 import axios from "axios";
+import { useLocation } from 'react-router-dom';
 import { SMARTButton } from "../button/button";
 import { shape } from "@mui/system";
 const Buffer = require("buffer").Buffer;
 
 
-
 const BuildGamePage = () => {
+  const location = useLocation();
+  const gameInfo = location.state;
+  console.log(gameInfo);
+
+  
   const url =
     process.env.NODE_ENV === "production"
       ? "https://smartgamesandbox.herokuapp.com"

@@ -5,14 +5,13 @@ import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../button/button";
 import { FaChessPawn, FaPlus } from "react-icons/fa";
 import Modal from "../modal/modal";
-import BuildGameForm from "../buildGame/buildGameForm";
 import ImageUploadForm from "../buildGame/imageUploadForm";
 import "./bottomToolbar.css";
 
 function BottomToolbar() {
+
   const [showUpload, setShowUpload] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [showModal3, setShowModal3] = useState(false);
 
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
@@ -53,18 +52,6 @@ function BottomToolbar() {
               size="large"
               variant="contained"
               onClick={() => setShowUpload(true)}
-              style={{
-                marginLeft: "20px",
-              }}
-            >
-              <FaChessPawn />
-            </SMARTIconButton>
-
-            <SMARTIconButton
-              theme="secondary"
-              size="large"
-              variant="contained"
-              onClick={() => setShowModal3(true)}
               style={{
                 marginLeft: "20px",
               }}
@@ -148,18 +135,6 @@ function BottomToolbar() {
             setImageURLs={setImageURLs}
           />
         </Modal>
-      </Modal>
-
-      <Modal
-        title="Build Game"
-        onClose={() => setShowModal3(false)}
-        show={showModal3}
-        style={{
-          height: "500px",
-          width: "700px",
-        }}
-      >
-        <BuildGameForm closePopup={() => setShowModal3(false)} />
       </Modal>
     </>
   );

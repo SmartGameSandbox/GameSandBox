@@ -44,6 +44,10 @@ const App = () => {
             path="/createroom"
             element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
           />
+          <Route 
+            path="/buildgame" 
+            element={isAuthed() ? <BuildGamePage />: <Navigate to="/login" />} />
+
           {/* <Route
             path="/joinroom"
             element={isAuthed() ? <JoinRoom /> : <Navigate to="/login" />}
@@ -55,7 +59,6 @@ const App = () => {
           <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/newaccount" element={<Register />} />
-          <Route path="/buildgame" element={<BuildGamePage />} />
           <Route path="/logout" element={<Logout />} />
         </Routes>
       </BrowserRouter>
