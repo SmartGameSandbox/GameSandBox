@@ -8,12 +8,12 @@ import styles from './roomStyle';
 import * as Constants from '../../util/constants';
 import { ReactSession } from "react-client-session";
 import Sidebar from '../sidebar/Sidebar';
+import Header from '../header/header';
 ReactSession.setStoreType("localStorage");
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
 const socket = io(url, { transports: ['websocket'] });
 let roomID = null;
-let roomPassword = null;
 var username = null;
 if (ReactSession.get("username")) {
     username = ReactSession.get("username");
@@ -43,20 +43,24 @@ const Room = () => {
     return (
         <>
             <div style={styles.roomWrapper}>
-                <div
-                    style={styles.stageWrapper}
-                >
-                    {
-                        imageUrl !== undefined && imageUrl !== '' && imageUrl !== null &&
-                        <img style={styles.board} alt="board" src={imageUrl} />
-                    }
-                    <Stage
-                        width={Constants.CANVAS_WIDTH}
-                        height={Constants.CANVAS_HEIGHT}
-                        onMouseMove={(e) => handleMouseMove(e)}
+                <Header />
+                <div style={styles.canvasWrapper}>
+                    <div
+                        style={styles.stageWrapper}
                     >
-                        <Table socket={socket} username={username} />
-                    </Stage>
+                        {
+                            imageUrl !== undefined && imageUrl !== '' && imageUrl !== null &&
+                            <img style={styles.board} alt="board" src={imageUrl} />
+                        }
+                        <Stage
+                            width={Constants.CANVAS_WIDTH}
+                            height={Constants.CANVAS_HEIGHT}
+                            onMouseMove={(e) => handleMouseMove(e)}
+                            
+                        >
+                            <Table socket={socket} username={username} />
+                        </Stage>
+                    </div>
                 </div>
                 <Sidebar />
             </div>
