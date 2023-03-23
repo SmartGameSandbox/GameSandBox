@@ -12,8 +12,8 @@ ReactSession.setStoreType("localStorage");
 const MyGames = () => {
     const [isLoading, setLoading] = useState(true); // Loading state
     const [gamesThings, setGames] = useState();
-    const [button_text, setButtonText] = useState("... More Games");
     let list = []
+    let no_games = false
     let games_list = null
     let counter = false
     useEffect(() => {
@@ -40,7 +40,7 @@ const MyGames = () => {
                   list.push(games[i].name)
                 }
                 if(list.length === 0){
-                    setButtonText("No Games Found")
+                    no_games = true
                 }
                 games_list = list.map((games) =>
                 <SMARTButton
@@ -83,14 +83,16 @@ const MyGames = () => {
             <div id = "my-games-list">
                 
                     {gamesThings}
+                    {no_games && (
                 <SMARTButton
                     id = "my-games-more-games"
                     varia
                     nt="contained"
                     sx={Themes.item}
                 >
-                    {button_text}
+                    No Games Found
                 </SMARTButton>
+    )}
             </div>
             <div id = "my-games-create-new-game-box">
                 <SMARTButton
