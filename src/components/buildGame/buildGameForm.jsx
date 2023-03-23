@@ -2,9 +2,11 @@ import React from "react";
 import { useState } from "react";
 import "./buildGameForm.css";
 import { SMARTButton } from "../button/button";
+import { useNavigate } from "react-router-dom";
 
-const BuildGameForm = ({closePopup}) => {
+const BuildGameForm = ({ closePopup }) => {
   const [inputs, setInputs] = useState({});
+  const navigate = useNavigate();
 
   const handleChange = (event) => {
     const name = event.target.name;
@@ -12,19 +14,18 @@ const BuildGameForm = ({closePopup}) => {
     setInputs((values) => ({ ...values, [name]: value }));
   };
 
-
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const form = event.target;
-    const formData = new FormData(form);
-    for (const [name, value] of formData.entries()) {
-      console.log(`${name}: ${value}`);
-    }
-    form.reset(); // reset the form
 
-    closePopup()
+    await form.reset(); // reset the form
+    await closePopup();
+    let data = { name: form.name.value, players: form.numPlayers.value };
+
+    navigate("/buildgame", {
+      state: data,
+    });
   };
 
   return (
@@ -33,14 +34,17 @@ const BuildGameForm = ({closePopup}) => {
         <label>GAME NAME:</label>
         <input
           type="text"
-          name="gamename"
-          value={inputs.gamename || ""}
+          name="name"
+          value={inputs.name || ""}
+          required
           onChange={handleChange}
         />
         <label>NUMBER OF PLAYERS:</label>
         <input
           type="number"
           name="numPlayers"
+          min={1}
+          max={10}
           value={inputs.numPlayers || ""}
           onChange={handleChange}
         />

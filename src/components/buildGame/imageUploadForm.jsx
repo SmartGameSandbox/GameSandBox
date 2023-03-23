@@ -1,14 +1,18 @@
 import "./imageUploadForm.css";
 
 import React from "react";
+import { ReactSession } from "react-client-session";
 import { useState, useEffect } from "react";
 import { SMARTButton } from "../button/button";
 import axios from "axios";
+
+ReactSession.setStoreType("localStorage");
 
 const ImageUploadForm = (props) => {
   let closePopup = props.closePopup;
   let images = props.images;
   let onImageChange = props.onImageChange;
+  let setDeck = props.setDeck;
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
@@ -38,7 +42,11 @@ const ImageUploadForm = (props) => {
       .post(`${url}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
-      .then((res) => {
+      .then(async (res) => {
+        const deckUploaded = await res.data.displayDeck;
+        await setDeck(deckUploaded);
+        await ReactSession.set("newDeckId", res.data.newDeckId);
+
         closePopup();
       })
       .catch((err) => console.log(err));

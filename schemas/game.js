@@ -11,12 +11,12 @@ const gameSchema = new Schema(
     players: {
       type: Number,
       min: [1, "Not enough players"],
-      max: [6, "Too many players"],
+      max: [10, "Too many players"],
     },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
     },
-    cardDeck: [cardv2Schema],
+    cardDeck: [mongoose.Schema.Types.ObjectId],
   },
   { timestamps: true }
 );

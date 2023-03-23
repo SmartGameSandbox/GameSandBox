@@ -8,6 +8,7 @@ const fs = require("fs");
 const bodyParser = require("body-parser");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
+const { ObjectId } = require("bson");
 
 var io;
 app.use(cors());
@@ -25,6 +26,7 @@ const { roomSchema, Room } = require("./schemas/room");
 const { cardSchema, Card } = require("./schemas/card");
 const { cardv2Schema, CardV2 } = require("./schemas/cardv2");
 const { gridSchema, Grid } = require("./schemas/grid");
+const { gameSchema, Game } = require("./schemas/game");
 
 const idGenerator = require("./utils/id_generator");
 app.use(express.json());
@@ -190,7 +192,7 @@ if (process.env.NODE_ENV === "production") {
 
 // Register
 const { User } = require("./schemas/user");
-const { constants } = require("buffer");
+// const { constants } = require("buffer");
 const { assert } = require("console");
 
 // createAccount
@@ -208,7 +210,7 @@ app.post("/api/register", async (req, res) => {
     if (!result) {
       throw new Error("Error: User failed to be created");
     }
-    res.json({ "status": "success", "message": "User created", "user": newUser });
+    res.json({ status: "success", message: "User created", user: newUser });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -224,7 +226,25 @@ app.post("/api/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid username or password");
     }
-    res.json({ "status": "success", "message": "User login successful", "user": user });
+    res.json({
+      status: "success",
+      message: "User login successful",
+      user: user,
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.get("/api/games", async (req, res) => {
+  try {
+    let games = await Game.find({ creator: req.query.id });
+    if (!games) {
+      throw new Error("No games");
+    }
+    res
+      .status(200)
+      .json({ status: "success", message: "Games received", games: games });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -262,10 +282,37 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
     };
 
     const result = await Grid.create(cardDeck);
-    res.status(200).send("Grid inserted successfully");
+    res.status(200).send({
+      message: "Grid inserted successfully",
+      newDeckId: result._id,
+      displayDeck: cardDocuments,
+    });
   } catch (error) {
     console.error("Failed to insert grid", error);
     res.status(500).send("Failed to insert grid");
+  }
+});
+
+app.post("/api/saveGame", async (req, res) => {
+  try {
+    let name = req.body.name; //Game name.
+    let numPlayers = parseInt(req.body.players);
+    let creatorId = req.body.creatorId; //User name for the creator of the game
+    let carDeckId = req.body.newDeckId;
+    if (creatorId) {
+      //Create a game now
+      const gameObject = {
+        name: name,
+        players: numPlayers,
+        creator: new ObjectId(creatorId),
+        cardDeck: [new ObjectId(carDeckId)],
+      };
+      const result = await Game.create(gameObject);
+      res.status(200).send("Game created successfully");
+    }
+  } catch (error) {
+    console.error("Failed to save game", error);
+    res.status(500).send("Failed to save game");
   }
 });
 
@@ -325,6 +372,16 @@ let createCardObjects = async (cardArray) => {
 
   return cardObjects;
 };
+
+// load face of the cards
+app.post("/getUploadedCardFaces", async (req, res) => {
+  try {
+    const result = await Grid.findOne({ name: "image-1679264637177" });
+    res.json({ file: result["deck"] });
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);
