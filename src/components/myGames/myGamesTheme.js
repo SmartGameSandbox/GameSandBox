@@ -8,7 +8,7 @@ const Themes = {
         marginBottom: "3%",
 
     },
-      item:{
+    item:{
         height: "2em",
         width: "80%",
         marginLeft: "10%",
