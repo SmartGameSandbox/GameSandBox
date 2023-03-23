@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
 import {SMARTButton} from '../button/button';
-import logo from "../icons/Group_89.png";
+import Modal from "../modal/modal";
 import "./myGames.css";
 import Themes from "./myGamesTheme"
 import axios from "axios";
 import { ReactSession } from "react-client-session";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../header/header";
+import BuildGameForm from "../buildGame/buildGameForm";
+
 ReactSession.setStoreType("localStorage");
 
 const MyGames = () => {
+    const [showBuildGameModal, setBuildGameModal] = React.useState(false);
     const [isLoading, setLoading] = useState(true); // Loading state
     const [gamesThings, setGames] = useState();
     let list = []
@@ -99,9 +102,22 @@ const MyGames = () => {
                     id = "my-games-more-games"
                     variant="contained"
                     sx={Themes.create}
+                    onClick={() => setBuildGameModal(true)}
                 >
                     Create New Game
                 </SMARTButton></div>
+             {/* Modals */}
+             <Modal
+                    title="Build Game"
+                    onClose={() => setBuildGameModal(false)}
+                    show={showBuildGameModal}
+                    style={{
+                    height: "500px",
+                    width: "700px",
+                    }}
+                >
+                    <BuildGameForm closePopup={() => setBuildGameModal(false)} />
+                </Modal>
 
         </div>
     )
