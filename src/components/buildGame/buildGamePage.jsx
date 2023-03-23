@@ -33,33 +33,8 @@ const BuildGamePage = () => {
 
   let card_locations = window.innerWidth / 3.1;
 
-  const [images, setImages] = useState([]);
-  useEffect(() => {
-    let imageObject;
-    let tempArray = [];
-    axios
-      .post(`${url}/getUploadedCardFaces`, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then( (res) => {
-        for (let i = 0; i < res.data.file.length; i++) {
-          imageObject = res.data.file[i];
-          const img = new window.Image();
-          img.src = `data:image/${
-            imageObject.imageSource.contentType
-          };base64,${Buffer.from(imageObject.imageSource.data).toString(
-            "base64"
-          )}`;
-          img.onload = () => {
-            tempArray.push(img);
-            setImages(tempArray);
-            console.log(tempArray.length);
-          };
-        }
-      })
-      .catch((err) => console.log(err));
-  }, []);
-
+  const [displayCards, setDisplayCards] = useState([]);
+  
   return (
     <>
       <Sidebar></Sidebar>
@@ -114,7 +89,7 @@ const BuildGamePage = () => {
               strokeWidth={5}
               fill="#EBEBEB"
             />
-            {images.map((item, index) => (
+            {displayCards.map((item, index) => (
               <Image
                 key={index}
                 image={item}
@@ -131,7 +106,7 @@ const BuildGamePage = () => {
         </Stage>
       </div>
       <div className="bgame-toolbar">
-        <BottomToolbar />
+        <BottomToolbar setDisplayCards = {setDisplayCards}/>
       </div>
     </>
   );

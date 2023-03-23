@@ -282,7 +282,11 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
     };
 
     const result = await Grid.create(cardDeck);
-    res.status(200).send({message: "Grid inserted successfully", newDeckId: result._id});
+    res.status(200).send({
+      message: "Grid inserted successfully",
+      newDeckId: result._id,
+      displayDeck: cardDocuments,
+    });
   } catch (error) {
     console.error("Failed to insert grid", error);
     res.status(500).send("Failed to insert grid");

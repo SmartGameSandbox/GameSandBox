@@ -9,13 +9,12 @@ import { ReactSession } from "react-client-session";
 import ImageUploadForm from "../buildGame/imageUploadForm";
 import "./bottomToolbar.css";
 import axios from "axios";
+const Buffer = require("buffer").Buffer;
 
 ReactSession.setStoreType("localStorage");
 
-
-function BottomToolbar() {
-
-
+function BottomToolbar(props) {
+  let setDisplayCards = props.setDisplayCards;
 
   const url =
     process.env.NODE_ENV === "production"
@@ -30,6 +29,8 @@ function BottomToolbar() {
 
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
+
+  const [deck, setDeck] = useState([]);
 
   useEffect(() => {
     if (images.length < 1) return;
@@ -50,22 +51,42 @@ function BottomToolbar() {
 
     let creatorId = ReactSession.get("id");
     let newDeckId = ReactSession.get("newDeckId");
-    
+
     const gameInfo = location.state;
     gameInfo.creatorId = creatorId;
     gameInfo.newDeckId = newDeckId;
 
     axios
-    .post(`${url}/api/saveGame`, gameInfo, {
-      headers: { "Content-Type": "application/json" },
-    })
-    .then(async (res) => {
-      console.log("Game successfully created with card deck uploaded.");
-      await ReactSession.remove("newDeckId");
-      navigate("/dashboard");
-    })
-    .catch((err) => console.log(err));
+      .post(`${url}/api/saveGame`, gameInfo, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then(async (res) => {
+        console.log("Game successfully created with card deck uploaded.");
+        await ReactSession.remove("newDeckId");
+        navigate("/dashboard");
+      })
+      .catch((err) => console.log(err));
   }
+
+  const handleCardDisplay = async () => {
+    let imageObject;
+    let cardImages = [];
+
+    for (let i = 0; i < deck.length; i++) {
+      imageObject = deck[i];
+      const img = new window.Image();
+      img.src = `data:image/${
+        imageObject.imageSource.contentType
+      };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
+
+      img.onload = async () => {
+        await cardImages.push(img);
+        await setDisplayCards(cardImages);
+      };
+    }
+
+    setShowUpload(false);
+  };
 
   return (
     <>
@@ -149,7 +170,7 @@ function BottomToolbar() {
             theme="secondary"
             size="large"
             variant="contained"
-            onClick={() => setShowUpload(false)}
+            onClick={() => handleCardDisplay()}
             style={{
               marginTop: "15px",
             }}
@@ -169,6 +190,7 @@ function BottomToolbar() {
             onImageChange={onImageChange}
             imageURLs={imageURLs}
             setImageURLs={setImageURLs}
+            setDeck={setDeck}
           />
         </Modal>
       </Modal>
