@@ -15,8 +15,6 @@ const styles = {
         mt: 10,
         pt: 3,
         pl: 5,
-
-        // backgroundColor: Constants.COLOR_PRIMARY
     },
     board: {
         width: "800px",
@@ -29,23 +27,23 @@ const styles = {
     createRoomButtonStyle: {
         mt: "20px",
     },
+    canvasWrapper: {
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: '2em'
+    },
     stageWrapper: {
-        backgroundColor: "white",
         width: Constants.CANVAS_WIDTH + "px",
         height: Constants.CANVAS_HEIGHT + "px",
-        display: "block",
-        position: "relative",
     },
     roomWrapper: {
-        backgroundColor: "rgba(0, 150, 136, 0.3)",
+        height: "100%",
         width: "100%",
         minWidth: `${Constants.CANVAS_WIDTH}px`,
-        paddingTop: "50px",
-        paddingLeft: `calc(50% - ${0.5 * Constants.CANVAS_WIDTH}px)`,
         maxWidth: "100%",
-        margin: 0,
-        paddingBottom: "50px",
-        minHeight: "calc(100% - 64px)",
+        minHeight: `${Constants.CANVAS_HEIGHT}px`,
         boxSizing: "border-box"
     },
     createRoomErrorStyle: {

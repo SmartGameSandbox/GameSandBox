@@ -192,10 +192,20 @@ const Table = ({ socket, username }) => {
             <Layer>
                 <Rect
                     x={0}
+                    y={0}
+                    width={Constants.CANVAS_WIDTH}
+                    height={Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT}
+                    stroke="#163B6E"
+                    strokeWidth={5}
+                    fill="#EBEBEB"
+                />
+                <Rect
+                    x={0}
                     y={Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT}
                     width={Constants.HAND_WIDTH}
                     height={Constants.HAND_HEIGHT}
-                    fill={"rgba(100, 177, 177, 1)"}
+                    fill="#163B6E"
+                    
                 />
 
                 <Deck
@@ -227,6 +237,8 @@ const Table = ({ socket, username }) => {
                     setTableData={setTableData}
                     canEmit={canEmit}
                     emitMouseChange={emitMouseChange}
+                    x={'500px'}
+                    fill="red"
                 />
             </Layer>
             <Layer>
