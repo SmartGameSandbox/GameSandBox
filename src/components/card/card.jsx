@@ -1,11 +1,12 @@
-import React from 'react';
-import { Image } from 'react-konva';
-import * as Constants from '../../util/constants';
+import React from "react";
+import { Image } from "react-konva";
+import * as Constants from "../../util/constants";
+const Buffer = require("buffer").Buffer;
 
 class Card extends React.Component {
   state = {
     image: null,
-    imageNode: null
+    imageNode: null,
   };
 
   componentDidMount() {
@@ -19,18 +20,23 @@ class Card extends React.Component {
   }
 
   componentWillUnmount() {
-    this.image.removeEventListener('load', this.handleLoad);
+    this.image.removeEventListener("load", this.handleLoad);
   }
 
-  loadImage() {
+  async loadImage() {
     this.image = new window.Image();
-    this.image.src = this.props.src;
-    this.image.addEventListener('load', this.handleLoad);
+    let imageObj = this.props.src;
+
+    this.image.src = `data:image/${imageObj.contentType};base64,${Buffer.from(
+      imageObj.data
+    ).toString("base64")}`;
+
+    this.image.addEventListener("load", this.handleLoad);
   }
 
   handleLoad = () => {
     this.setState(() => ({ image: this.image }));
-  }
+  };
 
   render() {
     return (
@@ -42,12 +48,17 @@ class Card extends React.Component {
         width={Constants.CARD_WIDTH}
         image={this.state.image}
         draggable
-        onDragMove={(e) => {this.props.onDragMove(e, this.props.id);}}
-        onDragStart={(e) => {this.props.onDragStart(e, this.props.id);}}
-        onClick={(e) => {this.props.onClick(e, this.props.id);}}
-        onDragEnd={(e) => {this.props.onDragEnd(e, this.props.id);}}
-        ref={(node) => {
-          this.imageNode = node;
+        onDragMove={(e) => {
+          this.props.onDragMove(e, this.props.id);
+        }}
+        onDragStart={(e) => {
+          this.props.onDragStart(e, this.props.id);
+        }}
+        onClick={(e) => {
+          this.props.onClick(e, this.props.id);
+        }}
+        onDragEnd={(e) => {
+          this.props.onDragEnd(e, this.props.id);
         }}
       />
     );

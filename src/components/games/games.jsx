@@ -5,8 +5,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
 import { ReactSession } from "react-client-session";
-import {SMARTButton, SMARTIconButton} from '../button/button';
-import CasinoIcon from '@mui/icons-material/Casino';
+import { SMARTButton, SMARTIconButton } from "../button/button";
+import CasinoIcon from "@mui/icons-material/Casino";
 import logo from "../icons/Group_89.png";
 import Sidebar from "../sidebar/Sidebar";
 import Modal from "../modal/modal";
@@ -16,76 +16,110 @@ ReactSession.setStoreType("localStorage");
 
 const Games = () => {
   const [isLoading, setLoading] = useState(true); // Loading state
-  const [gamesThings, setGames] = useState(); // pokemon state
-  let list = []
-  let gamesList = null
-  let test = "<p>This works</p>"
-  let counter = false
-  useEffect(() => {
-    setTimeout(() => { // simulate a delay
+  const [gamesButtons, setGamesButtons] = useState(); // pokemon state
+  let gameList = [];
+  let gameDisplayList = null;
 
-    if (!counter){
-      counter = true;
-      const id = ReactSession.get("id");
-      let games = null;
-      const url =
-        process.env.NODE_ENV === "production"
-          ? "https://smartgamesandbox.herokuapp.com"
-          : "http://localhost:8000";
-      axios
-        .get(`${url}/api/games`, {
-          params: {
-            id: id
-          }
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            games = response.data.games;
-            for (let i = 0; i < games.length; i++) {
-              list.push(games[i].name)
+  let counter = false;
+  useEffect(() => {
+    setTimeout(() => {
+      // simulate a delay
+
+      if (!counter) {
+        counter = true;
+        const id = ReactSession.get("id");
+        let games = null;
+        const url =
+          process.env.NODE_ENV === "production"
+            ? "https://smartgamesandbox.herokuapp.com"
+            : "http://localhost:8000";
+        axios
+          .get(`${url}/api/games`, {
+            params: {
+              creatorId: id,
+            },
+          })
+          .then((response) => {
+            if (response.status === 200) {
+              games = response.data.games;
+              for (let i = 0; i < games.length; i++) {
+                gameList.push({ name: games[i].name, id: games[i]._id });
+              }
+              gameDisplayList = gameList.map((gameObj, index) => (
+                <SMARTButton
+                  key={index}
+                  sx={styles.gameButtons}
+                  onClick={() => createroom(gameObj.id)}
+                >
+                  {gameObj.name}
+                </SMARTButton>
+              ));
+              setGamesButtons(gameDisplayList);
+              setLoading(false);
             }
-            gamesList = list.map((games) =>
-            <SMARTButton
-            sx = {styles.gameButtons}
-            >
-                {games}
-            </SMARTButton>
-      );
-            setGames(gamesList)
-            setLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.log(error.response.data.message);
-        });
-    }
-    }, 10)})
-  
-  if (isLoading){
+          })
+          .catch((error) => {
+            console.log(error.response.data.message);
+          });
+      }
+    }, 10);
+  });
+
+  const createroom = async (gameId) => {
+    let cardDeckIdArray;
+    let roomname;
+    const url =
+      process.env.NODE_ENV === "production"
+        ? "https://smartgamesandbox.herokuapp.com"
+        : "http://localhost:8000";
+
+    await axios
+      .get(`${url}/api/games`, {
+        params: {
+          gameId: gameId,
+        },
+      })
+      .then((response) => {
+        cardDeckIdArray = response.data.games.cardDeck;
+        roomname = response.data.games.name;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+      console.log("Game data retreived, starting up game");
+
+
+      await axios.post(`${url}/api/room`, {
+        name: roomname,
+        image: null,
+        cardDeck: cardDeckIdArray
+      }).then((response) => {
+        window.location.href = `/room?id=${response.data.id}`;
+      }).catch((error) => {
+        console.log(error);
+      });
+  };
+
+  if (isLoading) {
     return (
       <div style={styles.body}>
-      <Header />
-      <div>
+        <Header />
+        <div>
           <Sidebar />
+        </div>
       </div>
-  </div>
-  );
+    );
   }
   return (
     <div style={styles.body}>
-    <Header />
-    <div>
+      <Header />
+      <div>
         <Sidebar />
-        <div style={styles.btnGroup}>
-          {gamesThings}
-        </div>
-
+        <div style={styles.btnGroup}>{gamesButtons}</div>
+      </div>
     </div>
-</div>
-);
-
+  );
 };
-
-
 
 export default Games;

@@ -82,8 +82,10 @@ function BottomToolbar(props) {
       img.onload = async () => {
         await cardImages.push(img);
         await setDisplayCards(cardImages);
+        console.log(cardImages)
       };
     }
+
 
     setShowUpload(false);
   };

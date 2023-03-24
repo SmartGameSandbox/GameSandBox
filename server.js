@@ -154,6 +154,7 @@ app.get("/api/room", async (req, res) => {
 app.post("/api/room", async (req, res) => {
   const ROOM_ID_LENGTH = 10;
   let roomID = 0;
+  let cardDeckId = null;
   try {
     do {
       roomID = idGenerator(ROOM_ID_LENGTH);
@@ -161,15 +162,29 @@ app.post("/api/room", async (req, res) => {
     if (!req.body) {
       throw new Error("Error: No room body provided");
     }
-    const allCards = await Card.find();
+    if (req.body.cardDeck) {
+      cardDeckId = req.body.cardDeck[0];
+    }
+
+    let allCards;
+
+    if (cardDeckId === null) {
+      allCards= await Card.find();
+    } else {
+      deck = await Grid.find({_id: new ObjectId(cardDeckId)});
+      allCards = deck[0].deck;
+    }
+
     const gameRoomData = {
       id: roomID,
       name: req.body.name,
       image: req.body.image,
       deck: allCards,
       hand: {},
-      cards: [],
+      cards: allCards,
     };
+
+    console.log(gameRoomData);
     const room = new Room(gameRoomData);
     const result = await room.save();
     if (!result) {
@@ -238,7 +253,12 @@ app.post("/api/login", async (req, res) => {
 
 app.get("/api/games", async (req, res) => {
   try {
-    let games = await Game.find({ creator: req.query.id });
+    let games = null;
+    if (req.query.gameId) {
+      games = await Game.findOne({ _id: new ObjectId(req.query.gameId) });
+    } else {
+      games = await Game.find({ creator: req.query.creatorId });
+    }
     if (!games) {
       throw new Error("No games");
     }
@@ -256,6 +276,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //Image Upload REST APIs
 app.post("/api/upload", upload.single("image"), async (req, res) => {
   try {
+
     const totalCards = parseInt(req.body.totalCards);
     const cardDeckName = req.file.filename;
     const imageData = fs.readFileSync(
@@ -316,7 +337,7 @@ app.post("/api/saveGame", async (req, res) => {
   }
 });
 
-let sliceImages = async (BufferData, cols, rows) => {
+const sliceImages = async (BufferData, cols, rows) => {
   cardArray = [];
   const inputBuffer = Buffer.from(BufferData);
   const numCols = cols;
@@ -350,7 +371,7 @@ let sliceImages = async (BufferData, cols, rows) => {
   return cardArray;
 };
 
-let createCardObjects = async (cardArray) => {
+const createCardObjects = async (cardArray) => {
   //Card Array consists of buffers for every card in the deck.
   const cardObjects = [];
 
@@ -372,16 +393,6 @@ let createCardObjects = async (cardArray) => {
 
   return cardObjects;
 };
-
-// load face of the cards
-app.post("/getUploadedCardFaces", async (req, res) => {
-  try {
-    const result = await Grid.findOne({ name: "image-1679264637177" });
-    res.json({ file: result["deck"] });
-  } catch (err) {
-    console.log(err);
-  }
-});
 
 http.listen(port, async (err) => {
   if (err) return console.loge(err);

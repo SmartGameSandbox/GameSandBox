@@ -7,6 +7,7 @@ const cardv2Schema = new Schema(
       type: String,
       required: true,
       immutable: true,
+      unique: true
     },
     x: { type: Number, required: true },
     y: { type: Number, required: true },

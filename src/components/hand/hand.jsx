@@ -11,8 +11,7 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
             prevTable.hand = prevTable.hand.map((card) => {
                 if (card.id === cardID) {
                     card.isFlipped = !card.isFlipped;
-                    card.imageSource = card.isFlipped ? `${process.env.PUBLIC_URL}/assets/images/PokerCardBack.png` :
-                        `${process.env.PUBLIC_URL}/assets/images/PokerCardFront/card_${cardID}.jpg`;
+                    card.imageSource = card.imageSource;
                 }
                 return card;
             });
