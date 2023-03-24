@@ -184,7 +184,6 @@ app.post("/api/room", async (req, res) => {
       cards: allCards,
     };
 
-    console.log(gameRoomData);
     const room = new Room(gameRoomData);
     const result = await room.save();
     if (!result) {
@@ -395,7 +394,7 @@ const createCardObjects = async (cardArray) => {
 };
 
 http.listen(port, async (err) => {
-  if (err) return console.loge(err);
+  if (err) return console.log(err);
 
   try {
     await mongoose.connect(
