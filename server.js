@@ -181,7 +181,7 @@ app.post("/api/room", async (req, res) => {
       image: req.body.image,
       deck: allCards,
       hand: {},
-      cards: allCards,
+      cards: [],
     };
 
     const room = new Room(gameRoomData);
