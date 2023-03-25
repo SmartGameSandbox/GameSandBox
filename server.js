@@ -168,12 +168,25 @@ app.post("/api/room", async (req, res) => {
 
     let allCards;
 
+    // cardDeckId = null;
     if (cardDeckId === null) {
       allCards= await Card.find();
     } else {
       deck = await Grid.find({_id: new ObjectId(cardDeckId)});
       allCards = deck[0].deck;
     }
+
+    // workaround (for now) for type attribute causing bugs
+    allCards = allCards.map(card => {
+      return {
+        imageSource: card.imageSource,
+        id: card.id,
+        x: card.x,
+        y: card.y,
+        isFlipped: card.isFlipped,
+        _id: card._id
+      }
+    })
 
     const gameRoomData = {
       id: roomID,
