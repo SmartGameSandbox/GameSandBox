@@ -43,6 +43,7 @@ const ImageUploadForm = (props) => {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(async (res) => {
+        console.log(res);
         const deckUploaded = await res.data.displayDeck;
         await setDeck(deckUploaded);
         await ReactSession.set("newDeckId", res.data.newDeckId);
