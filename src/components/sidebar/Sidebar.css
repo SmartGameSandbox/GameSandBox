@@ -1,0 +1,119 @@
+.navbar {
+    font-family: Nunito;
+    font-weight: bold;
+    color: #fff;
+    display: grid;
+    grid-template-columns: 3.5rem auto;
+    grid-template-rows: 5rem 3.5rem auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+    min-height: 100vh;
+    width: 3.5rem;
+    z-index: 100;
+}
+
+#options {
+    background-color: #163B6E;
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    display: grid;
+    grid-template-rows: 5rem 3.5rem 3.5rem auto 3.5rem 5rem;
+}
+
+#close-open {
+    grid-column: 1;
+    grid-row: 2;
+    background-color: #163B6E;
+    border-radius: 50% 0% 0% 50%;
+    display: grid;
+    grid-template-columns: 20% auto 20%;
+    grid-template-rows: 15% auto 15%;
+}
+
+#options div, #close-open {
+    cursor: pointer;
+}
+
+.navbar img {
+    filter: invert(100%);
+    width: 2.2em;
+    margin: auto 0% auto auto;
+}
+
+#close-arrow {
+    transform: rotate(180deg);
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#profile {
+    grid-row: 2;
+    display: none;
+    grid-template-columns: 30% 70%;
+    align-items: center;
+    padding-left: 5%;
+}
+#settings {
+    grid-row: 3;
+    display: none;
+    grid-template-columns: 30% 70%;
+    align-items: center;
+    padding-left: 5%;
+}
+#logout {
+    grid-row: 5;
+    display: none;
+    grid-template-columns: 30% 70%;
+    align-items: center;
+    padding-left: 5%;
+}
+#options {
+    display: none;
+    box-shadow: -.8em 0em 7em rgb(0, 0, 0);
+}
+
+.navbar a {
+    margin: auto auto auto 10%;
+    color: white;
+    text-decoration: none;
+}
+.navbar p {
+    margin: auto auto auto 10%;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(180deg);
+    }
+}
+
+@keyframes rotationBackwards {
+    from {
+        transform: rotate(180deg);
+    }
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes closingColumns {
+    from {
+        width: 40vh;
+    }
+    to {
+        width: 3.5rem;
+    }
+}
+
+@keyframes openingColumns {
+    from {
+        width: 3.5rem;
+    }
+    to {
+        width: 40vh;
+    }
+}

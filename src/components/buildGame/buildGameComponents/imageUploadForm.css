@@ -1,0 +1,86 @@
+.bg-form form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+  gap: 1em;
+}
+
+.bg-form .row {
+  width: 100%;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.bg-form label {
+  text-align: end;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.bg-form input {
+  border-radius: 10px;
+  border: none;
+  font: inherit;
+}
+
+.bg-form input:focus {
+  outline: none;
+  border-color: #4f005f;
+}
+
+.btnContainer {
+  grid-column-start: 1;
+  grid-column-end: 3;
+}
+
+.btnContainer .bg-createGameBtn {
+  width: 50%;
+  margin-left: 25%;
+}
+
+.bg-form input[type="file"] {
+  width: 48%;
+  overflow-x: hidden;
+}
+
+.checkbox-wrapper div {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  /* removing default appearance */
+  -webkit-appearance: none;
+  appearance: none;
+  /* creating a custom design */
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 0.15em;
+  border: 0.15em solid #000;
+  outline: none;
+  cursor: pointer;
+  margin-right: 0.25em;
+}
+
+input.checked {
+  background-color: transparent;
+  position: relative;
+}
+
+input.checked::before {
+  content: "\2714";
+  font-size: 1.5em;
+  color: black;
+  background: transparent;
+  position: absolute;
+  right: 1px;
+  top: -5px;
+}

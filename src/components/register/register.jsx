@@ -3,7 +3,10 @@ import styles from "./registerStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import {SMARTButton} from '../button/button';
 import axios from 'axios';
+import logo from "../icons/Group_89.png";
+import { ReactSession } from "react-client-session";
 
 const Register = () => {
   const [usernameInputText, setUsernameInputText] = React.useState("");
@@ -36,7 +39,7 @@ const Register = () => {
     if (password !== confirmPw) {
       setErrorMessage("Passwords do not match");
     } else {
-      const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
+      const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
       axios.post(`${url}/api/register`, {
         username: username,
         email: email,
@@ -44,7 +47,9 @@ const Register = () => {
       }).then((response) => {
         if (response.status === 200) {
           setErrorMessage("");
-          window.location.href = "/login";
+          ReactSession.set("username", response.data.user.username);
+          ReactSession.set("id", response.data.user._id);
+          window.location.href = "/dashboard";
         } else {
           setErrorMessage(response.data.message);
         }
@@ -56,77 +61,148 @@ const Register = () => {
 
   return (
     <>
-      <Box
-        sx={styles.loginBoxStyle}
-        id="create-account-container"
-        component="form"
-        autoComplete="off"
-      >
-        <h1>Create User</h1>
-          <div>
-            <TextField
-              id="username-input"
-              sx={styles.textFieldStyle}
-              placeholder="Please select your username"
-              value={usernameInputText}
-              onChange={handleUsernameTextInputChange}
-              className="text-field"
-              required
-              label="Username"
-              size="large"
-            />
-            <br />
-            <TextField
-              id="email-input"
-              sx={styles.textFieldStyle}
-              placeholder="Please enter your email address"
-              value={emailInputText}
-              onChange={handleEmailInputtTextChange}
-              className="text-field"
-              required
-              label="Email Address"
-              type={"email"}
-              size="large"
-            />
-            <br />
-            <TextField
-              id="password-input"
-              sx={styles.textFieldStyle}
-              placeholder="Please create your password"
-              value={passwordInputText}
-              onChange={handlePasswordTextInputChange}
-              className="text-field"
-              required
-              label="Password"
-              type={"password"}
-              size="large"
-            />
-            <br />
-            <TextField
-              id="confirm-password-input"
-              sx={styles.textFieldStyle}
-              placeholder="Please confirm your password"
-              value={confirmPasswordInputText}
-              onChange={handleConfirmPasswordTextInputChange}
-              className="text-field"
-              required
-              label="Confirm Password"
-              type={"password"}
-              size="large"
-            />
-          </div>
-          <p style={styles.errorMessageStyle}>{errorMessage}</p>
-          <div sx={styles.forgotPasswordStyle}>
-            <Button
-              variant="contained"
-              sx={styles.signInButtonStyle}
-              onClick={handleSubmit}
-              disabled={usernameInputText === "" || emailInputText === "" || passwordInputText === "" || confirmPasswordInputText === "" || passwordInputText !== confirmPasswordInputText}
-            >
-              Submit
-            </Button>
-          </div>
-      </Box>
+      <div id="main" style={styles.main}>
+        <div id="left" style={styles.left}>
+          <Box
+            sx={styles.loginBoxStyle}
+            id="create-account-container"
+            component="form"
+            autoComplete="off"
+          >
+            <h1>Sign Up</h1>
+            <div>
+              <TextField
+                id="username-input"
+                sx={styles.textFieldStyle}
+                placeholder="Please select your username"
+                value={usernameInputText}
+                onChange={handleUsernameTextInputChange}
+                className="text-field"
+                required
+                label="Username"
+                size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
+              />
+              <br />
+              <TextField
+                id="email-input"
+                sx={styles.textFieldStyle}
+                placeholder="Please enter your email address"
+                value={emailInputText}
+                onChange={handleEmailInputtTextChange}
+                className="text-field"
+                required
+                label="Email Address"
+                type={"email"}
+                size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
+              />
+              <br />
+              <TextField
+                id="password-input"
+                sx={styles.textFieldStyle}
+                placeholder="Please create your password"
+                value={passwordInputText}
+                onChange={handlePasswordTextInputChange}
+                className="text-field"
+                required
+                label="Password"
+                type={"password"}
+                size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
+              />
+              <br />
+              <TextField
+                id="confirm-password-input"
+                sx={styles.textFieldStyle}
+                placeholder="Please confirm your password"
+                value={confirmPasswordInputText}
+                onChange={handleConfirmPasswordTextInputChange}
+                className="text-field"
+                required
+                label="Confirm Password"
+                type={"password"}
+                size="large"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                    position: "relative",
+                    top: "10px",
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    backgroundColor: "#f2f2f2",
+                    borderRadius: "15px",
+                  },
+                }}
+              />
+            </div>
+            <p style={styles.errorMessageStyle}>{errorMessage}</p>
+            <div sx={styles.forgotPasswordStyle}>
+              <div>
+                <span> Have an account?</span>
+                <Button href="/login">Login</Button> {/** change the route */}
+              </div>
+              <SMARTButton
+                size="large"
+                theme="secondary"
+                variant="contained"
+                sx={styles.signInButtonStyle}
+                onClick={handleSubmit}
+                disabled={
+                  usernameInputText === "" ||
+                  emailInputText === "" ||
+                  passwordInputText === "" ||
+                  confirmPasswordInputText === "" ||
+                  passwordInputText !== confirmPasswordInputText
+                }
+              >
+                Sign Up
+              </SMARTButton>
+            </div>
+          </Box>
+        </div>
+        <div id="right" style={styles.right}>
+          <img src={logo} style={{ width: "200px" }} />
+        </div>
+      </div>
     </>
   );
 };

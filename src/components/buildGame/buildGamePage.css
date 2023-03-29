@@ -1,0 +1,24 @@
+.bgame-container {
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+.bgame-header {
+    padding-top: 3%;
+    padding-left: 2%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.bgame-heading {
+    color: black;
+    margin-left: 2%;
+    font-size: 26px;
+}
+
+.bgame-toolbar {
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-bottom: 30px;
+}

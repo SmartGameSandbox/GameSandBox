@@ -3,8 +3,10 @@ import axios from 'axios';
 import styles from './roomStyle';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+// import Button from '@mui/material/Button';
 import FileBase64 from 'react-file-base64';
+// import buttonStyles from '../button/button';
+import {SMARTButton} from '../button/button';
 const CreateRoom = () => {
   const [item, setItem] = React.useState({ imageUrl: '' });
   const [roomNameInputText, setRoomNameInputText] = React.useState('Card Game Sandbox');
@@ -13,19 +15,13 @@ const CreateRoom = () => {
     setRoomNameInputText(event.target.value);
   };
 
-  const [passwordInputText, setPasswordInputText] = React.useState('');
-  const handlePasswordTextInputChange = event => {
-    setPasswordInputText(event.target.value);
-  };
-
   const createRoom = () => {
-    const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:5000";
+    const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
     axios.post(`${url}/api/room`, {
       name: roomNameInputText,
-      password: passwordInputText,
       image: item.imageUrl === '' ? null : item.imageUrl
     }).then((response) => {
-      window.location.href = `/room?id=${response.data.id}&password=${response.data.password}`;
+      window.location.href = `/room?id=${response.data.id}`;
     }).catch((error) => {
       setErrorMsg(error.response.statusText);
       console.log(error);
@@ -53,17 +49,6 @@ const CreateRoom = () => {
             size="large"
           />
           <br />
-          <TextField
-            id="password-input"
-            sx={styles.textFieldStyle}
-            value={passwordInputText}
-            onChange={handlePasswordTextInputChange}
-            className="text-field"
-            required
-            label="Password"
-            type={"password"}
-            size="large"
-          />
           <FileBase64
             type="file"
             multiple={false}
@@ -71,7 +56,7 @@ const CreateRoom = () => {
           />
         </div>
         <p style={styles.createRoomErrorStyle}>{errorMsg}</p>
-        <Button variant="contained" sx={styles.createRoomButtonStyle} onClick={() => { createRoom(); }}>Create Room</Button>
+        <SMARTButton theme='secondary' size='large' variant="contained" sx={styles.createRoomButtonStyle} onClick={() => { createRoom(); }}>Create Room</SMARTButton>
       </Box>
     </>
   );
