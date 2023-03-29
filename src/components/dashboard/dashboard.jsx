@@ -4,7 +4,7 @@ import {SMARTButton} from '../button/button';
 import styles from './dashboardStyle';
 import Sidebar from "../sidebar/Sidebar";
 import Modal from "../modal/modal";
-import BuildGameForm from "../buildGame/buildGameForm";
+import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
 import Header from "../header/header";
 import axios from 'axios';
 

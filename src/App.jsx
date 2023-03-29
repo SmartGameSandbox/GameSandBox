@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
 import Room from "./components/rooms/room";
 // import JoinRoom from "./components/rooms/joinRoom";
-import MyGames from "./components/myGames/myGames";
+import SavedGames from "./components/savedGames/savedGames";
 import Login from "./components/login/login";
 import Logout from "./components/logout/logout";
 import Register from "./components/register/register";
@@ -54,7 +54,7 @@ const App = () => {
           /> */}
           <Route
             path="/mygames"
-            element={isAuthed() ? <MyGames /> : <Navigate to="/login" />}
+            element={isAuthed() ? <SavedGames /> : <Navigate to="/login" />}
           />
           <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />

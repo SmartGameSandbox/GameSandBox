@@ -3,7 +3,7 @@ import "./imageUploadForm.css";
 import React from "react";
 import { ReactSession } from "react-client-session";
 import { useState, useEffect } from "react";
-import { SMARTButton } from "../button/button";
+import { SMARTButton } from "../../button/button";
 import axios from "axios";
 
 ReactSession.setStoreType("localStorage");

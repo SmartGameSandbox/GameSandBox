@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styles from "./games";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import axios from "axios";
 import { ReactSession } from "react-client-session";
 import { SMARTButton, SMARTIconButton } from "../button/button";
-import CasinoIcon from "@mui/icons-material/Casino";
-import logo from "../icons/Group_89.png";
 import Sidebar from "../sidebar/Sidebar";
-import Modal from "../modal/modal";
-import BuildGameForm from "../buildGame/buildGameForm";
 import Header from "../header/header";
 ReactSession.setStoreType("localStorage");
 
@@ -87,16 +80,18 @@ const Games = () => {
         console.log(error);
       });
 
-      console.log("Game data retreived, starting up game");
+    console.log("Game data retreived, starting up game");
 
-
-      await axios.post(`${url}/api/room`, {
+    await axios
+      .post(`${url}/api/room`, {
         name: roomname,
         image: null,
-        cardDeck: cardDeckIdArray
-      }).then((response) => {
+        cardDeck: cardDeckIdArray,
+      })
+      .then((response) => {
         window.location.href = `/room?id=${response.data.id}`;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.log(error);
       });
   };

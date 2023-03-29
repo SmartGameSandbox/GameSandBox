@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Stage, Layer, Rect, Image } from "react-konva";
 import { FaArrowLeft, FaEdit } from "react-icons/fa";
 import "./buildGamePage.css";
-import BottomToolbar from "../toolbar/bottomToolbar";
+import BottomToolbar from "./buildGameComponents/bottomToolbar";
 import Sidebar from "../sidebar/Sidebar";
 import axios from "axios";
 import { SMARTButton } from "../button/button";

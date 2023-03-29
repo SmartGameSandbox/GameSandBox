@@ -12,7 +12,7 @@ const styles = {
   right: {
     gridColumn: 2,
     size: "100%",
-    margin: "auto"
+    margin: "auto",
   },
   textFieldStyle: {
     mb: 2.0,
@@ -47,40 +47,39 @@ const styles = {
     marginBottom: 0,
     marginTop: 0,
   },
-  gameButtons:{
+  gameButtons: {
     height: "2em",
     width: "80%",
     marginLeft: "10%",
-    marginTop:"0.5em",
-    backgroundColor:"#163B6E",
+    marginTop: "0.5em",
+    backgroundColor: "#163B6E",
     color: "white",
     fontSize: "2em",
     border: "none",
     fontWeight: "bold",
     fontFamily: "Nunito",
     justifyContent: "center",
-},
+  },
   btnGroup: {
     boxSizing: "border-box",
     padding: "2%",
     gridGap: "2%",
-    justifyItems: 'center',
+    justifyItems: "center",
     justifyContent: "center",
-},
-loading:{
-  height: "2em",
-  width: "20%",
-  marginLeft: "10%",
-  marginTop:"0.5em",
-  backgroundColor:"#163B6E",
-  color: "white",
-  fontSize: "2em",
-  border: "none",
-  fontWeight: "bold",
-  fontFamily: "Nunito",
-  justifyContent: "center",
-}
-
+  },
+  loading: {
+    height: "2em",
+    width: "20%",
+    marginLeft: "10%",
+    marginTop: "0.5em",
+    backgroundColor: "#163B6E",
+    color: "white",
+    fontSize: "2em",
+    border: "none",
+    fontWeight: "bold",
+    fontFamily: "Nunito",
+    justifyContent: "center",
+  },
 };
 
 export default styles;
