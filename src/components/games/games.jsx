@@ -73,8 +73,8 @@ const Games = () => {
         },
       })
       .then((response) => {
-        cardDeckIdArray = response.data.games.cardDeck;
-        roomname = response.data.games.name;
+        cardDeckIdArray = response.data.savedGames.cardDeck;
+        roomname = response.data.savedGames.name;
       })
       .catch((error) => {
         console.log(error);
