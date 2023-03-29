@@ -58,7 +58,8 @@ const App = () => {
           />
           <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/newaccount" element={<Register />} />
+          <Route path="/newaccount" element={!isAuthed() ? <Register /> : <Navigate to="/dashboard" />} />
+
           <Route path="/logout" element={<Logout />} />
         </Routes>
       </BrowserRouter>

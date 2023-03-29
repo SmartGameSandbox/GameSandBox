@@ -36,7 +36,6 @@ const Login = () => {
       .then((response) => {
         if (response.status === 200) {
           setErrorMessage("");
-          console.log(response.data.user)
           ReactSession.set("username", response.data.user.username);
           ReactSession.set("id", response.data.user._id);
           window.location.href = "/dashboard";

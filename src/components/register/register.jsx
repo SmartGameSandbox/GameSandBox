@@ -48,6 +48,7 @@ const Register = () => {
         if (response.status === 200) {
           setErrorMessage("");
           ReactSession.set("username", response.data.user.username);
+          ReactSession.set("id", response.data.user._id);
           window.location.href = "/dashboard";
         } else {
           setErrorMessage(response.data.message);
