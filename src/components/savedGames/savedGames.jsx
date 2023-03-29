@@ -59,7 +59,7 @@ const SavedGames = () => {
             }
           })
           .catch((error) => {
-            console.log(error);
+            console.log("Error" + error);
           });
       }
     }, 1000);
