@@ -13,12 +13,14 @@ const { ObjectId } = require("bson");
 var io;
 app.use(cors());
 io = require("socket.io")(http, { cors: { origin: "*" } });
+
 // if (process.env.NODE_ENV !== "production") {
 //   app.use(cors());
 //   io = require("socket.io")(http, { cors: { origin: "*" } });
 // } else {
 //   io = require("socket.io")(http);
 // }
+
 const path = require("path");
 const port = process.env.PORT || 8000;
 const mongoose = require("mongoose");
@@ -170,23 +172,23 @@ app.post("/api/room", async (req, res) => {
 
     // cardDeckId = null;
     if (cardDeckId === null) {
-      allCards= await Card.find();
+      allCards = await Card.find();
     } else {
-      deck = await Grid.find({_id: new ObjectId(cardDeckId)});
+      deck = await Grid.find({ _id: new ObjectId(cardDeckId) });
       allCards = deck[0].deck;
     }
 
     // workaround (for now) for type attribute causing bugs
-    allCards = allCards.map(card => {
+    allCards = allCards.map((card) => {
       return {
         imageSource: card.imageSource,
         id: card.id,
         x: card.x,
         y: card.y,
         isFlipped: card.isFlipped,
-        _id: card._id
-      }
-    })
+        _id: card._id,
+      };
+    });
 
     const gameRoomData = {
       id: roomID,
@@ -210,13 +212,6 @@ app.post("/api/room", async (req, res) => {
   }
 });
 
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static("build"));
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "build", "index.html"));
-  });
-}
-
 // Register
 const { User } = require("./schemas/user");
 // const { constants } = require("buffer");
@@ -224,7 +219,6 @@ const { assert } = require("console");
 
 // createAccount
 app.post("/api/register", async (req, res) => {
-
   const newUser = new User({
     username: req.body.username,
     email: req.body.email,
@@ -270,26 +264,27 @@ app.get("/api/games", async (req, res) => {
     if (req.query.gameId) {
       games = await Game.findOne({ _id: new ObjectId(req.query.gameId) });
     } else {
-      games = await Game.find({ creator: req.query.creatorId });
+      games = await Game.find({ creator: new ObjectId(req.query.creatorId) });
     }
     if (!games) {
       throw new Error("No games");
     }
-    res
-      .status(200)
-      .json({ status: "success", message: "Games received", games: games });
+    res.status(200).send({ 
+      message: "Games received", 
+      savedGames: games 
+    });
+
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error("Failed to retreive games", err);
+    res.status(500).send("Failed to retreive games.");
   }
 });
 
 app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(bodyParser.json())
 
 //Image Upload REST APIs
 app.post("/api/upload", upload.single("image"), async (req, res) => {
   try {
-
     const totalCards = parseInt(req.body.totalCards);
     const cardDeckName = req.file.filename;
     const imageData = fs.readFileSync(
@@ -331,7 +326,7 @@ app.post("/api/saveGame", async (req, res) => {
   try {
     let name = req.body.name; //Game name.
     let numPlayers = parseInt(req.body.players);
-    let creatorId = req.body.creatorId; //User name for the creator of the game
+    let creatorId = req.body.creatorId; //id for the creator of the game
     let carDeckId = req.body.newDeckId;
     if (creatorId) {
       //Create a game now
@@ -406,6 +401,14 @@ const createCardObjects = async (cardArray) => {
 
   return cardObjects;
 };
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("build"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "build", "index.html"));
+  });
+}
+
 
 http.listen(port, async (err) => {
   if (err) return console.log(err);

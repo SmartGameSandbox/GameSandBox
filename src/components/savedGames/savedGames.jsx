@@ -8,6 +8,8 @@ import { ReactSession } from "react-client-session";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../header/header";
 import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
+import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
+
 
 ReactSession.setStoreType("localStorage");
 
@@ -38,8 +40,9 @@ const SavedGames = () => {
             },
           })
           .then((response) => {
+
             if (response.status === 200) {
-              games = response.data.games;
+              games = response.data.savedGames;
               for (let i = 0; i < games.length; i++) {
                 list.push(games[i].name);
               }
@@ -56,10 +59,10 @@ const SavedGames = () => {
             }
           })
           .catch((error) => {
-            console.log(error.response.data.message);
+            console.log(error);
           });
       }
-    }, 10);
+    }, 1000);
   });
 
   if (isLoading) {
@@ -67,6 +70,7 @@ const SavedGames = () => {
       <div style={Themes.body}>
         <Header />
         <div>
+        <LoadingSpinner />
           <Sidebar />
         </div>
       </div>

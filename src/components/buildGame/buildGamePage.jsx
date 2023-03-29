@@ -18,11 +18,6 @@ const BuildGamePage = () => {
     setHeader(location.state.name);
   }, [location]);
 
-  const url =
-    process.env.NODE_ENV === "production"
-      ? "https://smartgamesandbox.herokuapp.com"
-      : "http://localhost:8000";
-
   const goBack = () => {
     window.history.back();
   };

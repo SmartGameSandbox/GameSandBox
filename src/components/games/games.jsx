@@ -5,6 +5,7 @@ import { ReactSession } from "react-client-session";
 import { SMARTButton, SMARTIconButton } from "../button/button";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../header/header";
+import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 ReactSession.setStoreType("localStorage");
 
 const Games = () => {
@@ -26,36 +27,35 @@ const Games = () => {
           process.env.NODE_ENV === "production"
             ? "https://smartgamesandbox.herokuapp.com"
             : "http://localhost:8000";
+
         axios
           .get(`${url}/api/games`, {
             params: {
               creatorId: id,
             },
           })
-          .then((response) => {
-            if (response.status === 200) {
-              games = response.data.games;
-              for (let i = 0; i < games.length; i++) {
-                gameList.push({ name: games[i].name, id: games[i]._id });
-              }
-              gameDisplayList = gameList.map((gameObj, index) => (
-                <SMARTButton
-                  key={index}
-                  sx={styles.gameButtons}
-                  onClick={() => createroom(gameObj.id)}
-                >
-                  {gameObj.name}
-                </SMARTButton>
-              ));
-              setGamesButtons(gameDisplayList);
-              setLoading(false);
+          .then((res) => {
+            games = res.data.savedGames;
+            for (let i = 0; i < games.length; i++) {
+              gameList.push({ name: games[i].name, id: games[i]._id });
             }
+            gameDisplayList = gameList.map((gameObj, index) => (
+              <SMARTButton
+                key={index}
+                sx={styles.gameButtons}
+                onClick={() => createroom(gameObj.id)}
+              >
+                {gameObj.name}
+              </SMARTButton>
+            ));
+            setGamesButtons(gameDisplayList);
+            setLoading(false);
           })
           .catch((error) => {
-            console.log(error.response.data.message);
+            console.log(error);
           });
       }
-    }, 10);
+    }, 3000);
   });
 
   const createroom = async (gameId) => {
@@ -80,8 +80,6 @@ const Games = () => {
         console.log(error);
       });
 
-    console.log("Game data retreived, starting up game");
-
     await axios
       .post(`${url}/api/room`, {
         name: roomname,
@@ -101,6 +99,7 @@ const Games = () => {
       <div style={styles.body}>
         <Header />
         <div>
+          <LoadingSpinner />
           <Sidebar />
         </div>
       </div>
