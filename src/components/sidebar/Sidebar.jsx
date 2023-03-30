@@ -6,6 +6,11 @@ import logoutIcon from "../icons/power_settings_new_FILL0_wght400_GRAD0_opsz48.p
 import arrowIcon from "../icons/arrow_forward_ios_FILL0_wght400_GRAD0_opsz48.png";
 import $ from "jquery";
 
+let currVal = 2;
+if (process.env.NODE_ENV === "production") {
+  currVal = 1;
+}
+
 const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const firstTime = React.useRef(0);
@@ -38,14 +43,14 @@ const Sidebar = () => {
         });
       }, 800);
     } else {
-      $("#profile").slideToggle();
-      $("#settings").slideToggle();
-      $("#logout").slideToggle();
-
-      if (firstTime.current < 2) {
+      if (firstTime.current < currVal) {
         firstTime.current += 1;
         return;
       }
+
+      $("#profile").slideToggle();
+      $("#settings").slideToggle();
+      $("#logout").slideToggle();
   
       setTimeout(() => {
         $("#close-arrow").css({
