@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import styles from './roomStyle';
 import Box from '@mui/material/Box';
@@ -7,10 +7,13 @@ import TextField from '@mui/material/TextField';
 import FileBase64 from 'react-file-base64';
 // import buttonStyles from '../button/button';
 import {SMARTButton} from '../button/button';
+
 const CreateRoom = () => {
-  const [item, setItem] = React.useState({ imageUrl: '' });
-  const [roomNameInputText, setRoomNameInputText] = React.useState('Card Game Sandbox');
-  const [errorMsg, setErrorMsg] = React.useState('');
+
+  const [item, setItem] = useState({ imageUrl: '' });
+  const [roomNameInputText, setRoomNameInputText] = useState('Card Game Sandbox');
+  const [errorMsg, setErrorMsg] = useState('');
+  
   const handleRoomNameTextInputChange = event => {
     setRoomNameInputText(event.target.value);
   };

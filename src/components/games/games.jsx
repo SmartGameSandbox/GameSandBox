@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import styles from "./games";
 import axios from "axios";
-import { ReactSession } from "react-client-session";
 import { SMARTButton, SMARTIconButton } from "../button/button";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../header/header";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
-ReactSession.setStoreType("localStorage");
 
 const Games = () => {
   const [isLoading, setLoading] = useState(true); // Loading state
@@ -21,7 +19,7 @@ const Games = () => {
 
       if (!counter) {
         counter = true;
-        const id = ReactSession.get("id");
+        const id = localStorage.getItem("id");
         let games = null;
         const url =
           process.env.NODE_ENV === "production"

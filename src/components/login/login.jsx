@@ -1,22 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./loginStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
-import { ReactSession } from "react-client-session";
 import {SMARTButton, SMARTIconButton} from '../button/button';
 import CasinoIcon from '@mui/icons-material/Casino';
 import logo from "../icons/Group_89.png";
-ReactSession.setStoreType("localStorage");
 
 const Login = () => {
-  const [usernameInputText, setUsernameInputText] = React.useState("");
-  const [errorMessage, setErrorMessage] = React.useState("");
+  const [usernameInputText, setUsernameInputText] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [passwordInputText, setPasswordInputText] = useState("");
+
   const handleUsernameTextInputChange = (event) => {
     setUsernameInputText(event.target.value);
   };
-  const [passwordInputText, setPasswordInputText] = React.useState("");
   const handlePasswordTextInputChange = (event) => {
     setPasswordInputText(event.target.value);
   };
@@ -36,8 +35,8 @@ const Login = () => {
       .then((response) => {
         if (response.status === 200) {
           setErrorMessage("");
-          ReactSession.set("username", response.data.user.username);
-          ReactSession.set("id", response.data.user._id);
+          localStorage.setItem("username", response.data.user.username);
+          localStorage.setItem("id", response.data.user._id);
           window.location.href = "/dashboard";
         }
       })

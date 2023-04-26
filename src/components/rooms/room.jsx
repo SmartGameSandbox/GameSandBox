@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './room.css';
 import { io } from "socket.io-client";
 import Table from "../table/table";
@@ -6,39 +6,38 @@ import { Stage } from 'react-konva';
 import axios from 'axios';
 import styles from './roomStyle';
 import * as Constants from '../../util/constants';
-import { ReactSession } from "react-client-session";
 import Sidebar from '../sidebar/Sidebar';
 import Header from '../header/header';
-ReactSession.setStoreType("localStorage");
 
 const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
 const socket = io(url, { transports: ['websocket'] });
-let roomID = null;
-var username = null;
-if (ReactSession.get("username")) {
-    username = ReactSession.get("username");
-}
+
 const Room = () => {
-    const [imageUrl, setImageUrl] = React.useState('');
+    const [imageUrl, setImageUrl] = useState('');
+    const [username, setUsername] = useState(null);
+    const [roomID, setRoomId] = useState(null);
+
     const handleMouseMove = (data) => {
-        socket.emit("mouseMove", { x: data.evt.offsetX, y: data.evt.offsetY, username: username, roomID: roomID }, (err) => {
+        socket.emit("mouseMove",
+            { x: data.evt.offsetX, y: data.evt.offsetY, username: username, roomID: roomID }, (err) => {
             if (err) {
                 alert(err);
             }
         })
-    }
+    };
 
-    React.useEffect(() => {
+    useEffect(() => {
         const search = window.location.search;
         const params = new URLSearchParams(search);
-        roomID = params.get('id');
+        setRoomId(params.get('id'));
+        setUsername(localStorage.getItem('username'));
         axios.get(`${url}/api/room?id=${roomID}`).then((response) => {
             setImageUrl(response.data.image);
             socket.emit("joinRoom", { roomID: roomID, username: username }, () => { });
         }).catch((error) => {
             console.log(error);
         });
-    }, []);
+    }, [imageUrl, username, roomID]);
 
     return (
         <>

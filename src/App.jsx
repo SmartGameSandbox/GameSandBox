@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useContext } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
@@ -9,44 +9,38 @@ import Login from "./components/login/login";
 import Logout from "./components/logout/logout";
 import Register from "./components/register/register";
 import BuildGamePage from "./components/buildGame/buildGamePage";
-import { ReactSession } from "react-client-session";
 import Dashboard from './components/dashboard/dashboard';
 import Games from './components/games/games.jsx';
-ReactSession.setStoreType("localStorage");
+import UserContext from "./components/userContext";
 
 const App = () => {
-  const isAuthed = () => {
-    if (ReactSession.get("username")) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+
+  const userAuthed = useContext(UserContext)
 
   return (
-    <>
+    <UserContext.Provider value={localStorage.getItem('username')}>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={
-            isAuthed()
+            userAuthed
               ? <Navigate to='/dashboard' />
               : <Navigate to='/login' />
           } />
           <Route 
             path="/dashboard"
-            element={isAuthed() ? <Dashboard /> : <Navigate to="/login" />}
+            element={userAuthed ? <Dashboard /> : <Navigate to="/login" />}
           />
           <Route 
             path="/games"
-            element={isAuthed() ? <Games /> : <Navigate to="/login" />}
+            element={userAuthed ? <Games /> : <Navigate to="/login" />}
           />
           <Route
             path="/createroom"
-            element={isAuthed() ? <RoomCreation /> : <Navigate to="/login" />}
+            element={userAuthed ? <RoomCreation /> : <Navigate to="/login" />}
           />
           <Route 
             path="/buildgame" 
-            element={isAuthed() ? <BuildGamePage />: <Navigate to="/login" />} />
+            element={userAuthed ? <BuildGamePage />: <Navigate to="/login" />} />
 
           {/* <Route
             path="/joinroom"
@@ -54,16 +48,16 @@ const App = () => {
           /> */}
           <Route
             path="/mygames"
-            element={isAuthed() ? <SavedGames /> : <Navigate to="/login" />}
+            element={userAuthed ? <SavedGames /> : <Navigate to="/login" />}
           />
-          <Route path="/room" element={isAuthed() ? <Room /> : <Navigate to="/login" />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/newaccount" element={!isAuthed() ? <Register /> : <Navigate to="/dashboard" />} />
+          <Route path="/room" element={userAuthed ? <Room /> : <Navigate to="/login" />} />
+          <Route path="/login" element={userAuthed ? <Navigate to="/dashboard" /> : <Login />} />
+          <Route path="/newaccount" element={userAuthed ? <Navigate to="/dashboard" /> : <Register />} />
 
           <Route path="/logout" element={<Logout />} />
         </Routes>
       </BrowserRouter>
-    </>
+    </UserContext.Provider>
   );
 };
 

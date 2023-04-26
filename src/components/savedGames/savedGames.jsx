@@ -4,30 +4,27 @@ import Modal from "../modal/modal";
 import "./savedGames.css";
 import Themes from "./savedGamesTheme";
 import axios from "axios";
-import { ReactSession } from "react-client-session";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../header/header";
 import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 
 
-ReactSession.setStoreType("localStorage");
-
 const SavedGames = () => {
-  const [showBuildGameModal, setBuildGameModal] = React.useState(false);
+  const [showBuildGameModal, setBuildGameModal] = useState(false);
   const [isLoading, setLoading] = useState(true); // Loading state
   const [gamesThings, setGames] = useState();
   let list = [];
   let no_games = false;
   let games_list = null;
   let counter = false;
+
   useEffect(() => {
     setTimeout(() => {
       // simulate a delay
 
       if (!counter) {
         counter = true;
-        const id = ReactSession.get("id");
         let games = null;
         const url =
           process.env.NODE_ENV === "production"
@@ -36,7 +33,7 @@ const SavedGames = () => {
         axios
           .get(`${url}/api/games`, {
             params: {
-              creatorId: id,
+              creatorId: localStorage.getItem('id'),
             },
           })
           .then((response) => {

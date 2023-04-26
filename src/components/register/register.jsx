@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import styles from "./registerStyle";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -6,57 +6,53 @@ import Button from "@mui/material/Button";
 import {SMARTButton} from '../button/button';
 import axios from 'axios';
 import logo from "../icons/Group_89.png";
-import { ReactSession } from "react-client-session";
 
 const Register = () => {
-  const [usernameInputText, setUsernameInputText] = React.useState("");
-  const [errorMessage, setErrorMessage] = React.useState("");
+  const [usernameInputText, setUsernameInputText] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [emailInputText, setEmailInputText] = useState("");
+  const [passwordInputText, setPasswordInputText] = useState("");
+  const [confirmPasswordInputText, setConfirmPasswordInputText] = useState("");
+
   const handleUsernameTextInputChange = (event) => {
     setUsernameInputText(event.target.value);
   };
 
-  const [emailInputText, setEmailInputText] = React.useState("");
   const handleEmailInputtTextChange = (event) => {
     setEmailInputText(event.target.value);
   };
-  const [passwordInputText, setPasswordInputText] = React.useState("");
   const handlePasswordTextInputChange = (event) => {
     setPasswordInputText(event.target.value);
   };
 
-  const [confirmPasswordInputText, setConfirmPasswordInputText] =
-    React.useState("");
   const handleConfirmPasswordTextInputChange = (event) => {
     setConfirmPasswordInputText(event.target.value);
   };
 
-  const handleSubmit = () => {
-    let username = usernameInputText;
-    let email = emailInputText;
-    let password = passwordInputText;
-    let confirmPw = confirmPasswordInputText;
+  console.log(process.env.NODE_ENV);
 
-    if (password !== confirmPw) {
+  const handleSubmit = () => {
+    if (passwordInputText !== confirmPasswordInputText) {
       setErrorMessage("Passwords do not match");
-    } else {
-      const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
-      axios.post(`${url}/api/register`, {
-        username: username,
-        email: email,
-        password: password
-      }).then((response) => {
-        if (response.status === 200) {
-          setErrorMessage("");
-          ReactSession.set("username", response.data.user.username);
-          ReactSession.set("id", response.data.user._id);
-          window.location.href = "/dashboard";
-        } else {
-          setErrorMessage(response.data.message);
-        }
-      }).catch((errResponse) => {
-        setErrorMessage(errResponse.response.data.message);
-      });
+      return;
     }
+    const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
+    axios.post(`${url}/api/register`, {
+      username: usernameInputText,
+      email: emailInputText,
+      password: passwordInputText
+    }).then((response) => {
+      if (response.status !== 200) {
+        setErrorMessage(response.data.message);
+        return;
+      }
+      setErrorMessage("");
+      localStorage.setItem("username", response.data.user.username);
+      localStorage.setItem("id", response.data.user._id);
+      window.location.href = "/dashboard";
+    }).catch((errResponse) => {
+      setErrorMessage(errResponse.response.data.message);
+    });
   };
 
   return (
