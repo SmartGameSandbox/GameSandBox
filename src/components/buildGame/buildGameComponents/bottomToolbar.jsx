@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../../button/button";
@@ -43,6 +42,7 @@ const BottomToolbar = ({setDisplayCards}) => {
 
   function handleSave() {
     const newDeckId = localStorage.getItem('newDeckId');
+    console.log(newDeckId);
     if (newDeckId) {
       alert("Please upload a card deck to create a game.");
       return;
@@ -66,11 +66,10 @@ const BottomToolbar = ({setDisplayCards}) => {
   }
 
   const handleCardDisplay = async () => {
-    let imageObject;
-    let cardImages = [];
+    const cardImages = [];
 
     for (let i = 0; i < deck.length; i++) {
-      imageObject = deck[i];
+      const imageObject = deck[i];
       const img = new window.Image();
       img.src = `data:image/${
         imageObject.imageSource.contentType
@@ -81,8 +80,6 @@ const BottomToolbar = ({setDisplayCards}) => {
         await setDisplayCards(cardImages);
       };
     }
-
-
     setShowUpload(false);
   };
 

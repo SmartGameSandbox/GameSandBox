@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./games";
 import axios from "axios";
-import { SMARTButton, SMARTIconButton } from "../button/button";
+import { SMARTButton } from "../button/button";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../header/header";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";

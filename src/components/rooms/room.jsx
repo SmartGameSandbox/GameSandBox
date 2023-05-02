@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import './room.css';
 import { io } from "socket.io-client";
 import Table from "../table/table";
 import { Stage } from 'react-konva';

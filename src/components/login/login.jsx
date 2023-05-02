@@ -4,8 +4,7 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
-import {SMARTButton, SMARTIconButton} from '../button/button';
-import CasinoIcon from '@mui/icons-material/Casino';
+import {SMARTButton} from '../button/button';
 import logo from "../icons/Group_89.png";
 
 const Login = () => {
