@@ -17,8 +17,6 @@ const App = () => {
 
   const userAuthed = useContext(UserContext)
 
-  console.log(localStorage.getItem('username'));
-
   return (
     <UserContext.Provider value={localStorage.getItem('username')}>
       <BrowserRouter>

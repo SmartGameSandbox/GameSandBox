@@ -11,10 +11,20 @@
     align-items: center;
 }
 
+.bgame-header > button {
+    height: 4em;
+    background: transparent;
+    border-radius: 5em;
+    color: #163B6E;
+}
+
 .bgame-heading {
     color: black;
-    margin-left: 2%;
-    font-size: 26px;
+    margin: 0px;
+    font-family: 'Nunito';
+    font-size: 2em;
+    font-weight: bold;
+    padding: 1px 7px 1px 7px;
 }
 
 .bgame-toolbar {

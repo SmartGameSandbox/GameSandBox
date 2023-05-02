@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Stage, Layer, Rect, Image } from "react-konva";
-import { FaArrowLeft, FaEdit } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaSave } from "react-icons/fa";
 import "./buildGamePage.css";
 import BottomToolbar from "./buildGameComponents/bottomToolbar";
 import Sidebar from "../sidebar/Sidebar";
@@ -10,19 +10,38 @@ import { SMARTButton } from "../button/button";
 const BuildGamePage = () => {
 
   const location = useLocation();
-  const [header, setHeader] = useState("");
+  const [header, setHeader] = useState(location.state.name);
   const [displayCards, setDisplayCards] = useState([]);
+  const [editHeader, setEditHeader] = useState(false);
+
+  const gameName = useRef(location.state.name);
 
   useEffect(() => {
-    setHeader(location.state.name);
-  }, [location]);
+    if (editHeader) {
+      document.querySelector('.bgame-heading').focus();
+      return;
+    }
+    const headerText = gameName.current.innerText;
+    if (headerText) {
+      location.state.name = headerText;
+      setHeader(headerText);
+    }
+  }, [editHeader, location]);
+
+  const handleFocus = (e) => {
+    const range = document.createRange();
+    range.selectNodeContents(e.target);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
 
   const goBack = () => {
     window.history.back();
   };
 
   const editHeading = () => {
-    console.log("Edit the heading");
+    setEditHeader(!editHeader);  
   };
 
   let card_locations = window.innerWidth / 3.1;
@@ -35,36 +54,28 @@ const BuildGamePage = () => {
         <SMARTButton
           variant="text"
           onClick={goBack}
-          style={{
-            height: "4em",
-            background: "transparent",
-            borderRadius: "5em",
-            marginRight: "0.75em",
-            color: "#163B6E",
-          }}
         >
           <FaArrowLeft fontSize="large" />
         </SMARTButton>
 
-        <h4
+        <div
           className="bgame-heading"
-          style={{ fontFamily: "Nunito", fontSize: "2em", margin: "0px" }}
+          ref={gameName}
+          tabIndex={-1}
+          suppressContentEditableWarning
+          contentEditable={editHeader}
+          onFocus={handleFocus}
         >
           {header}
-        </h4>
+        </div>
 
         <SMARTButton
           variant="text"
           onClick={editHeading}
-          style={{
-            height: "4em",
-            marginLeft: "0.75em",
-            background: "transparent",
-            borderRadius: "5em",
-            color: "#163B6E",
-          }}
         >
-          <FaEdit fontSize="large" />
+          {editHeader
+            ? <FaSave fontSize="large"/>
+            : <FaEdit fontSize="large" />}
         </SMARTButton>
       </div>
 
