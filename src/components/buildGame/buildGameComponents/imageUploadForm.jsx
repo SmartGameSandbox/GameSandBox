@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { SMARTButton } from "../../button/button";
 import axios from "axios";
 
-const ImageUploadForm = ({closePopup, images, onImageChange, setDeck}) => {
+const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
   // let closePopup = props.closePopup;
   // let images = props.images;
   // let onImageChange = props.onImageChange;
