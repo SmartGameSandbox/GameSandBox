@@ -7,16 +7,11 @@ import Modal from "../../modal/modal";
 import ImageUploadForm from "./imageUploadForm";
 import "./bottomToolbar.css";
 import axios from "axios";
+import { BASE_URL } from '../../../util/constants'
 const Buffer = require("buffer").Buffer;
 
 
 const BottomToolbar = ({setDisplayCards}) => {
-
-  // todo: move into constant
-  const url =
-    process.env.NODE_ENV === "production"
-      ? "https://smartgamesandbox.herokuapp.com"
-      : "http://localhost:8000";
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,7 +49,7 @@ const BottomToolbar = ({setDisplayCards}) => {
     gameInfo.newDeckId = newDeckId;
 
     axios
-      .post(`${url}/api/saveGame`, gameInfo, {
+      .post(`${BASE_URL}/api/saveGame`, gameInfo, {
         headers: { "Content-Type": "application/json" },
       })
       .then(async () => {

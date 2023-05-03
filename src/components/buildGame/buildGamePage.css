@@ -32,3 +32,8 @@
     padding-right: 10%;
     padding-bottom: 30px;
 }
+
+.bgame-tabletop > div {
+    width: fit-content;
+    margin: 0 auto;
+}

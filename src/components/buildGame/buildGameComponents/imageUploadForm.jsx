@@ -1,7 +1,8 @@
 import "./imageUploadForm.css";
 import React, { useState } from "react";
-import { SMARTButton } from "../../button/button";
 import axios from "axios";
+import { SMARTButton } from "../../button/button";
+import { BASE_URL } from '../../../util/constants'
 
 const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
 
@@ -24,14 +25,8 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
     formData.append("totalCards", inputs.numTotal);
     formData.append("hasSameBack", isChecked);
 
-    // todo: move to constant
-    const url =
-      process.env.NODE_ENV === "production"
-        ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:8000";
-
     axios
-      .post(`${url}/api/upload`, formData, {
+      .post(`${BASE_URL}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(async (res) => {

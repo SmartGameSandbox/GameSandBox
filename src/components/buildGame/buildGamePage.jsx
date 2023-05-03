@@ -4,7 +4,6 @@ import { Stage, Layer, Rect, Image } from "react-konva";
 import { FaArrowLeft, FaEdit, FaSave } from "react-icons/fa";
 import "./buildGamePage.css";
 import BottomToolbar from "./buildGameComponents/bottomToolbar";
-import Sidebar from "../sidebar/Sidebar";
 import { SMARTButton } from "../button/button";
 
 const BuildGamePage = () => {
@@ -48,7 +47,6 @@ const BuildGamePage = () => {
   
   return (
     <>
-      <Sidebar></Sidebar>
       <div className="bgame-container"></div>
       <div className="bgame-header">
         <SMARTButton
@@ -80,10 +78,10 @@ const BuildGamePage = () => {
       </div>
 
       <div className="bgame-tabletop">
-        <Stage width={window.innerWidth} height={window.innerHeight * 0.64}>
+        <Stage width={8 + window.innerWidth / 1.7} height={window.innerHeight * 0.64}>
           <Layer id="layer">
             <Rect
-              x={window.innerWidth / 5}
+              x={4}
               y={window.innerHeight / 20}
               width={window.innerWidth / 1.7}
               height={window.innerHeight / 2}

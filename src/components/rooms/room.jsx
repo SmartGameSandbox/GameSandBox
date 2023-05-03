@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { io } from "socket.io-client";
-import Table from "../table/table";
-import { Stage } from 'react-konva';
 import axios from 'axios';
+import { Stage } from 'react-konva';
+import Table from "../table/table";
+import { BASE_URL, CANVAS_WIDTH, CANVAS_HEIGHT } from '../../util/constants'
 import styles from './roomStyle';
-import * as Constants from '../../util/constants';
-import Sidebar from '../sidebar/Sidebar';
 import Header from '../header/header';
 
-const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
-const socket = io(url, { transports: ['websocket'] });
+const socket = io(BASE_URL, { transports: ['websocket'] });
 
 const Room = () => {
     const [imageUrl, setImageUrl] = useState('');
@@ -30,7 +28,7 @@ const Room = () => {
         const params = new URLSearchParams(search);
         setRoomId(params.get('id'));
         setUsername(localStorage.getItem('username'));
-        axios.get(`${url}/api/room?id=${roomID}`).then((response) => {
+        axios.get(`${BASE_URL}/api/room?id=${roomID}`).then((response) => {
             setImageUrl(response.data.image);
             socket.emit("joinRoom", { roomID: roomID, username: username }, () => { });
         }).catch((error) => {
@@ -51,8 +49,8 @@ const Room = () => {
                             <img style={styles.board} alt="board" src={imageUrl} />
                         }
                         <Stage
-                            width={Constants.CANVAS_WIDTH}
-                            height={Constants.CANVAS_HEIGHT}
+                            width={CANVAS_WIDTH}
+                            height={CANVAS_HEIGHT}
                             onMouseMove={(e) => handleMouseMove(e)}
                             
                         >
@@ -60,7 +58,6 @@ const Room = () => {
                         </Stage>
                     </div>
                 </div>
-                <Sidebar />
             </div>
         </>
     );

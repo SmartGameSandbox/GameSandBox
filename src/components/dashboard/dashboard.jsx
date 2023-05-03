@@ -1,12 +1,12 @@
-import { TextField } from "@mui/material";
+import axios from 'axios';
 import React, { useState } from "react";
+import { TextField } from "@mui/material";
 import { SMARTButton } from '../button/button';
+import { BASE_URL } from '../../util/constants'
 import styles from './dashboardStyle';
-import Sidebar from "../sidebar/Sidebar";
 import Modal from "../modal/modal";
 import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
 import Header from "../header/header";
-import axios from 'axios';
 
 const Dashboard = () => {
     const [showBuildGameModal, setBuildGameModal] = useState(false);
@@ -18,9 +18,7 @@ const Dashboard = () => {
     };
 
     const joinRoom = () => {
-        const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
-
-        axios.get(`${url}/api/room?id=${roomLink}`)
+        axios.get(`${BASE_URL}/api/room?id=${roomLink}`)
         .then(() => {
             window.location.href = `/room?id=${roomLink}`;
         }).catch((error) => {
@@ -36,7 +34,6 @@ const Dashboard = () => {
         <div style={styles.body}>
             <Header />
             <div style={styles.main}>
-                <Sidebar />
                 <div style={styles.btnGroup}>
                     <div style={styles.joinRoom}>
                         <div style={styles.joinRoomInput}>

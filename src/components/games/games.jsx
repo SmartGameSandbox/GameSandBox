@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import styles from "./games";
 import axios from "axios";
 import { SMARTButton } from "../button/button";
-import Sidebar from "../sidebar/Sidebar";
+import { BASE_URL } from '../../util/constants'
+import styles from "./games";
 import Header from "../header/header";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 
@@ -21,13 +21,9 @@ const Games = () => {
         counter = true;
         const id = localStorage.getItem("id");
         let games = null;
-        const url =
-          process.env.NODE_ENV === "production"
-            ? "https://smartgamesandbox.herokuapp.com"
-            : "http://localhost:8000";
 
         axios
-          .get(`${url}/api/games`, {
+          .get(`${BASE_URL}/api/games`, {
             params: {
               creatorId: id,
             },
@@ -59,13 +55,8 @@ const Games = () => {
   const createroom = async (gameId) => {
     let cardDeckIdArray;
     let roomname;
-    const url =
-      process.env.NODE_ENV === "production"
-        ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:8000";
-
     await axios
-      .get(`${url}/api/games`, {
+      .get(`${BASE_URL}/api/games`, {
         params: {
           gameId: gameId,
         },
@@ -79,7 +70,7 @@ const Games = () => {
       });
 
     await axios
-      .post(`${url}/api/room`, {
+      .post(`${BASE_URL}/api/room`, {
         name: roomname,
         image: null,
         cardDeck: cardDeckIdArray,
@@ -98,7 +89,6 @@ const Games = () => {
         <Header />
         <div>
           <LoadingSpinner />
-          <Sidebar />
         </div>
       </div>
     );
@@ -107,7 +97,6 @@ const Games = () => {
     <div style={styles.body}>
       <Header />
       <div>
-        <Sidebar />
         <div style={styles.btnGroup}>{gamesButtons}</div>
       </div>
     </div>
