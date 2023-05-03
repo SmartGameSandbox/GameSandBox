@@ -11,7 +11,7 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
             prevTable.hand = prevTable.hand.map((card) => {
                 if (card.id === cardID) {
                     card.isFlipped = !card.isFlipped;
-                    card.imageSource = card.imageSource;
+                    // card.imageSource = card.imageSource;
                 }
                 return card;
             });

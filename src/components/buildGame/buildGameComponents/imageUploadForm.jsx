@@ -1,15 +1,9 @@
 import "./imageUploadForm.css";
-
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { SMARTButton } from "../../button/button";
 import axios from "axios";
 
 const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
-  // let closePopup = props.closePopup;
-  // let images = props.images;
-  // let onImageChange = props.onImageChange;
-  // let setDeck = props.setDeck;
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);

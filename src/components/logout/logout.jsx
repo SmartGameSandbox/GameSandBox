@@ -1,15 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 
 const Logout = () => {
-    React.useEffect(() => {
+    useEffect(() => {
         localStorage.clear();
     }, []);
 
-    return (
-        <Navigate to="/login" />
-    )
-
+    setTimeout(() => {
+        return (
+            <Navigate to="/login" />
+        )    
+    }, 0);
 }
 
 export default Logout;

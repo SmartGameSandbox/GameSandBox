@@ -26,7 +26,6 @@ const Deck = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
     setTableData((prevTable) => {
       const found = prevTable.deck.find((card) => card.id === cardID);
       found.isFlipped = !found.isFlipped;
-      found.imageSource = found.imageSource;
       // move found to the last index of cards array
       prevTable.deck = prevTable.deck.filter((card) => card.id !== cardID);
       prevTable.deck = [...prevTable.deck, found];

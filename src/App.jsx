@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RoomCreation from "./components/rooms/createRoom";
@@ -16,6 +16,8 @@ import UserContext from "./components/userContext";
 const App = () => {
 
   const userAuthed = useContext(UserContext)
+
+  console.log(localStorage.getItem('username'));
 
   return (
     <UserContext.Provider value={localStorage.getItem('username')}>
