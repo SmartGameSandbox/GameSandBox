@@ -17,6 +17,10 @@ const cardv2Schema = new Schema(
     },
     type: { type: String, required: true, enum: ["front", "back"] },
     isFlipped: { type: Boolean, required: true },
+    isLandscape: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

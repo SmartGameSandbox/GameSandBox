@@ -255,6 +255,7 @@ const Table = ({ socket, username }) => {
               x={card.x}
               y={card.y}
               isFlipped={card.isFlipped}
+              isLandscape={card.isLandscape}
               onDragStart={() => {}}
               onDragMove={onDragMoveCard}
               onClick={onClickCard}

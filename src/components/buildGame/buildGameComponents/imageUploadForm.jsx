@@ -7,6 +7,8 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
+  const [isChecked2, setIsChecked2] = useState(false);
+
 
   const handleChange = (event) => {
     const name = event.target.name;
@@ -23,6 +25,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
     formData.append("cardsDown", inputs.numDown);
     formData.append("totalCards", inputs.numTotal);
     formData.append("hasSameBack", isChecked);
+    formData.append("isLandscape", isChecked2);
 
     // todo: move to constant
     const url =
@@ -111,6 +114,15 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
               onChange={() => setIsChecked((prev) => !prev)}
             />
             <span>Same back for all cards? </span>
+          </div>
+          <div>
+            <input
+              type="checkbox"
+              className={isChecked2 ? "checked" : ""}
+              checked={isChecked2}
+              onChange={() => setIsChecked2((prev) => !prev)}
+            />
+            <span>Landscape </span>
           </div>
         </div>
 

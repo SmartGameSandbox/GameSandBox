@@ -1,32 +1,37 @@
 require("dotenv").config();
 const express = require("express");
+const app = express();
 const cors = require("cors");
+var http = require("http").Server(app);
 const multer = require("multer");
 const fs = require("fs");
 const bodyParser = require("body-parser");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
 const { ObjectId } = require("bson");
-const path = require("path");
-const mongoose = require("mongoose");
-const idGenerator = require("./utils/id_generator");
-var cron = require("node-cron");
 
-const { Room } = require("./schemas/room");
-const { Card } = require("./schemas/card");
-const { CardV2 } = require("./schemas/cardv2");
-const { Grid } = require("./schemas/grid");
-const { Game } = require("./schemas/game");
-const { User } = require("./schemas/user");
-
-const app = express();
-const http = require("http").Server(app);
+var io;
 app.use(cors());
-app.use(express.json());
-const io = require("socket.io")(http, { cors: { origin: "*" } });
+io = require("socket.io")(http, { cors: { origin: "*" } });
 
+// if (process.env.NODE_ENV !== "production") {
+//   app.use(cors());
+//   io = require("socket.io")(http, { cors: { origin: "*" } });
+// } else {
+//   io = require("socket.io")(http);
+// }
+
+const path = require("path");
 const port = process.env.PORT || 8000;
+const mongoose = require("mongoose");
+const { roomSchema, Room } = require("./schemas/room");
+const { cardSchema, Card } = require("./schemas/card");
+const { cardv2Schema, CardV2 } = require("./schemas/cardv2");
+const { gridSchema, Grid } = require("./schemas/grid");
+const { gameSchema, Game } = require("./schemas/game");
 
+const idGenerator = require("./utils/id_generator");
+app.use(express.json());
 
 var storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -39,6 +44,7 @@ var storage = multer.diskStorage({
 var upload = multer({ storage: storage });
 
 const ALLROOMSDATA = {};
+var cron = require("node-cron");
 cron.schedule(
   "00 04 * * *",
   async () => {
@@ -61,31 +67,31 @@ cron.schedule(
 io.on("connection", async (socket) => {
   // Join room
   socket.on("joinRoom", async ({ roomID, password, username }) => {
-    if (!roomID) {
+    if (roomID) {
+      const roomData = await Room.findOne({ id: roomID, password: password });
+      if (roomData) {
+        if (ALLROOMSDATA[roomID] === undefined) {
+          ALLROOMSDATA[roomID] = roomData;
+        }
+        socket.join(roomID);
+        if (ALLROOMSDATA[roomID].hand === undefined) {
+          ALLROOMSDATA[roomID].hand = {};
+        }
+        if (ALLROOMSDATA[roomID].hand[username] === undefined) {
+          ALLROOMSDATA[roomID].hand[username] = [];
+        }
+        io.to(socket.id).emit("tableReload", {
+          cards: ALLROOMSDATA[roomID].cards,
+          deck: ALLROOMSDATA[roomID].deck,
+          hand: ALLROOMSDATA[roomID].hand[username]
+            ? ALLROOMSDATA[roomID].hand[username]
+            : [],
+        });
+        // add user to the user array here
+        console.log(`User ${username} joined room ${roomID}`);
+      }
+    } else {
       console.error("Room Invalid");
-      return;
-    }
-    const roomData = await Room.findOne({ id: roomID, password: password });
-    if (roomData) {
-      if (ALLROOMSDATA[roomID] === undefined) {
-        ALLROOMSDATA[roomID] = roomData;
-      }
-      socket.join(roomID);
-      if (ALLROOMSDATA[roomID].hand === undefined) {
-        ALLROOMSDATA[roomID].hand = {};
-      }
-      if (ALLROOMSDATA[roomID].hand[username] === undefined) {
-        ALLROOMSDATA[roomID].hand[username] = [];
-      }
-      io.to(socket.id).emit("tableReload", {
-        cards: ALLROOMSDATA[roomID].cards,
-        deck: ALLROOMSDATA[roomID].deck,
-        hand: ALLROOMSDATA[roomID].hand[username]
-          ? ALLROOMSDATA[roomID].hand[username]
-          : [],
-      });
-      // add user to the user array here
-      console.log(`User ${username} joined room ${roomID}`);
     }
   });
 
@@ -180,6 +186,7 @@ app.post("/api/room", async (req, res) => {
         x: card.x,
         y: card.y,
         isFlipped: card.isFlipped,
+        isLandscape: card.isLandscape,
         _id: card._id,
       };
     });
@@ -205,6 +212,11 @@ app.post("/api/room", async (req, res) => {
     console.log(err);
   }
 });
+
+// Register
+const { User } = require("./schemas/user");
+// const { constants } = require("buffer");
+const { assert } = require("console");
 
 // createAccount
 app.post("/api/register", async (req, res) => {
@@ -271,7 +283,7 @@ app.get("/api/games", async (req, res) => {
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-//Image Upload REST APIs Deck making logics
+//Image Upload REST APIs
 app.post("/api/upload", upload.single("image"), async (req, res) => {
   try {
     const totalCards = parseInt(req.body.totalCards);
@@ -282,10 +294,13 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
 
     const numCols = parseInt(req.body.cardsAcross);
     const numRows = parseInt(req.body.cardsDown);
+    const isLandscape = req.body.isLandscape === "true"; 
 
     cardArray = await sliceImages(imageData, numCols, numRows);
 
-    let cardDocuments = await createCardObjects(cardArray);
+    assert(cardArray.length == totalCards);
+
+    let cardDocuments = await createCardObjects(cardArray, req.body.isLandscape);
 
     const cardDeck = {
       name: cardDeckName,
@@ -366,7 +381,7 @@ const sliceImages = async (BufferData, cols, rows) => {
   return cardArray;
 };
 
-const createCardObjects = async (cardArray) => {
+const createCardObjects = async (cardArray, isLandscape) => {
   //Card Array consists of buffers for every card in the deck.
   const cardObjects = [];
 
@@ -381,6 +396,7 @@ const createCardObjects = async (cardArray) => {
       },
       type: "front",
       isFlipped: false,
+      isLandscape: isLandscape,
     };
     await CardV2.create(cardObject);
     cardObjects.push(cardObject);

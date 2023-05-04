@@ -92,6 +92,7 @@ const BuildGamePage = () => {
                 draggable
                 stroke="#163B6E"
                 strokeWidth={5}
+                rotation = {item.isLandscape ? 90 : 0}
               />
             ))}
           </Layer>

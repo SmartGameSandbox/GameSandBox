@@ -43,7 +43,7 @@ const BottomToolbar = ({setDisplayCards}) => {
   function handleSave() {
     const newDeckId = localStorage.getItem('newDeckId');
     console.log(newDeckId);
-    if (newDeckId) {
+    if (!newDeckId) {
       alert("Please upload a card deck to create a game.");
       return;
     }
