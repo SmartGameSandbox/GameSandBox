@@ -1,25 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import styles from './roomStyle';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-// import Button from '@mui/material/Button';
-import FileBase64 from 'react-file-base64';
-// import buttonStyles from '../button/button';
 import {SMARTButton} from '../button/button';
+
 const CreateRoom = () => {
-  const [item, setItem] = React.useState({ imageUrl: '' });
-  const [roomNameInputText, setRoomNameInputText] = React.useState('Card Game Sandbox');
-  const [errorMsg, setErrorMsg] = React.useState('');
+
+  const [item, setItem] = useState('');
+  const [roomNameInputText, setRoomNameInputText] = useState('Card Game Sandbox');
+  const [errorMsg, setErrorMsg] = useState('');
+  
   const handleRoomNameTextInputChange = event => {
     setRoomNameInputText(event.target.value);
   };
 
+  const onImageChange = e => {
+    const imagefile = e.target.files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result
+                                .replace('data:', '')
+                                .replace(/^.+,/, '');
+      setItem(base64String);
+    }
+    reader.readAsDataURL(imagefile);
+  }
+
   const createRoom = () => {
     const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
+    console.log(item)
     axios.post(`${url}/api/room`, {
       name: roomNameInputText,
-      image: item.imageUrl === '' ? null : item.imageUrl
+      image: item || null,
     }).then((response) => {
       window.location.href = `/room?id=${response.data.id}`;
     }).catch((error) => {
@@ -49,10 +62,13 @@ const CreateRoom = () => {
             size="large"
           />
           <br />
-          <FileBase64
+          <input
             type="file"
-            multiple={false}
-            onDone={({ base64 }) => setItem({ ...item, imageUrl: base64 })}
+            multiple
+            name="image"
+            id="image"
+            accept="image/*"
+            onChange={onImageChange}
           />
         </div>
         <p style={styles.createRoomErrorStyle}>{errorMsg}</p>

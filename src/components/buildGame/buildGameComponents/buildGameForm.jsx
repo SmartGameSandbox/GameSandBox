@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import "./buildGameForm.css";
 import { SMARTButton } from "../../button/button";
 import { useNavigate } from "react-router-dom";

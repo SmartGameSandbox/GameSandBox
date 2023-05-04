@@ -1,21 +1,18 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../../button/button";
 import { FaChessPawn, FaPlus } from "react-icons/fa";
 import Modal from "../../modal/modal";
-import { ReactSession } from "react-client-session";
 import ImageUploadForm from "./imageUploadForm";
 import "./bottomToolbar.css";
 import axios from "axios";
 const Buffer = require("buffer").Buffer;
 
-ReactSession.setStoreType("localStorage");
 
-function BottomToolbar(props) {
-  let setDisplayCards = props.setDisplayCards;
+const BottomToolbar = ({setDisplayCards}) => {
 
+  // todo: move into constant
   const url =
     process.env.NODE_ENV === "production"
       ? "https://smartgamesandbox.herokuapp.com"
@@ -44,13 +41,13 @@ function BottomToolbar(props) {
   };
 
   function handleSave() {
-    if (!ReactSession.get("newDeckId")) {
+    const newDeckId = localStorage.getItem('newDeckId');
+    console.log(newDeckId);
+    if (newDeckId) {
       alert("Please upload a card deck to create a game.");
       return;
     }
-
-    let creatorId = ReactSession.get("id");
-    let newDeckId = ReactSession.get("newDeckId");
+    const creatorId = localStorage.getItem("id");
 
     const gameInfo = location.state;
     gameInfo.creatorId = creatorId;
@@ -60,20 +57,19 @@ function BottomToolbar(props) {
       .post(`${url}/api/saveGame`, gameInfo, {
         headers: { "Content-Type": "application/json" },
       })
-      .then(async (res) => {
+      .then(async () => {
         console.log("Game successfully created with card deck uploaded.");
-        await ReactSession.remove("newDeckId");
+        await localStorage.removeItem('newDeckId');
         navigate("/dashboard");
       })
       .catch((err) => console.log(err));
   }
 
   const handleCardDisplay = async () => {
-    let imageObject;
-    let cardImages = [];
+    const cardImages = [];
 
     for (let i = 0; i < deck.length; i++) {
-      imageObject = deck[i];
+      const imageObject = deck[i];
       const img = new window.Image();
       img.src = `data:image/${
         imageObject.imageSource.contentType
@@ -84,8 +80,6 @@ function BottomToolbar(props) {
         await setDisplayCards(cardImages);
       };
     }
-
-
     setShowUpload(false);
   };
 

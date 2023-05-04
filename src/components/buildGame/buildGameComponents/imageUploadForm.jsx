@@ -1,18 +1,9 @@
 import "./imageUploadForm.css";
-
-import React from "react";
-import { ReactSession } from "react-client-session";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { SMARTButton } from "../../button/button";
 import axios from "axios";
 
-ReactSession.setStoreType("localStorage");
-
-const ImageUploadForm = (props) => {
-  let closePopup = props.closePopup;
-  let images = props.images;
-  let onImageChange = props.onImageChange;
-  let setDeck = props.setDeck;
+const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
@@ -33,6 +24,7 @@ const ImageUploadForm = (props) => {
     formData.append("totalCards", inputs.numTotal);
     formData.append("hasSameBack", isChecked);
 
+    // todo: move to constant
     const url =
       process.env.NODE_ENV === "production"
         ? "https://smartgamesandbox.herokuapp.com"
@@ -46,7 +38,7 @@ const ImageUploadForm = (props) => {
         console.log(res);
         const deckUploaded = await res.data.displayDeck;
         await setDeck(deckUploaded);
-        await ReactSession.set("newDeckId", res.data.newDeckId);
+        localStorage.setItem("newDeckId", res.data.newDeckId);
 
         closePopup();
       })

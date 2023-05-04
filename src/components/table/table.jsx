@@ -123,7 +123,7 @@ const Table = ({ socket, username }) => {
     setTableData((prevTable) => {
       const found = prevTable.cards.find((card) => card.id === cardID);
       found.isFlipped = !found.isFlipped;
-      found.imageSource = found.imageSource; //Make a change here to flip cards
+      // found.imageSource = found.imageSource; //Make a change here to flip cards
       // move found to the last index of cards array
       prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
       prevTable.cards = [...prevTable.cards, found];
@@ -196,7 +196,7 @@ const Table = ({ socket, username }) => {
       // flip all deck
       prevTable.deck = prevTable.deck.map((card) => {
         card.isFlipped = true;
-        card.imageSource = card.imageSource;
+        // card.imageSource = card.imageSource;
         return card;
       });
       return { ...prevTable };
@@ -208,7 +208,7 @@ const Table = ({ socket, username }) => {
     setTableData((prevTable) => {
       prevTable.deck = prevTable.deck.map((card) => {
         card.isFlipped = true;
-        card.imageSource = card.imageSource;
+        // card.imageSource = card.imageSource;
         return card;
       });
       prevTable.deck = prevTable.deck.sort(() => Math.random() - 0.5);
