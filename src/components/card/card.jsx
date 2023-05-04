@@ -39,6 +39,7 @@ class Card extends React.Component {
   };
 
   render() {
+    console.log("card props", this.props);
     return (
       <Image
         key={this.props.id}
@@ -47,6 +48,8 @@ class Card extends React.Component {
         height={Constants.CARD_HEIGHT}
         width={Constants.CARD_WIDTH}
         image={this.state.image}
+        isLandscape={this.props.isLandscape}
+        rotation={this.props.isLandscape ? 90 : 0}
         draggable
         onDragMove={(e) => {
           this.props.onDragMove(e, this.props.id);

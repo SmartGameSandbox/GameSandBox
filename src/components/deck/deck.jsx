@@ -116,6 +116,7 @@ const Deck = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
             x={card.x}
             y={card.y}
             isFlipped={card.isFlipped}
+            isLandscape={card.isLandscape}
             onClick={onClickCard}
             onDragStart={() => {}}
             onDragEnd={onDragEnd}
