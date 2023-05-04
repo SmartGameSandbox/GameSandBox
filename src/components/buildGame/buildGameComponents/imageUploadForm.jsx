@@ -8,6 +8,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
+  const [itemType, setItemType] = useState("Card");
 
   const handleChange = (event) => {
     const name = event.target.name;
@@ -30,7 +31,6 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(async (res) => {
-        console.log(res);
         const deckUploaded = await res.data.displayDeck;
         await setDeck(deckUploaded);
         localStorage.setItem("newDeckId", res.data.newDeckId);
@@ -40,9 +40,38 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
       .catch((err) => console.log(err));
   };
 
+  const checkItemType = (inputType) => {
+    if (inputType === itemType) return "active";
+    return "bg-itemtype-button";
+  } 
+
   return (
     <div className="bg-form">
       <form onSubmit={handleSubmit}>
+      <div className="row">
+          <label>Item Type:</label>
+          <div style={{width: "50%", display: "flex", justifyContent: "space-between"}}>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Card")}`}
+              onClick={() => {setItemType("Card")}}
+            >   
+              Card
+            </div>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Token")}`}
+              onClick={() => {setItemType("Token")}}
+            >
+              Token
+            </div>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Piece")}`}
+              onClick={() => {setItemType("Piece")}}
+            >
+              Piece
+            </div>
+          </div>
+        </div>
+
         <div className="row">
           <label>Upload Image Grid:</label>
           <input
@@ -109,7 +138,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
           </div>
         </div>
 
-        <div className="row">
+        <div className="row last">
           <SMARTButton
             type="submit"
             className="bg-createGameBtn"
@@ -117,7 +146,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
             size="large"
             variant="contained"
           >
-            Create Game
+            Create Item
           </SMARTButton>
         </div>
       </form>

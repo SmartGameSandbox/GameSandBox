@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../../button/button";
-import { FaChessPawn, FaPlus } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import Modal from "../../modal/modal";
 import ImageUploadForm from "./imageUploadForm";
 import "./bottomToolbar.css";
-import axios from "axios";
 import { BASE_URL } from '../../../util/constants'
 const Buffer = require("buffer").Buffer;
 
@@ -16,13 +16,15 @@ const BottomToolbar = ({setDisplayCards}) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [showUpload, setShowUpload] = useState(false);
+  // const [showUpload, setShowUpload] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
 
   const [deck, setDeck] = useState([]);
+
+  console.log(showForm);
 
   useEffect(() => {
     if (images.length < 1) return;
@@ -37,9 +39,8 @@ const BottomToolbar = ({setDisplayCards}) => {
 
   function handleSave() {
     const newDeckId = localStorage.getItem('newDeckId');
-    console.log(newDeckId);
     if (newDeckId) {
-      alert("Please upload a card deck to create a game.");
+      alert("Please upload an item to create a game.");
       return;
     }
     const creatorId = localStorage.getItem("id");
@@ -71,11 +72,10 @@ const BottomToolbar = ({setDisplayCards}) => {
       };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
 
       img.onload = async () => {
-        await cardImages.push(img);
+        cardImages.push(img);
         await setDisplayCards(cardImages);
       };
     }
-    setShowUpload(false);
   };
 
   return (
@@ -90,20 +90,9 @@ const BottomToolbar = ({setDisplayCards}) => {
               theme="secondary"
               size="large"
               variant="contained"
-              onClick={() => setShowUpload(true)}
+              onClick={() => setShowForm(true)}
             >
-              <FaChessPawn />
-            </SMARTIconButton>
-            <SMARTIconButton
-              theme="secondary"
-              size="large"
-              variant="contained"
-              onClick={() => setShowUpload(true)}
-              style={{
-                marginLeft: "20px",
-              }}
-            >
-              <FaChessPawn />
+              <FaPlus />
             </SMARTIconButton>
           </div>
 
@@ -123,67 +112,26 @@ const BottomToolbar = ({setDisplayCards}) => {
         </div>
       </AppBar>
       <Modal
-        title="Card Decks"
-        onClose={() => setShowUpload(false)}
-        show={showUpload}
-        style={{
-          height: "500px",
-          width: "800px",
-        }}
+        title="Upload Item"
+        onClose={() => setShowForm(false)}
+        show={showForm}
       >
-        <div className="wrapper">
-          <div className="upload-container">
-            <div className="plus-container">
-              <SMARTIconButton
-                className="card"
-                size="large"
-                variant="contained"
-                onClick={() => setShowForm(true)}
-                style={{
-                  height: "160px",
-                  width: "120px",
-                  background: "#C7C7C7",
-                }}
-              >
-                <FaPlus />
-              </SMARTIconButton>
-            </div>
-
+        <ImageUploadForm
+          closePopup={() => setShowForm(false)}
+          images={images}
+          onImageChange={onImageChange}
+          imageURLs={imageURLs}
+          setImageURLs={setImageURLs}
+          setDeck={setDeck}
+        />
+      </Modal>
+      {/*
             <div className="image-preview">
               {imageURLs.map((imageSrc, key) => (
                 <img key={key} alt="" src={imageSrc} />
               ))}
             </div>
-          </div>
-
-          <SMARTButton
-            theme="secondary"
-            size="large"
-            variant="contained"
-            onClick={() => handleCardDisplay()}
-            style={{
-              marginTop: "15px",
-            }}
-          >
-            SAVE
-          </SMARTButton>
-        </div>
-
-        <Modal
-          title="Upload Card Deck"
-          onClose={() => setShowForm(false)}
-          show={showForm}
-        >
-          <ImageUploadForm
-            closePopup={() => setShowForm(false)}
-            images={images}
-            onImageChange={onImageChange}
-            imageURLs={imageURLs}
-            setImageURLs={setImageURLs}
-            setDeck={setDeck}
-          />
-        </Modal>
-      </Modal>
+          </div>*/}
     </>
   );
 }

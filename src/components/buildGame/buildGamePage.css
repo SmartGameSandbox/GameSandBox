@@ -33,6 +33,10 @@
     padding-bottom: 30px;
 }
 
+.bgame-tabletop {
+    margin-top: 50px;
+}
+
 .bgame-tabletop > div {
     width: fit-content;
     margin: 0 auto;
