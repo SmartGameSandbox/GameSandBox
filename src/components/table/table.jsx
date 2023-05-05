@@ -178,6 +178,24 @@ const Table = ({ socket, username }) => {
         prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
         return { ...prevTable };
       });
+    } else {
+      setTableData((prevTable) => {
+        const found = prevTable.cards.find((card) => card.id === cardID);
+        prevTable.cards.forEach((pile) => {
+          if (pile !== found && position.x > pile.x - 10 && position.x < pile.x + Constants.CARD_WIDTH + 10 &&
+          position.y > pile.y - 10 && position.y < pile.y + Constants.CARD_HEIGHT + 10) {
+            prevTable.cards = prevTable.cards.filter((card) => card !== found && card !== pile);
+            var newPile = structuredClone(found)
+            newPile.pile = newPile.pile.concat(pile).concat(pile.pile)
+            pile.x = -100
+            pile.y = -100
+            console.log(newPile)
+            prevTable.cards.push(newPile)
+          }
+        })
+
+        return { ...prevTable };
+      });
     }
   };
 

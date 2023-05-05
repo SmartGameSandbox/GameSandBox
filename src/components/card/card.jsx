@@ -6,7 +6,7 @@ const Buffer = require("buffer").Buffer;
 class Card extends React.Component {
   state = {
     image: null,
-    imageNode: null,
+    imageNode: null
   };
 
   componentDidMount() {
@@ -39,7 +39,7 @@ class Card extends React.Component {
   };
 
   render() {
-    console.log("card props", this.props);
+    // console.log("card props", this.props);
     return (
       <Image
         key={this.props.id}

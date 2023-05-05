@@ -125,14 +125,6 @@ io.on("connect_error", (err) => {
 
 // Restful Apis
 // Rooms
-app.get("/api/rooms", async (req, res) => {
-  try {
-    res.json(await Room.find());
-  } catch (err) {
-    res.json({ status: "error", message: err });
-    console.log(err);
-  }
-});
 
 // Get room by id
 app.get("/api/room", async (req, res) => {
@@ -185,6 +177,7 @@ app.post("/api/room", async (req, res) => {
         id: card.id,
         x: card.x,
         y: card.y,
+        pile: [],
         isFlipped: card.isFlipped,
         isLandscape: card.isLandscape,
         _id: card._id,
@@ -394,6 +387,7 @@ const createCardObjects = async (cardArray, isLandscape) => {
         data: buffer,
         contentType: "image/png",
       },
+      pile: [],
       type: "front",
       isFlipped: false,
       isLandscape: isLandscape,
