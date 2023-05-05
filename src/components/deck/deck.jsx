@@ -94,16 +94,25 @@ const Deck = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
     }
   };
 
+  if (!tableData) {
+    return null; //prevent loading before tableData is set*
+  }
+
   return (
     <>
       <Rect
         key="deck_square"
-        x={Constants.DECK_STARTING_POSITION_X}
+        // x={Constants.DECK_STARTING_POSITION_X}
+        x={
+          Constants.DECK_STARTING_POSITION_X + 
+          (tableData.deck.length > 0 && tableData.deck[0].isLandscape ? 20 : 0)
+        }
         y={Constants.DECK_STARTING_POSITION_Y}
         width={Constants.DECK_AREA_WIDTH}
         height={Constants.DECK_AREA_HEIGHT}
         cornerRadius={10}
         fill={"rgba(177, 177, 177, 0.6)"}
+        rotation={tableData.deck.some((card) => card.isLandscape) ? 90 : 0} // rotate by 90 degrees if any card is landscape
       />
 
       {tableData &&
