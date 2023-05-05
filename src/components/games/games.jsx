@@ -7,73 +7,35 @@ import Header from "../header/header";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 
 const Games = () => {
-  const [isLoading, setLoading] = useState(true); // Loading state
-  const [gamesButtons, setGamesButtons] = useState(); // pokemon state
-  let gameList = [];
-  let gameDisplayList = null;
+  const [isLoading, setLoading] = useState(true);
+  const [games, setGames] = useState([]);
 
-  let counter = false;
   useEffect(() => {
-    setTimeout(() => {
-      // simulate a delay
-
-      if (!counter) {
-        counter = true;
-        const id = localStorage.getItem("id");
-        let games = null;
-
-        axios
-          .get(`${BASE_URL}/api/games`, {
-            params: {
-              creatorId: id,
-            },
-          })
-          .then((res) => {
-            games = res.data.savedGames;
-            for (let i = 0; i < games.length; i++) {
-              gameList.push({ name: games[i].name, id: games[i]._id });
-            }
-            gameDisplayList = gameList.map((gameObj, index) => (
-              <SMARTButton
-                key={index}
-                sx={styles.gameButtons}
-                onClick={() => createroom(gameObj.id)}
-              >
-                {gameObj.name}
-              </SMARTButton>
-            ));
-            setGamesButtons(gameDisplayList);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
-    }, 3000);
-  });
-
-  const createroom = async (gameId) => {
-    let cardDeckIdArray;
-    let roomname;
-    await axios
+    axios
       .get(`${BASE_URL}/api/games`, {
         params: {
-          gameId: gameId,
+          creatorId: localStorage.getItem("id"),
         },
       })
-      .then((response) => {
-        cardDeckIdArray = response.data.savedGames.cardDeck;
-        roomname = response.data.savedGames.name;
+      .then((res) => {
+        setGames(res.data.savedGames);
+        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
       });
+  }, [isLoading, games]);
+
+  const createroom = async (gameId) => {
+    const game = games.find(({ _id }) => _id === gameId);
+    if (!game) return;
+    const { cardDeck, name } = game;
 
     await axios
       .post(`${BASE_URL}/api/room`, {
-        name: roomname,
+        name,
         image: null,
-        cardDeck: cardDeckIdArray,
+        cardDeck,
       })
       .then((response) => {
         window.location.href = `/room?id=${response.data.id}`;
@@ -83,21 +45,24 @@ const Games = () => {
       });
   };
 
-  if (isLoading) {
-    return (
-      <div style={styles.body}>
-        <Header />
-        <div>
-          <LoadingSpinner />
-        </div>
-      </div>
-    );
-  }
   return (
     <div style={styles.body}>
       <Header />
       <div>
-        <div style={styles.btnGroup}>{gamesButtons}</div>
+        {isLoading
+          ? <LoadingSpinner />
+          : <div style={styles.btnGroup}>
+              {games.map((gameObj) => (
+                <SMARTButton
+                  key={gameObj._id}
+                  sx={styles.gameButtons}
+                  onClick={() => createroom(gameObj._id)}
+                >
+                  {gameObj.name}
+                </SMARTButton>
+              ))}
+            </div>
+        }
       </div>
     </div>
   );

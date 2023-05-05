@@ -16,6 +16,7 @@
 }
 
 .bt-IconBtnContainer {
+    display: flex;
     margin: 10px;
 }
 
@@ -28,16 +29,11 @@
 
 .image-preview {
     display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-}
-
-.image-preview img {
-    flex: 0 0 auto;
-    margin-left: 10px;
-    border-radius: 10px;
-    height: 160px;
-    width: 120px;
+    width: 52px;
+    height: 52px;
+    margin-left: 15px;
+    border-radius: 15px;
+    background-size: cover;
 }
 
 .plus-container {

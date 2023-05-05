@@ -43,8 +43,6 @@ const BuildGamePage = () => {
     setEditHeader(!editHeader);  
   };
 
-  let card_locations = window.innerWidth / 3.1;
-  
   return (
     <>
       <div className="bgame-container"></div>
@@ -91,17 +89,19 @@ const BuildGamePage = () => {
               fill="#EBEBEB"
             />
             {displayCards.map((item, index) => (
-              <Image
-                key={index}
-                image={item}
-                x={card_locations += 20}
-                y={window.innerHeight / 5}
+              item.map((img, index2) => (
+                <Image
+                key={`${index}-${index2}`}
+                image={img}
+                x={(index+1)*120 + index2}
+                y={window.innerHeight / 5 - index2}
                 width={window.innerWidth / 20}
                 height={window.innerHeight / 8}
                 draggable
                 stroke="#163B6E"
                 strokeWidth={5}
               />
+              ))
             ))}
           </Layer>
         </Stage>

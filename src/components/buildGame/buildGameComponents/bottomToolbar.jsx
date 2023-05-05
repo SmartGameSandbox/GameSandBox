@@ -16,15 +16,11 @@ const BottomToolbar = ({setDisplayCards}) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // const [showUpload, setShowUpload] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
-
-  const [deck, setDeck] = useState([]);
-
-  console.log(showForm);
+  const [decks, setDecks] = useState([]);
 
   useEffect(() => {
     if (images.length < 1) return;
@@ -34,49 +30,55 @@ const BottomToolbar = ({setDisplayCards}) => {
   }, [images]);
 
   const onImageChange = (e) => {
-    setImages([...e.target.files]);
+    setImages([...images, ...e.target.files]);
   };
 
   function handleSave() {
-    const newDeckId = localStorage.getItem('newDeckId');
-    if (newDeckId) {
-      alert("Please upload an item to create a game.");
-      return;
-    }
-    const creatorId = localStorage.getItem("id");
-
-    const gameInfo = location.state;
-    gameInfo.creatorId = creatorId;
-    gameInfo.newDeckId = newDeckId;
-
-    axios
-      .post(`${BASE_URL}/api/saveGame`, gameInfo, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then(async () => {
-        console.log("Game successfully created with card deck uploaded.");
-        await localStorage.removeItem('newDeckId');
-        navigate("/dashboard");
+    const promises = decks.map((obj) => {
+      return axios
+              .post(`${BASE_URL}/api/addDecks`, obj, {
+                headers: { "Content-Type": "application/json" }
+              }).then((res) => res.data);
+    })
+    Promise.all(promises)
+      .then((values) => values.map(({ deckId }) => deckId))
+      .then((deckIds) => {
+        const gameInfo = {
+          ...location.state,
+          creatorId: localStorage.getItem('id'),
+          newDeckIds: deckIds,
+        };
+        axios
+          .post(`${BASE_URL}/api/saveGame`, gameInfo, {
+            headers: { "Content-Type": "application/json" },
+        })
+          .then(async () => {
+            navigate("/dashboard");
+        })
+          .catch((err) => console.log(err));
       })
       .catch((err) => console.log(err));
   }
 
-  const handleCardDisplay = async () => {
+  useEffect(() => {
     const cardImages = [];
-
-    for (let i = 0; i < deck.length; i++) {
-      const imageObject = deck[i];
-      const img = new window.Image();
-      img.src = `data:image/${
-        imageObject.imageSource.contentType
-      };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
-
-      img.onload = async () => {
-        cardImages.push(img);
-        await setDisplayCards(cardImages);
-      };
-    }
-  };
+    decks.forEach(({ deck }) => {
+      const currentDeck = [];
+      for (const imageObject of deck) {
+        const img = new window.Image();
+        img.src = `data:image/${
+          imageObject.imageSource.contentType
+        };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
+        img.onload = async () => {
+          currentDeck.push(img);
+        };
+      }
+      cardImages.push(currentDeck);
+    });
+    setTimeout(() => {
+      setDisplayCards(cardImages);
+    }, 100);
+  }, [decks, setDisplayCards]);
 
   return (
     <>
@@ -94,6 +96,13 @@ const BottomToolbar = ({setDisplayCards}) => {
             >
               <FaPlus />
             </SMARTIconButton>
+              {imageURLs.map((imageSrc, key) => (
+                <div
+                  key={key}
+                  className="image-preview"
+                  style={{backgroundImage: `url('${imageSrc}')`}}
+                />
+              ))}
           </div>
 
           <div className="bt-BtnContainer">
@@ -122,16 +131,10 @@ const BottomToolbar = ({setDisplayCards}) => {
           onImageChange={onImageChange}
           imageURLs={imageURLs}
           setImageURLs={setImageURLs}
-          setDeck={setDeck}
+          setDecks={setDecks}
+          decks={decks}
         />
       </Modal>
-      {/*
-            <div className="image-preview">
-              {imageURLs.map((imageSrc, key) => (
-                <img key={key} alt="" src={imageSrc} />
-              ))}
-            </div>
-          </div>*/}
     </>
   );
 }

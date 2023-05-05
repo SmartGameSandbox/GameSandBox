@@ -22,7 +22,7 @@ const { User } = require("./schemas/user");
 const app = express();
 const http = require("http").Server(app);
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit: '200kb'}));
 const io = require("socket.io")(http, { cors: { origin: "*" } });
 
 const port = process.env.PORT || 8000;
@@ -168,7 +168,7 @@ app.post("/api/room", async (req, res) => {
     if (cardDeckId === null) {
       allCards = await Card.find();
     } else {
-      deck = await Grid.find({ _id: new ObjectId(cardDeckId) });
+      const deck = await Grid.find({ _id: new ObjectId(cardDeckId) });
       allCards = deck[0].deck;
     }
 
@@ -283,7 +283,7 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
     const numCols = parseInt(req.body.cardsAcross);
     const numRows = parseInt(req.body.cardsDown);
 
-    cardArray = await sliceImages(imageData, numCols, numRows);
+    const cardArray = await sliceImages(imageData, numCols, numRows);
 
     let cardDocuments = await createCardObjects(cardArray);
 
@@ -297,11 +297,24 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
       deck: cardDocuments,
     };
 
-    const result = await Grid.create(cardDeck);
     res.status(200).send({
-      message: "Grid inserted successfully",
-      newDeckId: result._id,
-      displayDeck: cardDocuments,
+      message: "Deck created successfully",
+      newDeck: cardDeck,
+    });
+  } catch (error) {
+    console.error("Failed to insert grid", error);
+    res.status(500).send("Failed to insert grid");
+  }
+});
+
+//Image Upload REST APIs Deck making logics
+app.post("/api/addDecks", async (req, res) => {
+  try {
+    const gameObject = req.body;
+    await CardV2.create(gameObject.deck);
+    const result = await Grid.create(gameObject);
+    res.status(200).send({
+      deckId: result._id,
     });
   } catch (error) {
     console.error("Failed to insert grid", error);
@@ -311,19 +324,21 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
 
 app.post("/api/saveGame", async (req, res) => {
   try {
-    let name = req.body.name; //Game name.
-    let numPlayers = parseInt(req.body.players);
-    let creatorId = req.body.creatorId; //id for the creator of the game
-    let carDeckId = req.body.newDeckId;
+    const {
+      name,
+      players,
+      creatorId,
+      newDeckIds,
+    } = req.body;
     if (creatorId) {
       //Create a game now
       const gameObject = {
-        name: name,
-        players: numPlayers,
+        name,
+        players: parseInt(players),
         creator: new ObjectId(creatorId),
-        cardDeck: [new ObjectId(carDeckId)],
+        cardDeck: newDeckIds.map((id) => new ObjectId(id)),
       };
-      const result = await Game.create(gameObject);
+      await Game.create(gameObject);
       res.status(200).send("Game created successfully");
     }
   } catch (error) {
@@ -333,7 +348,7 @@ app.post("/api/saveGame", async (req, res) => {
 });
 
 const sliceImages = async (BufferData, cols, rows) => {
-  cardArray = [];
+  const cardArray = [];
   const inputBuffer = Buffer.from(BufferData);
   const numCols = cols;
   const numRows = rows;
@@ -382,7 +397,6 @@ const createCardObjects = async (cardArray) => {
       type: "front",
       isFlipped: false,
     };
-    await CardV2.create(cardObject);
     cardObjects.push(cardObject);
   }
 

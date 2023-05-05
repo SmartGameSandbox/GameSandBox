@@ -4,7 +4,7 @@ import axios from "axios";
 import { SMARTButton } from "../../button/button";
 import { BASE_URL } from '../../../util/constants'
 
-const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
+const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks }) => {
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
@@ -20,7 +20,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("image", images[0]);
+    formData.append("image", images.at(-1));
     formData.append("cardsAcross", inputs.numAcross);
     formData.append("cardsDown", inputs.numDown);
     formData.append("totalCards", inputs.numTotal);
@@ -31,10 +31,8 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(async (res) => {
-        const deckUploaded = await res.data.displayDeck;
-        await setDeck(deckUploaded);
-        localStorage.setItem("newDeckId", res.data.newDeckId);
-
+        const deckUploaded = await res.data.newDeck;
+        await setDecks([...decks, deckUploaded]);
         closePopup();
       })
       .catch((err) => console.log(err));
