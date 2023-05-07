@@ -1,68 +1,56 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import { Image } from "react-konva";
 import * as Constants from "../../util/constants";
 const Buffer = require("buffer").Buffer;
 
-class Card extends React.Component {
-  state = {
-    image: null,
-    imageNode: null,
-  };
+const Card = ({
+  username,
+  roomID,
+  src,
+  id,
+  x,
+  y,
+  isFlipped,
+  deckIndex,
+  onDragMove,
+  onClick,
+  onDragEnd,
+}) => {
 
-  componentDidMount() {
-    this.loadImage();
-  }
+  const [image, setImage] = useState(null);
 
-  componentDidUpdate(oldProps) {
-    if (oldProps.src !== this.props.src) {
-      this.loadImage();
-    }
-  }
-
-  componentWillUnmount() {
-    this.image.removeEventListener("load", this.handleLoad);
-  }
-
-  async loadImage() {
-    this.image = new window.Image();
-    let imageObj = this.props.src;
-
-    this.image.src = `data:image/${imageObj.contentType};base64,${Buffer.from(
-      imageObj.data
+  
+  useEffect(() => {
+    if(!src) return;
+    const image = new window.Image();
+    console.log('here')
+    image.src = `data:image/${src.contentType};base64,${Buffer.from(
+      src.data
     ).toString("base64")}`;
+    image.addEventListener("load", setImage(image));
+    setImage(image);
+  },[])
 
-    this.image.addEventListener("load", this.handleLoad);
-  }
+  useEffect(() => {
+    return () => {
+      image?.removeEventListener("load", setImage(image));
+    }
+  },[image])
 
-  handleLoad = () => {
-    this.setState(() => ({ image: this.image }));
-  };
-
-  render() {
-    return (
-      <Image
-        key={this.props.id}
-        x={this.props.x}
-        y={this.props.y}
-        height={Constants.CARD_HEIGHT}
-        width={Constants.CARD_WIDTH}
-        image={this.state.image}
-        draggable
-        onDragMove={(e) => {
-          this.props.onDragMove(e, this.props.id);
-        }}
-        onDragStart={(e) => {
-          this.props.onDragStart(e, this.props.id);
-        }}
-        onClick={(e) => {
-          this.props.onClick(e, this.props.id);
-        }}
-        onDragEnd={(e) => {
-          this.props.onDragEnd(e, this.props.id);
-        }}
-      />
-    );
-  }
+  return (
+    <Image
+      key={id}
+      x={x}
+      y={y}
+      height={Constants.CARD_HEIGHT}
+      width={Constants.CARD_WIDTH}
+      image={image}
+      draggable
+      onDragMove={(e) => {onDragMove(e, id);}}
+      onClick={(e) => {onClick(e, id);}}
+      onDragEnd={(e) => {onDragEnd(e, id);}}
+    />
+  );
 }
 
 export default Card;

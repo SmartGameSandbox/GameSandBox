@@ -89,7 +89,7 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
 
     return (
         <>
-            {tableData && tableData.hand && tableData.hand.map((card) => (
+            {tableData?.hand?.map((card) => (
                 <Card
                     key={"hand_" + card.id}
                     src={card.imageSource}
@@ -98,7 +98,7 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
                     y={card.y}
                     isFlipped={card.isFlipped}
                     onClick={onClickCard}
-                    onDragStart={() => { }}
+                    // onDragStart={() => { }}
                     onDragEnd={onDragEndCard}
                     onDragMove={onDragMoveCard}
                     draggable

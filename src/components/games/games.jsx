@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { SMARTButton } from "../button/button";
 import { BASE_URL } from '../../util/constants'

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { io } from "socket.io-client";
 import axios from 'axios';
 import { Stage } from 'react-konva';
@@ -11,7 +11,7 @@ const socket = io(BASE_URL, { transports: ['websocket'] });
 
 const Room = () => {
     const [imageUrl, setImageUrl] = useState('');
-    const [username, setUsername] = useState(null);
+    const [username, setUsername] = useState(localStorage.getItem('username'));
     const [roomID, setRoomId] = useState(null);
 
     const handleMouseMove = (data) => {
@@ -27,12 +27,14 @@ const Room = () => {
         const search = window.location.search;
         const params = new URLSearchParams(search);
         setRoomId(params.get('id'));
+        if (!roomID) return;
         setUsername(localStorage.getItem('username'));
         axios.get(`${BASE_URL}/api/room?id=${roomID}`).then((response) => {
             setImageUrl(response.data.image);
-            socket.emit("joinRoom", { roomID: roomID, username: username }, () => { });
-        }).catch((error) => {
-            console.log(error);
+            socket.emit("joinRoom", { roomID: roomID, username: username });
+        // })
+        // .catch((error) => {
+        //     console.log(error);
         });
     }, [imageUrl, username, roomID]);
 
@@ -54,7 +56,7 @@ const Room = () => {
                             onMouseMove={(e) => handleMouseMove(e)}
                             
                         >
-                            <Table socket={socket} username={username} />
+                            <Table socket={socket} username={username} roomId={roomID} />
                         </Stage>
                     </div>
                 </div>
