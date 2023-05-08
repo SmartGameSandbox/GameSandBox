@@ -160,11 +160,10 @@ const Table = ({ socket, username, roomID }) => {
           if (pile !== found && position.x > pile.x - 10 && position.x < pile.x + Constants.CARD_WIDTH + 10 &&
           position.y > pile.y - 10 && position.y < pile.y + Constants.CARD_HEIGHT + 10) {
             prevTable.cards = prevTable.cards.filter((card) => card !== found && card !== pile);
-            var newPile = structuredClone(found)
-            newPile.pile = newPile.pile.concat(pile).concat(pile.pile)
+            found.pile = found.pile.concat(pile).concat(pile.pile)
             pile.x = -100
             pile.y = -100
-            prevTable.cards.push(newPile)
+            prevTable.cards.push(found)
           }
         })
 
