@@ -368,6 +368,7 @@ const createCardObjects = async (cardArray, isLandscape) => {
         data: buffer,
         contentType: "image/png",
       },
+      pile: [],
       type: "front",
       isFlipped: false,
       isLandscape: isLandscape,

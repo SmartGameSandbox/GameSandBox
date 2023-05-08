@@ -164,7 +164,6 @@ const Table = ({ socket, username, roomID }) => {
             newPile.pile = newPile.pile.concat(pile).concat(pile.pile)
             pile.x = -100
             pile.y = -100
-            console.log(newPile)
             prevTable.cards.push(newPile)
           }
         })
@@ -254,6 +253,7 @@ const Table = ({ socket, username, roomID }) => {
               id={card.id}
               x={card.x}
               y={card.y}
+              pile={[]}
               isFlipped={card.isFlipped}
               isLandscape={card.isLandscape}
               onDragMove={onDragMoveCard}
