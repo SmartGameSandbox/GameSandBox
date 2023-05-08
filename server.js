@@ -125,6 +125,14 @@ io.on("connect_error", (err) => {
 
 // Restful Apis
 // Rooms
+app.get("/api/rooms", async (req, res) => {
+  try {
+    res.json(await Room.find());
+  } catch (err) {
+    res.json({ status: "error", message: err });
+    console.log(err);
+  }
+});
 
 // Get room by id
 app.get("/api/room", async (req, res) => {
