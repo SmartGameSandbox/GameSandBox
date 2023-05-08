@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { SMARTButton } from "../button/button";
 import Modal from "../modal/modal";
 import "./savedGames.css";
+import { BASE_URL } from '../../util/constants'
 import Themes from "./savedGamesTheme";
-import axios from "axios";
-import Sidebar from "../sidebar/Sidebar";
 import Header from "../header/header";
 import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
@@ -26,12 +26,8 @@ const SavedGames = () => {
       if (!counter) {
         counter = true;
         let games = null;
-        const url =
-          process.env.NODE_ENV === "production"
-            ? "https://smartgamesandbox.herokuapp.com"
-            : "http://localhost:8000";
         axios
-          .get(`${url}/api/games`, {
+          .get(`${BASE_URL}/api/games`, {
             params: {
               creatorId: localStorage.getItem('id'),
             },
@@ -68,7 +64,6 @@ const SavedGames = () => {
         <Header />
         <div>
         <LoadingSpinner />
-          <Sidebar />
         </div>
       </div>
     );
@@ -77,7 +72,6 @@ const SavedGames = () => {
   return (
     <div id="my-page-body">
       <Header />
-      <Sidebar />
       <div id="right" style={Themes.logo}></div>
       <div id="my-games-title">My Games</div>
       <div id="my-games-list">

@@ -1,78 +1,85 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Stage, Layer, Rect, Image } from "react-konva";
-import { FaArrowLeft, FaEdit } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaSave } from "react-icons/fa";
 import "./buildGamePage.css";
 import BottomToolbar from "./buildGameComponents/bottomToolbar";
-import Sidebar from "../sidebar/Sidebar";
 import { SMARTButton } from "../button/button";
 
 const BuildGamePage = () => {
 
   const location = useLocation();
-  const [header, setHeader] = useState("");
+  const [header, setHeader] = useState(location.state.name);
   const [displayCards, setDisplayCards] = useState([]);
+  const [editHeader, setEditHeader] = useState(false);
+
+  const gameName = useRef(location.state.name);
 
   useEffect(() => {
-    setHeader(location.state.name);
-  }, [location]);
+    if (editHeader) {
+      document.querySelector('.bgame-heading').focus();
+      return;
+    }
+    const headerText = gameName.current.innerText;
+    if (headerText) {
+      location.state.name = headerText;
+      setHeader(headerText);
+    }
+  }, [editHeader, location]);
+
+  const handleFocus = (e) => {
+    const range = document.createRange();
+    range.selectNodeContents(e.target);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
 
   const goBack = () => {
     window.history.back();
   };
 
   const editHeading = () => {
-    console.log("Edit the heading");
+    setEditHeader(!editHeader);  
   };
 
-  let card_locations = window.innerWidth / 3.1;
-  
   return (
     <>
-      <Sidebar></Sidebar>
       <div className="bgame-container"></div>
       <div className="bgame-header">
         <SMARTButton
           variant="text"
           onClick={goBack}
-          style={{
-            height: "4em",
-            background: "transparent",
-            borderRadius: "5em",
-            marginRight: "0.75em",
-            color: "#163B6E",
-          }}
         >
           <FaArrowLeft fontSize="large" />
         </SMARTButton>
 
-        <h4
+        <div
           className="bgame-heading"
-          style={{ fontFamily: "Nunito", fontSize: "2em", margin: "0px" }}
+          ref={gameName}
+          tabIndex={-1}
+          suppressContentEditableWarning
+          contentEditable={editHeader}
+          onFocus={handleFocus}
         >
           {header}
-        </h4>
+        </div>
 
         <SMARTButton
           variant="text"
           onClick={editHeading}
-          style={{
-            height: "4em",
-            marginLeft: "0.75em",
-            background: "transparent",
-            borderRadius: "5em",
-            color: "#163B6E",
-          }}
         >
-          <FaEdit fontSize="large" />
+          {editHeader
+            ? <FaSave fontSize="large"/>
+            : <FaEdit fontSize="large" />}
         </SMARTButton>
       </div>
 
       <div className="bgame-tabletop">
-        <Stage width={window.innerWidth} height={window.innerHeight * 0.64}>
+        <Stage width={8 + window.innerWidth / 1.7} height={window.innerHeight * 0.64}>
           <Layer id="layer">
             <Rect
-              x={window.innerWidth / 5}
+              x={4}
               y={window.innerHeight / 20}
               width={window.innerWidth / 1.7}
               height={window.innerHeight / 2}
@@ -82,11 +89,12 @@ const BuildGamePage = () => {
               fill="#EBEBEB"
             />
             {displayCards.map((item, index) => (
-              <Image
-                key={index}
-                image={item}
-                x={card_locations += 20}
-                y={window.innerHeight / 5}
+              item.map((img, index2) => (
+                <Image
+                key={`${index}-${index2}`}
+                image={img}
+                x={(index+1)*120 + index2}
+                y={window.innerHeight / 5 - index2}
                 width={window.innerWidth / 20}
                 height={window.innerHeight / 8}
                 draggable
@@ -94,6 +102,7 @@ const BuildGamePage = () => {
                 strokeWidth={5}
                 rotation = {item.isLandscape ? 90 : 0}
               />
+              ))
             ))}
           </Layer>
         </Stage>

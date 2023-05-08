@@ -12,15 +12,15 @@ import BuildGamePage from "./components/buildGame/buildGamePage";
 import Dashboard from './components/dashboard/dashboard';
 import Games from './components/games/games.jsx';
 import UserContext from "./components/userContext";
+import Sidebar from "./components/sidebar/Sidebar";
 
 const App = () => {
 
   const userAuthed = useContext(UserContext)
 
-  console.log(localStorage.getItem('username'));
-
   return (
     <UserContext.Provider value={localStorage.getItem('username')}>
+      {userAuthed && <Sidebar/>}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={

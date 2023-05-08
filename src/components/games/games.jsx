@@ -1,88 +1,41 @@
-import React, { useEffect, useState } from "react";
-import styles from "./games";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { SMARTButton } from "../button/button";
-import Sidebar from "../sidebar/Sidebar";
+import { BASE_URL } from '../../util/constants'
+import styles from "./games";
 import Header from "../header/header";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 
 const Games = () => {
-  const [isLoading, setLoading] = useState(true); // Loading state
-  const [gamesButtons, setGamesButtons] = useState(); // pokemon state
-  let gameList = [];
-  let gameDisplayList = null;
+  const [isLoading, setLoading] = useState(true);
+  const [games, setGames] = useState([]);
 
-  let counter = false;
   useEffect(() => {
-    setTimeout(() => {
-      // simulate a delay
-
-      if (!counter) {
-        counter = true;
-        const id = localStorage.getItem("id");
-        let games = null;
-        const url =
-          process.env.NODE_ENV === "production"
-            ? "https://smartgamesandbox.herokuapp.com"
-            : "http://localhost:8000";
-
-        axios
-          .get(`${url}/api/games`, {
-            params: {
-              creatorId: id,
-            },
-          })
-          .then((res) => {
-            games = res.data.savedGames;
-            for (let i = 0; i < games.length; i++) {
-              gameList.push({ name: games[i].name, id: games[i]._id });
-            }
-            gameDisplayList = gameList.map((gameObj, index) => (
-              <SMARTButton
-                key={index}
-                sx={styles.gameButtons}
-                onClick={() => createroom(gameObj.id)}
-              >
-                {gameObj.name}
-              </SMARTButton>
-            ));
-            setGamesButtons(gameDisplayList);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
-    }, 3000);
-  });
-
-  const createroom = async (gameId) => {
-    let cardDeckIdArray;
-    let roomname;
-    const url =
-      process.env.NODE_ENV === "production"
-        ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:8000";
-
-    await axios
-      .get(`${url}/api/games`, {
+    axios
+      .get(`${BASE_URL}/api/games`, {
         params: {
-          gameId: gameId,
+          creatorId: localStorage.getItem("id"),
         },
       })
-      .then((response) => {
-        cardDeckIdArray = response.data.savedGames.cardDeck;
-        roomname = response.data.savedGames.name;
+      .then((res) => {
+        setGames(res.data.savedGames);
+        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
       });
+  }, [isLoading, games]);
+
+  const createroom = async (gameId) => {
+    const game = games.find(({ _id }) => _id === gameId);
+    if (!game) return;
+    const { cardDeck, name } = game;
 
     await axios
-      .post(`${url}/api/room`, {
-        name: roomname,
+      .post(`${BASE_URL}/api/room`, {
+        name,
         image: null,
-        cardDeck: cardDeckIdArray,
+        cardDeck,
       })
       .then((response) => {
         window.location.href = `/room?id=${response.data.id}`;
@@ -92,23 +45,24 @@ const Games = () => {
       });
   };
 
-  if (isLoading) {
-    return (
-      <div style={styles.body}>
-        <Header />
-        <div>
-          <LoadingSpinner />
-          <Sidebar />
-        </div>
-      </div>
-    );
-  }
   return (
     <div style={styles.body}>
       <Header />
       <div>
-        <Sidebar />
-        <div style={styles.btnGroup}>{gamesButtons}</div>
+        {isLoading
+          ? <LoadingSpinner />
+          : <div style={styles.btnGroup}>
+              {games.map((gameObj) => (
+                <SMARTButton
+                  key={gameObj._id}
+                  sx={styles.gameButtons}
+                  onClick={() => createroom(gameObj._id)}
+                >
+                  {gameObj.name}
+                </SMARTButton>
+              ))}
+            </div>
+        }
       </div>
     </div>
   );

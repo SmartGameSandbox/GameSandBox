@@ -1,33 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 import AppBar from "@mui/material/AppBar";
 import { SMARTButton, SMARTIconButton } from "../../button/button";
-import { FaChessPawn, FaPlus } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import Modal from "../../modal/modal";
 import ImageUploadForm from "./imageUploadForm";
 import "./bottomToolbar.css";
-import axios from "axios";
+import { BASE_URL } from '../../../util/constants'
 const Buffer = require("buffer").Buffer;
 
 
 const BottomToolbar = ({setDisplayCards}) => {
 
-  // todo: move into constant
-  const url =
-    process.env.NODE_ENV === "production"
-      ? "https://smartgamesandbox.herokuapp.com"
-      : "http://localhost:8000";
-
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [showUpload, setShowUpload] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
-
-  const [deck, setDeck] = useState([]);
+  const [decks, setDecks] = useState([]);
 
   useEffect(() => {
     if (images.length < 1) return;
@@ -37,51 +30,55 @@ const BottomToolbar = ({setDisplayCards}) => {
   }, [images]);
 
   const onImageChange = (e) => {
-    setImages([...e.target.files]);
+    setImages([...images, ...e.target.files]);
   };
 
   function handleSave() {
-    const newDeckId = localStorage.getItem('newDeckId');
-    console.log(newDeckId);
-    if (!newDeckId) {
-      alert("Please upload a card deck to create a game.");
-      return;
-    }
-    const creatorId = localStorage.getItem("id");
-
-    const gameInfo = location.state;
-    gameInfo.creatorId = creatorId;
-    gameInfo.newDeckId = newDeckId;
-
-    axios
-      .post(`${url}/api/saveGame`, gameInfo, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then(async () => {
-        console.log("Game successfully created with card deck uploaded.");
-        await localStorage.removeItem('newDeckId');
-        navigate("/dashboard");
+    const promises = decks.map((obj) => {
+      return axios
+              .post(`${BASE_URL}/api/addDecks`, obj, {
+                headers: { "Content-Type": "application/json" }
+              }).then((res) => res.data);
+    })
+    Promise.all(promises)
+      .then((values) => values.map(({ deckId }) => deckId))
+      .then((deckIds) => {
+        const gameInfo = {
+          ...location.state,
+          creatorId: localStorage.getItem('id'),
+          newDeckIds: deckIds,
+        };
+        axios
+          .post(`${BASE_URL}/api/saveGame`, gameInfo, {
+            headers: { "Content-Type": "application/json" },
+        })
+          .then(async () => {
+            navigate("/dashboard");
+        })
+          .catch((err) => console.log(err));
       })
       .catch((err) => console.log(err));
   }
 
-  const handleCardDisplay = async () => {
+  useEffect(() => {
     const cardImages = [];
-
-    for (let i = 0; i < deck.length; i++) {
-      const imageObject = deck[i];
-      const img = new window.Image();
-      img.src = `data:image/${
-        imageObject.imageSource.contentType
-      };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
-
-      img.onload = async () => {
-        await cardImages.push(img);
-        await setDisplayCards(cardImages);
-      };
-    }
-    setShowUpload(false);
-  };
+    decks.forEach(({ deck }) => {
+      const currentDeck = [];
+      for (const imageObject of deck) {
+        const img = new window.Image();
+        img.src = `data:image/${
+          imageObject.imageSource.contentType
+        };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
+        img.onload = async () => {
+          currentDeck.push(img);
+        };
+      }
+      cardImages.push(currentDeck);
+    });
+    setTimeout(() => {
+      setDisplayCards(cardImages);
+    }, 100);
+  }, [decks, setDisplayCards]);
 
   return (
     <>
@@ -95,21 +92,17 @@ const BottomToolbar = ({setDisplayCards}) => {
               theme="secondary"
               size="large"
               variant="contained"
-              onClick={() => setShowUpload(true)}
+              onClick={() => setShowForm(true)}
             >
-              <FaChessPawn />
+              <FaPlus />
             </SMARTIconButton>
-            <SMARTIconButton
-              theme="secondary"
-              size="large"
-              variant="contained"
-              onClick={() => setShowUpload(true)}
-              style={{
-                marginLeft: "20px",
-              }}
-            >
-              <FaChessPawn />
-            </SMARTIconButton>
+              {imageURLs.map((imageSrc, key) => (
+                <div
+                  key={key}
+                  className="image-preview"
+                  style={{backgroundImage: `url('${imageSrc}')`}}
+                />
+              ))}
           </div>
 
           <div className="bt-BtnContainer">
@@ -128,66 +121,19 @@ const BottomToolbar = ({setDisplayCards}) => {
         </div>
       </AppBar>
       <Modal
-        title="Card Decks"
-        onClose={() => setShowUpload(false)}
-        show={showUpload}
-        style={{
-          height: "500px",
-          width: "800px",
-        }}
+        title="Upload Item"
+        onClose={() => setShowForm(false)}
+        show={showForm}
       >
-        <div className="wrapper">
-          <div className="upload-container">
-            <div className="plus-container">
-              <SMARTIconButton
-                className="card"
-                size="large"
-                variant="contained"
-                onClick={() => setShowForm(true)}
-                style={{
-                  height: "160px",
-                  width: "120px",
-                  background: "#C7C7C7",
-                }}
-              >
-                <FaPlus />
-              </SMARTIconButton>
-            </div>
-
-            <div className="image-preview">
-              {imageURLs.map((imageSrc, key) => (
-                <img key={key} alt="" src={imageSrc} />
-              ))}
-            </div>
-          </div>
-
-          <SMARTButton
-            theme="secondary"
-            size="large"
-            variant="contained"
-            onClick={() => handleCardDisplay()}
-            style={{
-              marginTop: "15px",
-            }}
-          >
-            SAVE
-          </SMARTButton>
-        </div>
-
-        <Modal
-          title="Upload Card Deck"
-          onClose={() => setShowForm(false)}
-          show={showForm}
-        >
-          <ImageUploadForm
-            closePopup={() => setShowForm(false)}
-            images={images}
-            onImageChange={onImageChange}
-            imageURLs={imageURLs}
-            setImageURLs={setImageURLs}
-            setDeck={setDeck}
-          />
-        </Modal>
+        <ImageUploadForm
+          closePopup={() => setShowForm(false)}
+          images={images}
+          onImageChange={onImageChange}
+          imageURLs={imageURLs}
+          setImageURLs={setImageURLs}
+          setDecks={setDecks}
+          decks={decks}
+        />
       </Modal>
     </>
   );

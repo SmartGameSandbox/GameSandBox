@@ -1,9 +1,10 @@
+import axios from "axios";
 import React, { useState } from "react";
 import styles from "./loginStyle";
+import { BASE_URL } from '../../util/constants'
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import axios from "axios";
 import {SMARTButton} from '../button/button';
 import logo from "../icons/Group_89.png";
 
@@ -22,12 +23,8 @@ const Login = () => {
   const handleSubmit = () => {
     let username = usernameInputText;
     let password = passwordInputText;
-    const url =
-      process.env.NODE_ENV === "production"
-        ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:8000";
     axios
-      .post(`${url}/api/login`, {
+      .post(`${BASE_URL}/api/login`, {
         username: username,
         password: password,
       })

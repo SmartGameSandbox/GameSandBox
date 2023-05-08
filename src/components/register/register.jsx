@@ -1,10 +1,11 @@
 import React, {useState} from "react";
+import axios from 'axios';
 import styles from "./registerStyle";
+import { BASE_URL } from '../../util/constants'
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import {SMARTButton} from '../button/button';
-import axios from 'axios';
 import logo from "../icons/Group_89.png";
 
 const Register = () => {
@@ -36,8 +37,7 @@ const Register = () => {
       setErrorMessage("Passwords do not match");
       return;
     }
-    const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
-    axios.post(`${url}/api/register`, {
+    axios.post(`${BASE_URL}/api/register`, {
       username: usernameInputText,
       email: emailInputText,
       password: passwordInputText
