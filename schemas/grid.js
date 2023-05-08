@@ -29,11 +29,16 @@ const gridSchema = new Schema(
         },
         type: { type: String, required: true, enum: ["front", "back"] },
         isFlipped: { type: Boolean, required: true },
+        isLandscape: {
+          type: Boolean,
+          default: true,
+        },
       },
     ],
   },
   { timestamps: true }
 );
+
 
 module.exports.gridSchema = gridSchema;
 module.exports.Grid = mongoose.model("grid", gridSchema);

@@ -12,7 +12,7 @@ export const CANVAS_WIDTH = 1300;
 export const CARD_HEIGHT = 90.5;
 export const CARD_WIDTH = 62.5;
 export const HAND_CARD_GAP = 30;
-export const HAND_PADDING_X = 30;
+export const HAND_PADDING_X = 110;
 export const HAND_PADDING_Y = 15;
 
 // Deck Constants

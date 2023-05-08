@@ -7,6 +7,10 @@ const cardSchema = new Schema({
     y: { type: Number, required: true },
     imageSource: { type: String, required: true },
     isFlipped: { type: Boolean, required: true },
+    isLandscape: {
+        type: Boolean,
+        default: false,
+      },
 }, { timestamps: true });
 
 module.exports.cardSchema = cardSchema;

@@ -237,7 +237,7 @@ const Table = ({ socket, username, roomID }) => {
               x={card.x}
               y={card.y}
               isFlipped={card.isFlipped}
-              // onDragStart={() => {}}
+              isLandscape={card.isLandscape}
               onDragMove={onDragMoveCard}
               onClick={onClickCard}
               onDragEnd={onDragEndCard}

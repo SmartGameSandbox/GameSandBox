@@ -6,6 +6,7 @@ const fs = require("fs");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
 const { ObjectId } = require("bson");
+
 const path = require("path");
 const mongoose = require("mongoose");
 const idGenerator = require("./utils/id_generator");
@@ -178,6 +179,7 @@ app.post("/api/room", async (req, res) => {
   }
 });
 
+// Register
 // createAccount
 app.post("/api/register", async (req, res) => {
   const newUser = new User({
@@ -252,10 +254,12 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
 
     const numCols = parseInt(req.body.cardsAcross);
     const numRows = parseInt(req.body.cardsDown);
+    const isLandscape = req.body.isLandscape === "true";
 
     const cardArray = await sliceImages(imageData, numCols, numRows);
 
-    let cardDocuments = await createCardObjects(cardArray);
+
+    let cardDocuments = await createCardObjects(cardArray, req.body.isLandscape);
 
     const cardDeck = {
       name: cardDeckName,
@@ -351,7 +355,7 @@ const sliceImages = async (BufferData, cols, rows) => {
   return cardArray;
 };
 
-const createCardObjects = async (cardArray) => {
+const createCardObjects = async (cardArray, isLandscape) => {
   //Card Array consists of buffers for every card in the deck.
   const cardObjects = [];
 
@@ -366,6 +370,7 @@ const createCardObjects = async (cardArray) => {
       },
       type: "front",
       isFlipped: false,
+      isLandscape: isLandscape,
     };
     cardObjects.push(cardObject);
   }

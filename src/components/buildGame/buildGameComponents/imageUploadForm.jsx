@@ -8,6 +8,8 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks })
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
+  const [isChecked2, setIsChecked2] = useState(false);
+
   const [itemType, setItemType] = useState("Card");
 
   const handleChange = (event) => {
@@ -133,6 +135,15 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks })
               onChange={() => setIsChecked((prev) => !prev)}
             />
             <span>Same back for all cards? </span>
+          </div>
+          <div>
+            <input
+              type="checkbox"
+              className={isChecked2 ? "checked" : ""}
+              checked={isChecked2}
+              onChange={() => setIsChecked2((prev) => !prev)}
+            />
+            <span>Landscape </span>
           </div>
         </div>
 

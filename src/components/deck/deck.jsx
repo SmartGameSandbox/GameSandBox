@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import { Rect } from "react-konva";
 
 // deck data
 const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
+  const [isLandScape, setLandScape] = useState(false);
+  useEffect(() => {
+    setLandScape(tableData.deck[deckIndex][0].isLandscape);
+  }, []);
   const onDragMoveCard = (e, cardID) => {
     setCanEmit(true);
     setTableData((prevTable) => {
@@ -95,16 +99,25 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
     }
   };
 
+  if (!tableData) {
+    return null; //prevent loading before tableData is set*
+  }
+
   return (
     <>
       <Rect
         key={`deck_square_${deckIndex}`}
-        x={Constants.DECK_STARTING_POSITION_X + deckIndex * 140}
+        x={
+          Constants.DECK_STARTING_POSITION_X
+          + deckIndex * 140
+          + (isLandScape ? 20 : 0)
+        }
         y={Constants.DECK_STARTING_POSITION_Y}
         width={Constants.DECK_AREA_WIDTH}
         height={Constants.DECK_AREA_HEIGHT}
         cornerRadius={10}
         fill={"rgba(177, 177, 177, 0.6)"}
+        rotation={isLandScape ? 90 : 0} // rotate by 90 degrees if any card is landscape
       />
 
       {tableData?.deck?.[deckIndex].map((card) => (
@@ -116,6 +129,7 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
             y={card.y}
             deckIndex={deckIndex}
             isFlipped={card.isFlipped}
+            isLandscape={card.isLandscape}
             onClick={onClickCard}
             onDragEnd={onDragEnd}
             onDragMove={onDragMoveCard}
