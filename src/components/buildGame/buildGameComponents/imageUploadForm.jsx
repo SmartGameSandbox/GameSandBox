@@ -1,12 +1,16 @@
 import "./imageUploadForm.css";
 import React, { useState } from "react";
-import { SMARTButton } from "../../button/button";
 import axios from "axios";
+import { SMARTButton } from "../../button/button";
+import { BASE_URL } from '../../../util/constants'
 
-const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
+const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks }) => {
 
   const [inputs, setInputs] = useState({});
   const [isChecked, setIsChecked] = useState(false);
+  const [isChecked2, setIsChecked2] = useState(false);
+
+  const [itemType, setItemType] = useState("Card");
 
   const handleChange = (event) => {
     const name = event.target.name;
@@ -18,7 +22,6 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
     e.preventDefault();
 
     const formData = new FormData();
-    console.log(images);
     formData.append("image", images[0]);
     formData.append("image", images[1]);
     formData.append("cardsAcross", inputs.numAcross);
@@ -26,30 +29,50 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
     formData.append("totalCards", inputs.numTotal);
     formData.append("hasSameBack", isChecked);
 
-    // todo: move to constant
-    const url =
-      process.env.NODE_ENV === "production"
-        ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:8000";
-
     axios
-      .post(`${url}/api/upload`, formData, {
+      .post(`${BASE_URL}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(async (res) => {
-        // console.log(res);
-        const deckUploaded = await res.data.displayDeck;
-        await setDeck(deckUploaded);
-        localStorage.setItem("newDeckId", res.data.newDeckId);
-
+        const deckUploaded = await res.data.newDeck;
+        await setDecks([...decks, deckUploaded]);
         closePopup();
       })
       .catch((err) => console.log(err));
   };
 
+  const checkItemType = (inputType) => {
+    if (inputType === itemType) return "active";
+    return "bg-itemtype-button";
+  } 
+
   return (
     <div className="bg-form">
       <form onSubmit={handleSubmit}>
+      <div className="row">
+          <label>Item Type:</label>
+          <div style={{width: "50%", display: "flex", justifyContent: "space-between"}}>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Card")}`}
+              onClick={() => {setItemType("Card")}}
+            >   
+              Card
+            </div>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Token")}`}
+              onClick={() => {setItemType("Token")}}
+            >
+              Token
+            </div>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Piece")}`}
+              onClick={() => {setItemType("Piece")}}
+            >
+              Piece
+            </div>
+          </div>
+        </div>
+
         <div className="row">
           <label>Upload Image Grid:</label>
           <input
@@ -114,9 +137,18 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
             />
             <span>Same back for all cards? </span>
           </div>
+          <div>
+            <input
+              type="checkbox"
+              className={isChecked2 ? "checked" : ""}
+              checked={isChecked2}
+              onChange={() => setIsChecked2((prev) => !prev)}
+            />
+            <span>Landscape </span>
+          </div>
         </div>
 
-        <div className="row">
+        <div className="row last">
           <SMARTButton
             type="submit"
             className="bg-createGameBtn"
@@ -124,7 +156,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
             size="large"
             variant="contained"
           >
-            Create Game
+            Create Item
           </SMARTButton>
         </div>
       </form>

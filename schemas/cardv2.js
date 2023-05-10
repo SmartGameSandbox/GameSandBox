@@ -26,16 +26,14 @@ const cardv2Schema = new Schema({
     back: {
       data: Buffer,
       contentType: String,
-    }
-  },
-  type: {
-    type: String,
-    required: true,
-    enum: ["front", "back"]
-  },
-  isFlipped: {
-    type: Boolean,
-    required: true
+    },
+    pile: {type: Array, default: []},
+    type: { type: String, required: true, enum: ["front", "back"] },
+    isFlipped: { type: Boolean, required: true },
+    isLandscape: {
+      type: Boolean,
+      default: false,
+    },
   },
 }, {
   timestamps: true

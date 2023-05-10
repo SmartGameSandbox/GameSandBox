@@ -3,52 +3,34 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
-const bodyParser = require("body-parser");
 const sharp = require("sharp");
-const {
-  v4: uuidv4
-} = require("uuid");
-const {
-  ObjectId
-} = require("bson");
+const { v4: uuidv4 } = require("uuid");
+const { ObjectId } = require("bson");
+
 const path = require("path");
 const mongoose = require("mongoose");
 const idGenerator = require("./utils/id_generator");
-var cron = require("node-cron");
+const cron = require("node-cron");
 
-const {
-  Room
-} = require("./schemas/room");
-const {
-  Card
-} = require("./schemas/card");
-const {
-  CardV2
-} = require("./schemas/cardv2");
-const {
-  Grid
-} = require("./schemas/grid");
-const {
-  Game
-} = require("./schemas/game");
-const {
-  User
-} = require("./schemas/user");
+const { Room } = require("./schemas/room");
+// const { Card } = require("./schemas/card");
+const { CardV2 } = require("./schemas/cardv2");
+const { Grid } = require("./schemas/grid");
+const { Game } = require("./schemas/game");
+const { User } = require("./schemas/user");
 
 const app = express();
 const http = require("http").Server(app);
 app.use(cors());
-app.use(express.json());
-const io = require("socket.io")(http, {
-  cors: {
-    origin: "*"
-  }
-});
+app.use(express.json({limit: '200kb'}));
+app.use(express.urlencoded({ extended: false }));
+
+const io = require("socket.io")(http, { cors: { origin: "*" } });
 
 const port = process.env.PORT || 8000;
 
 
-var storage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads");
   },
@@ -56,9 +38,7 @@ var storage = multer.diskStorage({
     cb(null, file.fieldname + '-' + uuidv4())
   },
 });
-var upload = multer({
-  storage: storage
-});
+const upload = multer({ storage: storage });
 
 const ALLROOMSDATA = {};
 cron.schedule(
@@ -85,37 +65,27 @@ cron.schedule(
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
-  socket.on("joinRoom", async ({
-    roomID,
-    username
-  }) => {
+  socket.on("joinRoom", async ({ roomID, username }) => {
     if (!roomID) {
       console.error("Room Invalid");
       return;
     }
-    const roomData = await Room.findOne({
-      id: roomID,
-    });
-    if (roomData) {
-      if (ALLROOMSDATA[roomID] === undefined) {
-        ALLROOMSDATA[roomID] = roomData;
-      }
-      socket.join(roomID);
-      if (ALLROOMSDATA[roomID].hand === undefined) {
-        ALLROOMSDATA[roomID].hand = {};
-      }
-      if (ALLROOMSDATA[roomID].hand[username] === undefined) {
-        ALLROOMSDATA[roomID].hand[username] = [];
-      }
-      io.to(socket.id).emit("tableReload", {
-        cards: ALLROOMSDATA[roomID].cards,
-        deck: ALLROOMSDATA[roomID].deck,
-        hand: ALLROOMSDATA[roomID].hand[username] ?
-          ALLROOMSDATA[roomID].hand[username] : [],
-      });
-      // add user to the user array here
-      console.log(`User ${username} joined room ${roomID}`);
+    ALLROOMSDATA[roomID] ??= await Room.findOne({ id: roomID });
+    if (!ALLROOMSDATA[roomID]) {
+      console.error(`Can not find room: ${roomID}`);
+      return;
     }
+    socket.join(roomID);
+    ALLROOMSDATA[roomID].hand ??= {};
+    ALLROOMSDATA[roomID].hand[username] ??= [];
+
+    io.to(socket.id).emit("tableReload", {
+      cards: ALLROOMSDATA[roomID].cards,
+      deck: ALLROOMSDATA[roomID].deck,
+      hand: ALLROOMSDATA[roomID].hand[username],
+    });
+    // add user to the user array here
+    console.log(`User ${username} joined room ${roomID}`);
   });
 
   socket.on("tableChange", ({
@@ -176,17 +146,12 @@ app.get("/api/room", async (req, res) => {
     if (!id) {
       throw new Error("Room ID is required");
     }
-    const roomData = await Room.findOne({
-      id: id
-    });
-    if (roomData) {
-      res.json(roomData);
-    } else {
-      res.status(400).json({
-        status: "error",
-        message: "Invalid room ID"
-      });
+    const roomData = await Room.findOne({ id: id });
+    if (!roomData) {
+      res.status(400).json({ status: "error", message: "Invalid room ID" });
+      return;
     }
+    res.json(roomData);
   } catch (err) {
     res.status(404).json({
       status: "error",
@@ -198,37 +163,29 @@ app.get("/api/room", async (req, res) => {
 //create room
 app.post("/api/room", async (req, res) => {
   const ROOM_ID_LENGTH = 10;
-  let roomID = 0;
-  let cardDeckId = null;
   try {
-    do {
+    const deckIds = req.body?.cardDeck;
+    if (!deckIds || deckIds.length < 1) {
+      throw new Error("Error: room body missing/corrupted.");
+    }
+    let roomID = idGenerator(ROOM_ID_LENGTH);
+    while (await Room.findOne({ id: roomID })) {
       roomID = idGenerator(ROOM_ID_LENGTH);
-    } while (await Room.findOne({
-        id: roomID
-      }));
-    if (!req.body) {
-      throw new Error("Error: No room body provided");
     }
-    if (req.body.cardDeck) {
-      cardDeckId = req.body.cardDeck[0];
-    }
-
-    let allCards;
-    deck = await Grid.find({
-      _id: new ObjectId(cardDeckId)
-    });
-    allCards = deck[0].deck;
+    
+    const decks = await Grid.find({ _id: { $in: deckIds } });
+    const cardPiles = decks.map(({deck}) => deck);
 
     const gameRoomData = {
       id: roomID,
       name: req.body.name,
       image: req.body.image,
-      deck: allCards,
+      deck: cardPiles,
       hand: {},
       cards: [],
     };
 
-    const result = await Room.create(gameRoomData)
+    const result = await Room.create(gameRoomData);
     if (!result) {
       throw new Error("Error: Room not created");
     }
@@ -243,6 +200,7 @@ app.post("/api/room", async (req, res) => {
   }
 });
 
+// Register
 // createAccount
 app.post("/api/register", async (req, res) => {
   const newUser = new User({
@@ -320,10 +278,6 @@ app.get("/api/games", async (req, res) => {
   }
 });
 
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
-
 //Image Upload REST APIs Deck making logics
 app.post("/api/upload", upload.array("image", 2), async (req, res) => {
   try {
@@ -338,10 +292,12 @@ app.post("/api/upload", upload.array("image", 2), async (req, res) => {
 
     const numCols = parseInt(req.body.cardsAcross);
     const numRows = parseInt(req.body.cardsDown);
+    const isLandscape = req.body.isLandscape === "true";
 
-    cardArray = await sliceImages(imageData, numCols, numRows);
+    const cardArray = await sliceImages(imageData, numCols, numRows);
 
-    let cardDocuments = await createCardObjects(cardArray, backImgData);
+
+    let cardDocuments = await createCardObjects(cardArray, req.body.isLandscape, backImgData);
 
       const cardDeck = {
         name: cardDeckName,
@@ -353,12 +309,25 @@ app.post("/api/upload", upload.array("image", 2), async (req, res) => {
         deck: cardDocuments,
       };
 
-      const result = await Grid.create(cardDeck);
-      res.status(200).send({
-        message: "Grid inserted successfully",
-        newDeckId: result._id,
-        displayDeck: cardDocuments,
-      });
+    res.status(200).send({
+      message: "Deck created successfully",
+      newDeck: cardDeck,
+    });
+  } catch (error) {
+    console.error("Failed to insert grid", error);
+    res.status(500).send("Failed to insert grid");
+  }
+});
+
+//Image Upload REST APIs Deck making logics
+app.post("/api/addDecks", async (req, res) => {
+  try {
+    const gameObject = req.body;
+    await CardV2.create(gameObject.deck);
+    const result = await Grid.create(gameObject);
+    res.status(200).send({
+      deckId: result._id,
+    });
   } catch (error) {
     console.error("Failed to insert grid", error);
     res.status(500).send("Failed to insert grid");
@@ -367,17 +336,19 @@ app.post("/api/upload", upload.array("image", 2), async (req, res) => {
 
 app.post("/api/saveGame", async (req, res) => {
   try {
-    let name = req.body.name; //Game name.
-    let numPlayers = parseInt(req.body.players);
-    let creatorId = req.body.creatorId; //id for the creator of the game
-    let carDeckId = req.body.newDeckId;
+    const {
+      name,
+      players,
+      creatorId,
+      newDeckIds,
+    } = req.body;
     if (creatorId) {
       //Create a game now
       const gameObject = {
-        name: name,
-        players: numPlayers,
+        name,
+        players: parseInt(players),
         creator: new ObjectId(creatorId),
-        cardDeck: [new ObjectId(carDeckId)],
+        cardDeck: newDeckIds.map((id) => new ObjectId(id)),
       };
       await Game.create(gameObject);
       res.status(200).send("Game created successfully");
@@ -427,7 +398,7 @@ const sliceImages = async (ImageData, cols, rows) => {
   return cardArray;
 };
 
-const createCardObjects = async (cardArray, backImgData) => {
+const createCardObjects = async (cardArray, backImgData, isLandscape) => {
   //Card Array consists of buffers for every card in the deck.
   const cardObjects = [];
   const backImgBuffer = Buffer.from(backImgData);
@@ -448,10 +419,11 @@ const createCardObjects = async (cardArray, backImgData) => {
         }
 
       },
+      pile: [],
       type: "front",
       isFlipped: false,
+      isLandscape: isLandscape,
     };
-    await CardV2.create(cardObject);
     cardObjects.push(cardObject);
   }
 

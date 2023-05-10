@@ -33,6 +33,7 @@ const gridSchema = new Schema({
       type: Number,
       required: true
     },
+    pile: [],
     imageSource: {
       front: {
         data: Buffer,
@@ -42,21 +43,25 @@ const gridSchema = new Schema({
         data: Buffer,
         contentType: String,
       }
-
     },
     type: {
       type: String,
       required: true,
       enum: ["front", "back"]
     },
+    isLandscape: {
+      type: Boolean,
+      default: true,
+    },
     isFlipped: {
       type: Boolean,
       required: true
     },
-  }, ],
+  }],
 }, {
   timestamps: true
 });
+
 
 module.exports.gridSchema = gridSchema;
 module.exports.Grid = mongoose.model("grid", gridSchema);

@@ -11,12 +11,14 @@
 }
 
 .bg-form .row {
-  width: 100%;
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
+  width: 90%;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
+}
+
+.bg-form .row.last {
+  justify-content: space-around;
 }
 
 .bg-form label {
@@ -47,8 +49,9 @@
 }
 
 .bg-form input[type="file"] {
-  width: 48%;
+  width: 220px;
   overflow-x: hidden;
+  padding-top: 8px;
 }
 
 .checkbox-wrapper div {
@@ -83,4 +86,41 @@ input.checked::before {
   position: absolute;
   right: 1px;
   top: -5px;
+}
+
+input[name="game_item"] {
+  appearance: none;
+  padding: 0;
+  margin: 0;
+  height: 0;
+}
+
+.bg-itemtype-button {
+  background-color: #163B6EBB;
+  color: #FDF551CC;
+  border-radius: 12px;
+  width: 60px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 100ms
+}
+
+.bg-itemtype-button:hover {
+  background-color: #163B6EDD;
+  color: #FDF551;
+}
+
+.bg-itemtype-button.active {
+  background-color: #FDF551;
+  color: #163B6E;
+  transition: all 100ms
+}
+
+.bg-itemtype-button label {
+  font-weight: 400;
+  margin: 0 auto;
 }

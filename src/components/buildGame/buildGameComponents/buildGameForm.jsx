@@ -1,26 +1,18 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import "./buildGameForm.css";
 import { SMARTButton } from "../../button/button";
 import { useNavigate } from "react-router-dom";
 
 const BuildGameForm = ({ closePopup }) => {
-  const [inputs, setInputs] = useState({});
+  const gameNameRef = useRef('');
+  const numPlayerRef = useRef(2);
   const navigate = useNavigate();
-
-  const handleChange = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setInputs((values) => ({ ...values, [name]: value }));
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    const form = event.target;
-
-    await form.reset(); // reset the form
+    const data = { name: gameNameRef.current.value, players: numPlayerRef.current.value };
+    await event.target.reset(); // reset the form
     await closePopup();
-    let data = { name: form.name.value, players: form.numPlayers.value };
 
     navigate("/buildgame", {
       state: data,
@@ -34,9 +26,9 @@ const BuildGameForm = ({ closePopup }) => {
         <input
           type="text"
           name="name"
-          value={inputs.name || ""}
+          placeholder="e.g. card game"
+          ref={gameNameRef}
           required
-          onChange={handleChange}
         />
         <label>NUMBER OF PLAYERS:</label>
         <input
@@ -44,8 +36,8 @@ const BuildGameForm = ({ closePopup }) => {
           name="numPlayers"
           min={1}
           max={10}
-          value={inputs.numPlayers || ""}
-          onChange={handleChange}
+          defaultValue={2}
+          ref={numPlayerRef}
         />
 
         <div className="btnContainer">

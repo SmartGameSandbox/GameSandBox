@@ -1,10 +1,14 @@
 .tb-container {
     border-radius: 1%;
-    padding: 15px;
+    padding: 15px 0;
     align-items: center;
     height: 50px;
     display: flex;
     justify-content: space-between;
+}
+
+.tb-container > div {
+    margin: 0 10px 0 15px;
 }
 
 .wrapper {
@@ -12,6 +16,7 @@
 }
 
 .bt-IconBtnContainer {
+    display: flex;
     margin: 10px;
 }
 
@@ -24,17 +29,11 @@
 
 .image-preview {
     display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-}
-
-.image-preview img {
-    flex: 0 0 auto;
-    margin-left: 10px;
-    border-radius: 10px;
-    height: 160px;
-    width: 120px;
-    /* background: "#C7C7C7", */
+    width: 52px;
+    height: 52px;
+    margin-left: 15px;
+    border-radius: 15px;
+    background-size: cover;
 }
 
 .plus-container {
