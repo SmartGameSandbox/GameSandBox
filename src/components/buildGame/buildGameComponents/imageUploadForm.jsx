@@ -18,7 +18,9 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
     e.preventDefault();
 
     const formData = new FormData();
+    console.log(images);
     formData.append("image", images[0]);
+    formData.append("image", images[1]);
     formData.append("cardsAcross", inputs.numAcross);
     formData.append("cardsDown", inputs.numDown);
     formData.append("totalCards", inputs.numTotal);
@@ -35,7 +37,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(async (res) => {
-        console.log(res);
+        // console.log(res);
         const deckUploaded = await res.data.displayDeck;
         await setDeck(deckUploaded);
         localStorage.setItem("newDeckId", res.data.newDeckId);
@@ -61,7 +63,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
           />
         </div>
 
-        {/* <div className="row">
+        <div className="row">
           <label>Upload Image Grid (back page):</label>
           <input
             type="file"
@@ -70,7 +72,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
             name="backFile"
             onChange={onImageChange}
           />
-        </div> */}
+        </div>
 
         <div className="row">
           <label>Number of Cards Across:</label>
@@ -93,7 +95,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
         </div>
 
         <div className="row">
-          <label>Numer of Cards In Deck:</label>
+          <label>Number of Cards In Deck:</label>
           <input
             type="number"
             name="numTotal"

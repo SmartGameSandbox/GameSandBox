@@ -25,6 +25,7 @@ const BuildGamePage = () => {
     console.log("Edit the heading");
   };
 
+
   let card_locations = window.innerWidth / 3.1;
   
   return (

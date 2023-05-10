@@ -14,9 +14,10 @@ class Card extends React.Component {
   }
 
   componentDidUpdate(oldProps) {
-    if (oldProps.src !== this.props.src) {
+    if (oldProps.src !== this.props.src || oldProps.isFlipped !== this.props.isFlipped) {
       this.loadImage();
     }
+    console.log("componentDidUpdate");
   }
 
   componentWillUnmount() {
@@ -26,10 +27,15 @@ class Card extends React.Component {
   async loadImage() {
     this.image = new window.Image();
     let imageObj = this.props.src;
-
-    this.image.src = `data:image/${imageObj.contentType};base64,${Buffer.from(
-      imageObj.data
-    ).toString("base64")}`;
+    if(this.props.isFlipped){
+      this.image.src = `data:image/${imageObj.front.contentType};base64,${Buffer.from(
+        imageObj.front.data
+      ).toString("base64")}`;
+    }else{
+      this.image.src = `data:image/${imageObj.back.contentType};base64,${Buffer.from(
+        imageObj.back.data
+      ).toString("base64")}`;
+    }
 
     this.image.addEventListener("load", this.handleLoad);
   }
@@ -54,9 +60,7 @@ class Card extends React.Component {
         onDragStart={(e) => {
           this.props.onDragStart(e, this.props.id);
         }}
-        onClick={(e) => {
-          this.props.onClick(e, this.props.id);
-        }}
+
         onDragEnd={(e) => {
           this.props.onDragEnd(e, this.props.id);
         }}

@@ -29,7 +29,6 @@ const CreateRoom = () => {
 
   const createRoom = () => {
     const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
-    console.log(item)
     axios.post(`${url}/api/room`, {
       name: roomNameInputText,
       image: item || null,

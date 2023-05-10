@@ -37,19 +37,18 @@ const BottomToolbar = ({setDisplayCards}) => {
   }, [images]);
 
   const onImageChange = (e) => {
-    setImages([...e.target.files]);
+    setImages([...images, ...e.target.files]);
   };
 
   function handleSave() {
     const newDeckId = localStorage.getItem('newDeckId');
-    console.log(newDeckId);
-    if (newDeckId) {
+    if (!newDeckId) {
       alert("Please upload a card deck to create a game.");
       return;
     }
     const creatorId = localStorage.getItem("id");
 
-    const gameInfo = location.state;
+    const gameInfo = location.state; // {name: game2, numPlayer: 1}
     gameInfo.creatorId = creatorId;
     gameInfo.newDeckId = newDeckId;
 
@@ -68,12 +67,11 @@ const BottomToolbar = ({setDisplayCards}) => {
   const handleCardDisplay = async () => {
     const cardImages = [];
 
-    for (let i = 0; i < deck.length; i++) {
-      const imageObject = deck[i];
+    for (const imageObject of deck) {
       const img = new window.Image();
       img.src = `data:image/${
-        imageObject.imageSource.contentType
-      };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
+        imageObject.imageSource.front.contentType
+      };base64,${Buffer.from(imageObject.imageSource.front.data).toString("base64")}`;
 
       img.onload = async () => {
         await cardImages.push(img);

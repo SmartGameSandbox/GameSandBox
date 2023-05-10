@@ -1,10 +1,11 @@
 import React from "react";
-import { Layer, Rect, Text } from "react-konva";
+import { Group, Layer, Rect, Text } from "react-konva";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import Cursors from "../cursor/cursors";
 import Hand from "../hand/hand";
 import Deck from "../deck/deck";
+import RightClickMenu from './rightClickMenu';
 
 const search = window.location.search;
 const params = new URLSearchParams(search);
@@ -13,9 +14,12 @@ let canEmit = true;
 const Table = ({ socket, username }) => {
   const [tableData, setTableData] = React.useState(null);
   const [cursors, setCursors] = React.useState([]);
+  const [rightClickPos, setRightClickPos] = React.useState({ x: null, y: null });
+  const [clickedCardID, setClickedCardID] = React.useState(null);
   const setCanEmit = (value) => {
     canEmit = value;
   };
+
   React.useEffect(() => {
     if (canEmit && tableData) {
       socket.emit(
@@ -138,8 +142,8 @@ const Table = ({ socket, username }) => {
     if (
       position.y >
       Constants.CANVAS_HEIGHT -
-        Constants.HAND_HEIGHT -
-        0.5 * Constants.CARD_HEIGHT
+      Constants.HAND_HEIGHT -
+      0.5 * Constants.CARD_HEIGHT
     ) {
       setTableData((prevTable) => {
         // find card in tableData.cards
@@ -162,11 +166,11 @@ const Table = ({ socket, username }) => {
     else if (
       position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
       position.x <=
-        Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
+      Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
       position.y >=
-        Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT &&
+      Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT &&
       position.y <=
-        Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
+      Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
     ) {
       setTableData((prevTable) => {
         // find card in tableData.cards
@@ -216,6 +220,14 @@ const Table = ({ socket, username }) => {
     });
   };
 
+  const handleContextMenu = (event, cardID) => {
+    event.evt.preventDefault();
+    const { top: konvaTop, left: konvaLeft } = document.querySelector(".konvajs-content").getBoundingClientRect();
+    const {clientY, clientX} = event.evt;
+    setRightClickPos({ x: clientX - konvaLeft, y: clientY - konvaTop });
+    setClickedCardID(cardID);
+  };
+
   return (
     <>
       <Layer>
@@ -243,24 +255,40 @@ const Table = ({ socket, username }) => {
           canEmit={canEmit}
           emitMouseChange={emitMouseChange}
         />
+
         {tableData &&
           tableData.cards &&
           tableData.cards.map((card) => (
-            <Card
-              username={username}
-              roomID={roomID}
-              key={`card_${card.id}`}
-              src={card.imageSource}
-              id={card.id}
-              x={card.x}
-              y={card.y}
-              isFlipped={card.isFlipped}
-              onDragStart={() => {}}
-              onDragMove={onDragMoveCard}
-              onClick={onClickCard}
-              onDragEnd={onDragEndCard}
-            />
-          ))}
+            <Group key={`card_${card.id}`} onContextMenu={(e) => handleContextMenu(e, card.id)}>
+              <Card
+                username={username}
+                roomID={roomID}
+                key={`card_${card.id}`}
+                src={card.imageSource}
+                id={card.id}
+                x={card.x}
+                y={card.y}
+                isFlipped={card.isFlipped}
+                onDragStart={() => { }}
+                onDragMove={onDragMoveCard}
+                onClick={onClickCard}
+                onDragEnd={onDragEndCard}
+              />
+            </Group>
+
+          ))
+        }
+        {rightClickPos.x !== null && rightClickPos.y !== null && (
+          <RightClickMenu
+            x={rightClickPos.x}
+            y={rightClickPos.y}
+            cardId={clickedCardID}
+            setTableData={setTableData}
+            setRightClickPos={setRightClickPos}
+            setClickedCardID={setClickedCardID}
+          />
+        )}
+
         <Hand
           tableData={tableData}
           setCanEmit={setCanEmit}
@@ -293,6 +321,7 @@ const Table = ({ socket, username }) => {
           onClick={() => shuffleCards()}
         />
         <Cursors key={`cursor_${username}`} cursors={cursors} />
+
       </Layer>
     </>
   );
