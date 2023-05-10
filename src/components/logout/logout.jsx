@@ -6,11 +6,9 @@ const Logout = () => {
         localStorage.clear();
     }, []);
 
-    setTimeout(() => {
-        return (
-            <Navigate to="/login" />
-        )    
-    }, 0);
-}
+    return (
+        <Navigate to="/login" />
+    );
+};
 
 export default Logout;

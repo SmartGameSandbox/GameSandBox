@@ -11,6 +11,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 const idGenerator = require("./utils/id_generator");
 const cron = require("node-cron");
+const bcryptjs = require('bcryptjs');
 
 const { Room } = require("./schemas/room");
 // const { Card } = require("./schemas/card");
@@ -187,6 +188,7 @@ app.post("/api/register", async (req, res) => {
     email: req.body.email,
     password: req.body.password,
   });
+  console.log(newUser);
   try {
     if (await User.findOne({ username: req.body.username })) {
       throw new Error("Username already exists");
@@ -206,11 +208,17 @@ app.post("/api/login", async (req, res) => {
   try {
     const user = await User.findOne({
       username: req.body.username,
-      password: req.body.password,
     });
+    console.log(user);
     if (!user) {
       throw new Error("Invalid username or password");
     }
+
+    const passwordMatch = await bcryptjs.compare(req.body.password, user.password);
+    if (!passwordMatch) {
+      throw new Error("Invalid password");
+    }
+
     res.json({
       status: "success",
       message: "User login successful",

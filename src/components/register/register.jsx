@@ -7,6 +7,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import {SMARTButton} from '../button/button';
 import logo from "../icons/Group_89.png";
+import bcryptjs from "bcryptjs";
+
 
 const Register = () => {
   const [usernameInputText, setUsernameInputText] = useState("");
@@ -37,10 +39,14 @@ const Register = () => {
       setErrorMessage("Passwords do not match");
       return;
     }
+
+    const salt = bcryptjs.genSaltSync(10);
+    const hashedPassword = bcryptjs.hashSync(passwordInputText, salt);
+
     axios.post(`${BASE_URL}/api/register`, {
       username: usernameInputText,
       email: emailInputText,
-      password: passwordInputText
+      password: hashedPassword
     }).then((response) => {
       if (response.status !== 200) {
         setErrorMessage(response.data.message);
