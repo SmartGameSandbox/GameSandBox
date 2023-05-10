@@ -67,8 +67,8 @@ const BottomToolbar = ({setDisplayCards}) => {
       for (const imageObject of deck) {
         const img = new window.Image();
         img.src = `data:image/${
-          imageObject.imageSource.contentType
-        };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
+          imageObject.imageSource.front.contentType
+        };base64,${Buffer.from(imageObject.imageSource.front.data).toString("base64")}`;
         img.onload = async () => {
           currentDeck.push(img);
         };

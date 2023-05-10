@@ -24,10 +24,15 @@ const Card = ({
   useEffect(() => {
     if(!src) return;
     const image = new window.Image();
-    console.log('here')
-    image.src = `data:image/${src.contentType};base64,${Buffer.from(
-      src.data
-    ).toString("base64")}`;
+    if(isFlipped){
+      image.src = `data:image/${src.front.contentType};base64,${Buffer.from(
+        src.front.data
+      ).toString("base64")}`;
+    }else{
+      image.src = `data:image/${src.back.contentType};base64,${Buffer.from(
+        src.back.data
+      ).toString("base64")}`;
+    }
     image.addEventListener("load", setImage(image));
     setImage(image);
   },[])
@@ -50,7 +55,6 @@ const Card = ({
       rotation={isLandscape ? 90: 0}
       draggable
       onDragMove={(e) => {onDragMove(e, id);}}
-      onClick={(e) => {onClick(e, id);}}
       onDragEnd={(e) => {onDragEnd(e, id);}}
     />
   );

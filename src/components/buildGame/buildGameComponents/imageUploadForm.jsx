@@ -22,7 +22,8 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks })
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("image", images.at(-1));
+    formData.append("image", images[0]);
+    formData.append("image", images[1]);
     formData.append("cardsAcross", inputs.numAcross);
     formData.append("cardsDown", inputs.numDown);
     formData.append("totalCards", inputs.numTotal);
@@ -85,7 +86,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks })
           />
         </div>
 
-        {/* <div className="row">
+        <div className="row">
           <label>Upload Image Grid (back page):</label>
           <input
             type="file"
@@ -94,7 +95,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks })
             name="backFile"
             onChange={onImageChange}
           />
-        </div> */}
+        </div>
 
         <div className="row">
           <label>Number of Cards Across:</label>
@@ -117,7 +118,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks })
         </div>
 
         <div className="row">
-          <label>Numer of Cards In Deck:</label>
+          <label>Number of Cards In Deck:</label>
           <input
             type="number"
             name="numTotal"
