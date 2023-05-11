@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useRef } from "react";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import { Rect } from "react-konva";
 
 // deck data
 const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
-  const [isLandScape, setLandScape] = useState(false);
-  useEffect(() => {
-    setLandScape(tableData.deck[deckIndex][0].isLandscape);
-  }, []);
+  const isLandScape = useRef(null);
+  isLandScape.current ??= tableData.deck[deckIndex][0].isLandscape; 
+
   const onDragMoveCard = (e, cardID) => {
     setCanEmit(true);
     setTableData((prevTable) => {
@@ -22,19 +21,6 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
       return { ...prevTable };
     });
     emitMouseChange(e);
-  };
-
-  const onClickCard = (e, cardID) => {
-    // flip card
-    setCanEmit(true);
-    setTableData((prevTable) => {
-      const found = prevTable.deck[deckIndex].find((card) => card.id === cardID);
-      found.isFlipped = !found.isFlipped;
-      // move found to the last index of cards array
-      prevTable.deck[deckIndex] = prevTable.deck[deckIndex].filter((card) => card.id !== cardID);
-      prevTable.deck[deckIndex].push(found);
-      return { ...prevTable };
-    });
   };
 
   const onDragEnd = (e, cardID) => {
@@ -51,7 +37,6 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
     ) {
       // deck area movement
       setTableData((prevTable) => {
-        console.log(prevTable.deck)
         prevTable.deck[deckIndex] = prevTable.deck[deckIndex].map((card) => {
           if (card.id === cardID) {
             card.x =
@@ -110,27 +95,26 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
         x={
           Constants.DECK_STARTING_POSITION_X
           + deckIndex * 140
-          + (isLandScape ? 20 : 0)
+          + (isLandScape.current ? 20 : 0)
         }
         y={Constants.DECK_STARTING_POSITION_Y}
         width={Constants.DECK_AREA_WIDTH}
         height={Constants.DECK_AREA_HEIGHT}
         cornerRadius={10}
         fill={"rgba(177, 177, 177, 0.6)"}
-        rotation={isLandScape ? 90 : 0} // rotate by 90 degrees if any card is landscape
+        rotation={isLandScape.current ? 90 : 0} // rotate by 90 degrees if any card is landscape
       />
 
       {tableData?.deck?.[deckIndex].map((card) => (
           <Card
             key={`deck_card_${card.id}`}
-            src={card.imageSource}
+            src={card.isFlipped 
+                  ? card.imageSource.front 
+                  : card.imageSource.back}
             id={card.id}
             x={card.x + deckIndex * 140}
             y={card.y}
-            deckIndex={deckIndex}
-            isFlipped={card.isFlipped}
             isLandscape={card.isLandscape}
-            onClick={onClickCard}
             onDragEnd={onDragEnd}
             onDragMove={onDragMoveCard}
             draggable

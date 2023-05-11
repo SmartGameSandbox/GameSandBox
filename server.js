@@ -21,7 +21,6 @@ const { User } = require("./schemas/user");
 const app = express();
 const http = require("http").Server(app);
 app.use(cors());
-// TODO: try to optimize the upload size in the future
 app.use(express.json({limit: '500kb'}));
 app.use(express.urlencoded({ extended: false }));
 
@@ -35,7 +34,7 @@ const storage = multer.diskStorage({
     cb(null, "uploads");
   },
   filename: (req, file, cb) => {
-    cb(null, file.fieldname + "-" + Date.now());
+    cb(null, file.fieldname + '-' + uuidv4())
   },
 });
 const upload = multer({ storage: storage });
@@ -45,15 +44,18 @@ cron.schedule(
   "00 04 * * *",
   async () => {
     // find room with id in ALLROOMSDATA index
-    const rooms = await Room.find({ id: { $in: Object.keys(ALLROOMSDATA) } });
+    const rooms = await Room.find({
+      id: {
+        $in: Object.keys(ALLROOMSDATA)
+      }
+    });
     for (const roomID in ALLROOMSDATA) {
       const found = rooms.find((room) => room.id === roomID);
       if (!found) {
         delete ALLROOMSDATA[roomID];
       }
     }
-  },
-  {
+  }, {
     scheduled: true,
     timezone: "America/Vancouver",
   }
@@ -85,7 +87,11 @@ io.on("connection", async (socket) => {
     console.log(`User ${username} joined room ${roomID}`);
   });
 
-  socket.on("tableChange", ({ username, roomID, tableData }) => {
+  socket.on("tableChange", ({
+    username,
+    roomID,
+    tableData
+  }) => {
     if (ALLROOMSDATA[roomID] && tableData) {
       ALLROOMSDATA[roomID].cards = tableData.cards;
       ALLROOMSDATA[roomID].deck = tableData.deck;
@@ -100,7 +106,12 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("mouseMove", ({ x, y, username, roomID }) => {
+  socket.on("mouseMove", ({
+    x,
+    y,
+    username,
+    roomID
+  }) => {
     io.to(roomID).emit("mousePositionUpdate", {
       x: x,
       y: y,
@@ -119,7 +130,10 @@ app.get("/api/rooms", async (req, res) => {
   try {
     res.json(await Room.find());
   } catch (err) {
-    res.json({ status: "error", message: err });
+    res.json({
+      status: "error",
+      message: err
+    });
     console.log(err);
   }
 });
@@ -138,7 +152,10 @@ app.get("/api/room", async (req, res) => {
     }
     res.json(roomData);
   } catch (err) {
-    res.status(404).json({ status: "error", message: err.message });
+    res.status(404).json({
+      status: "error",
+      message: err.message
+    });
   }
 });
 
@@ -174,7 +191,10 @@ app.post("/api/room", async (req, res) => {
     ALLROOMSDATA[roomID] = gameRoomData;
     res.json(result);
   } catch (err) {
-    res.json({ status: "error", message: err });
+    res.json({
+      status: "error",
+      message: err
+    });
     console.log(err);
   }
 });
@@ -188,16 +208,24 @@ app.post("/api/register", async (req, res) => {
     password: req.body.password,
   });
   try {
-    if (await User.findOne({ username: req.body.username })) {
+    if (await User.findOne({
+        username: req.body.username
+      })) {
       throw new Error("Username already exists");
     }
     const result = await newUser.save();
     if (!result) {
       throw new Error("Error: User failed to be created");
     }
-    res.json({ status: "success", message: "User created", user: newUser });
+    res.json({
+      status: "success",
+      message: "User created",
+      user: newUser
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      message: err.message
+    });
   }
 });
 
@@ -217,7 +245,9 @@ app.post("/api/login", async (req, res) => {
       user: user,
     });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      message: err.message
+    });
   }
 });
 
@@ -225,16 +255,20 @@ app.get("/api/games", async (req, res) => {
   try {
     let games = null;
     if (req.query.gameId) {
-      games = await Game.findOne({ _id: new ObjectId(req.query.gameId) });
+      games = await Game.findOne({
+        _id: new ObjectId(req.query.gameId)
+      });
     } else {
-      games = await Game.find({ creator: new ObjectId(req.query.creatorId) });
+      games = await Game.find({
+        creator: new ObjectId(req.query.creatorId)
+      });
     }
     if (!games) {
       throw new Error("No games");
     }
-    res.status(200).send({ 
-      message: "Games received", 
-      savedGames: games 
+    res.status(200).send({
+      message: "Games received",
+      savedGames: games
     });
 
   } catch (err) {
@@ -244,11 +278,15 @@ app.get("/api/games", async (req, res) => {
 });
 
 //Image Upload REST APIs Deck making logics
-app.post("/api/upload", upload.single("image"), async (req, res) => {
+app.post("/api/upload", upload.array("image", 2), async (req, res) => {
   try {
-    const cardDeckName = req.file.filename;
+    const totalCards = parseInt(req.body.totalCards);
+    const cardDeckName = req.files[0].filename;
     const imageData = fs.readFileSync(
-      path.join(__dirname + "/uploads/" + req.file.filename)
+      path.join(__dirname + "/uploads/" + req.files[0].filename)
+    );
+    const backImgData= fs.readFileSync(
+      path.join(__dirname + "/uploads/" + req.files[1].filename)
     );
 
     const {
@@ -261,17 +299,17 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
 
     const cardArray = await sliceImages(imageData, cardsAcross, cardsDown);
 
-    let cardDocuments = await createCardObjects(cardArray, isLandscape, itemType);
+    let cardDocuments = await createCardObjects(cardArray, isLandscape, backImgData, itemType);
 
-    const cardDeck = {
-      name: cardDeckName,
-      numCards: totalCards,
-      imageGrid: {
-        data: imageData,
-        contentType: "image/png",
-      },
-      deck: cardDocuments,
-    };
+      const cardDeck = {
+        name: cardDeckName,
+        numCards: totalCards,
+        imageGrid: {
+          data: imageData,
+          contentType: "image/png",
+        },
+        deck: cardDocuments,
+      };
 
     res.status(200).send({
       message: "Deck created successfully",
@@ -323,9 +361,9 @@ app.post("/api/saveGame", async (req, res) => {
   }
 });
 
-const sliceImages = async (BufferData, cols, rows) => {
+const sliceImages = async (ImageData, cols, rows) => {
   const cardArray = [];
-  const inputBuffer = Buffer.from(BufferData);
+  const inputBuffer = Buffer.from(ImageData);
   const numCols = cols;
   const numRows = rows;
 
@@ -348,7 +386,12 @@ const sliceImages = async (BufferData, cols, rows) => {
         y + cardHeight <= metadata.height
       ) {
         cardImage = await input
-          .extract({ left: x, top: y, width: cardWidth, height: cardHeight })
+          .extract({
+            left: x,
+            top: y,
+            width: cardWidth,
+            height: cardHeight
+          })
           .toBuffer();
         cardArray.push(cardImage);
       }
@@ -357,15 +400,24 @@ const sliceImages = async (BufferData, cols, rows) => {
   return cardArray;
 };
 
-const createCardObjects = async (cardArray, isLandscape, itemType) => {
+const createCardObjects = async (cardArray, isLandscape, backImgData, itemType) => {
   //Card Array consists of buffers for every card in the deck.
+  const backImgBuffer = Buffer.from(backImgData);
+
   return cardArray.map(buffer => ({
       id: uuidv4(),
       x: 600,
       y: 200,
       imageSource: {
-        data: buffer,
-        contentType: "image/png",
+        front: {
+          data: buffer,
+          contentType: "image/png",
+        },
+        back: {
+          data: backImgBuffer,
+          contentType: "image/png",
+        }
+
       },
       pile: [],
       type: itemType,

@@ -46,6 +46,7 @@ const BuildGamePage = () => {
     setEditHeader(!editHeader);  
   };
 
+
   return (
     <>
       <div className="bgame-container"></div>

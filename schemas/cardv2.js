@@ -1,27 +1,37 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const {
+  Schema
+} = mongoose;
 
-const cardv2Schema = new Schema(
-  {
-    id: {
-      type: String,
-      required: true,
-      immutable: true,
-      unique: true
+const cardv2Schema = new Schema({
+  id: {
+    type: String,
+    required: true,
+    immutable: true,
+    unique: true
+  },
+  x: {
+    type: Number,
+    required: true
+  },
+  y: {
+    type: Number,
+    required: true
+  },
+  imageSource: {
+    front: {
+      data: Buffer,
+      contentType: String
     },
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
-    imageSource: {
+    back: {
       data: Buffer,
       contentType: String,
-    },
-    pile: {type: Array, default: []},
-    type: { type: String, required: true, enum: ["front", "back"] },
-    isFlipped: { type: Boolean, required: true },
-    isLandscape: {
-      type: Boolean,
-      default: false,
-    },
+    }
+  },
+  pile: {type: Array, default: []},
+  type: { type: String, required: true, enum: ["front", "back"] },
+  isFlipped: { type: Boolean, required: true },
+  isLandscape: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

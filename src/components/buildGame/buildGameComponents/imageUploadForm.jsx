@@ -25,7 +25,8 @@ const ImageUploadForm = ({
     const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
 
     const formData = new FormData();
-    formData.append("image", images.at(-1));
+    formData.append("image", images[0]);
+    formData.append("image", images[1]);
     formData.append("cardsAcross", numAcross.current.valueAsNumber);
     formData.append("cardsDown", numDown.current.valueAsNumber);
     formData.append("totalCards", numTotal.current.valueAsNumber);
@@ -90,7 +91,7 @@ const ImageUploadForm = ({
           />
         </div>
 
-        {/* <div className="row">
+        <div className="row">
           <label>Upload Image Grid (back page):</label>
           <input
             type="file"
@@ -99,7 +100,7 @@ const ImageUploadForm = ({
             name="backFile"
             onChange={onImageChange}
           />
-        </div> */}
+        </div>
 
         <div className="row">
           <label>{`Number of ${itemType}s Across:`}</label>
