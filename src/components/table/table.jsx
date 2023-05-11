@@ -114,6 +114,14 @@ const Table = ({ socket, username, roomID }) => {
     if (position.y > HAND_POS_Y - Constants.HAND_PADDING_Y - 0.5 * Constants.CARD_HEIGHT) {
       setTableData((prevTable) => {
         // find card in tableData.cards
+        if (draggedCard.pile.length > 0) {
+          draggedCard.pile.forEach(cardInPile => prevTable.hand.push(cardInPile))
+          draggedCard.pile.forEach(cardInPile => cardInPile.x = Constants.HAND_PADDING_X +
+              (prevTable.hand.length - 1) * Constants.HAND_CARD_GAP)
+          draggedCard.pile.forEach(cardInPile => cardInPile.y =
+              draggedCard.y = HAND_POS_Y)
+          draggedCard.pile = []
+        }
         prevTable.hand.push(draggedCard);
         draggedCard.x =
           Constants.HAND_PADDING_X +
@@ -135,10 +143,14 @@ const Table = ({ socket, username, roomID }) => {
         Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
     ) {
       setTableData((prevTable) => {
-        // find card in tableData.cards
+        if (draggedCard.pile.length > 0) {
+          draggedCard.pile.forEach(cardInPile => prevTable.deck[deckIndex].push(cardInPile))
+          draggedCard.pile.forEach(cardInPile => cardInPile.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING)
+          draggedCard.pile.forEach(cardInPile => cardInPile.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING)
+          draggedCard.pile = []
+        }
         draggedCard.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
         draggedCard.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
-        // add card to deck
         prevTable.deck[deckIndex].push(draggedCard);
         prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
         return { ...prevTable };
@@ -151,6 +163,7 @@ const Table = ({ socket, username, roomID }) => {
           position.y > pile.y - 10 && position.y < pile.y + Constants.CARD_HEIGHT + 10) {
             prevTable.cards = prevTable.cards.filter((card) => card !== found && card !== pile);
             found.pile = found.pile.concat(pile).concat(pile.pile)
+            pile.pile = []
             pile.x = -100
             pile.y = -100
             prevTable.cards.push(found)
@@ -254,7 +267,6 @@ const Table = ({ socket, username, roomID }) => {
                 id={card.id}
                 x={card.x}
                 y={card.y}
-                pile={[]}
                 isLandscape={card.isLandscape}
                 onDragMove={onDragMoveCard}
                 onDragEnd={onDragEndCard}
@@ -285,26 +297,6 @@ const Table = ({ socket, username, roomID }) => {
         />
       </Layer>
       <Layer>
-        <Text
-          x={0}
-          y={0}
-          padding={10}
-          key={`collect_btn`}
-          fill={"black"}
-          fontSize={20}
-          text={"Collect Cards"}
-          onClick={() => collectCards()}
-        />
-        <Text
-          x={150}
-          y={0}
-          padding={10}
-          key={`shuffle_btn`}
-          fill={"black"}
-          fontSize={20}
-          text={"Shuffle Cards"}
-          onClick={() => shuffleCards()}
-        />
         <Cursors key={`cursor_${username}`} cursors={cursors} />
 
       </Layer>

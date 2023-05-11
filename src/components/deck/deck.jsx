@@ -6,7 +6,7 @@ import { Rect } from "react-konva";
 // deck data
 const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
   const isLandScape = useRef(null);
-  isLandScape.current ??= tableData.deck[deckIndex][0].isLandscape; 
+  // isLandScape.current ??= tableData.deck[deckIndex][0].isLandscape;
 
   const onDragMoveCard = (e, cardID) => {
     setCanEmit(true);
