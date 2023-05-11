@@ -26,18 +26,15 @@ const cardv2Schema = new Schema({
     back: {
       data: Buffer,
       contentType: String,
-    },
-    pile: {type: Array, default: []},
-    type: { type: String, required: true, enum: ["front", "back"] },
-    isFlipped: { type: Boolean, required: true },
-    isLandscape: {
-      type: Boolean,
-      default: false,
-    },
+    }
   },
-}, {
-  timestamps: true
-});
+  pile: {type: Array, default: []},
+  type: { type: String, required: true, enum: ["front", "back"] },
+  isFlipped: { type: Boolean, required: true },
+  isLandscape: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
 
 module.exports.cardv2Schema = cardv2Schema;
 module.exports.CardV2 = mongoose.model("cardsv2", cardv2Schema);

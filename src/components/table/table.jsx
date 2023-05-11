@@ -103,20 +103,6 @@ const Table = ({ socket, username, roomID }) => {
     emitMouseChange(e);
   };
 
-  const onClickCard = (e, cardID) => {
-    // flip card
-    setCanEmit(true);
-    setTableData((prevTable) => {
-      const found = prevTable.cards.find((card) => card.id === cardID);
-      found.isFlipped = !found.isFlipped;
-      // found.imageSource = found.imageSource; //Make a change here to flip cards
-      // move found to the last index of cards array
-      prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
-      prevTable.cards = [...prevTable.cards, found];
-      return { ...prevTable };
-    });
-  };
-
   const onDragEndCard = (e, cardID) => {
     const position = e.target.attrs;
     const draggedCard = tableData.cards.find(({id}) => id === cardID);
@@ -256,20 +242,21 @@ const Table = ({ socket, username, roomID }) => {
         />
         ))}
         {tableData?.cards?.map((card) => (
-            <Group key={`card_${card.id}`} onContextMenu={(e) => handleContextMenu(e, card.id)}>
+            <Group 
+              key={`card_${card.id}`}
+              onContextMenu={(e) => handleContextMenu(e, card.id)}
+            >
               <Card
-                username={username}
-                roomID={roomID}
                 key={`card_${card.id}`}
-                src={card.imageSource}
+                src={card.isFlipped 
+                      ? card.imageSource.front 
+                      : card.imageSource.back}
                 id={card.id}
                 x={card.x}
                 y={card.y}
                 pile={[]}
-                isFlipped={card.isFlipped}
                 isLandscape={card.isLandscape}
                 onDragMove={onDragMoveCard}
-                onClick={onClickCard}
                 onDragEnd={onDragEndCard}
               />
             </Group>

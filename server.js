@@ -13,7 +13,6 @@ const idGenerator = require("./utils/id_generator");
 const cron = require("node-cron");
 
 const { Room } = require("./schemas/room");
-// const { Card } = require("./schemas/card");
 const { CardV2 } = require("./schemas/cardv2");
 const { Grid } = require("./schemas/grid");
 const { Game } = require("./schemas/game");
@@ -22,7 +21,7 @@ const { User } = require("./schemas/user");
 const app = express();
 const http = require("http").Server(app);
 app.use(cors());
-app.use(express.json({limit: '200kb'}));
+app.use(express.json({limit: '500kb'}));
 app.use(express.urlencoded({ extended: false }));
 
 const io = require("socket.io")(http, { cors: { origin: "*" } });
@@ -292,7 +291,6 @@ app.post("/api/upload", upload.array("image", 2), async (req, res) => {
 
     const numCols = parseInt(req.body.cardsAcross);
     const numRows = parseInt(req.body.cardsDown);
-    const isLandscape = req.body.isLandscape === "true";
 
     const cardArray = await sliceImages(imageData, numCols, numRows);
 
@@ -360,7 +358,7 @@ app.post("/api/saveGame", async (req, res) => {
 });
 
 const sliceImages = async (ImageData, cols, rows) => {
-  cardArray = [];
+  const cardArray = [];
   const inputBuffer = Buffer.from(ImageData);
   const numCols = cols;
   const numRows = rows;
@@ -398,7 +396,7 @@ const sliceImages = async (ImageData, cols, rows) => {
   return cardArray;
 };
 
-const createCardObjects = async (cardArray, backImgData, isLandscape) => {
+const createCardObjects = async (cardArray, isLandscape, backImgData) => {
   //Card Array consists of buffers for every card in the deck.
   const cardObjects = [];
   const backImgBuffer = Buffer.from(backImgData);
@@ -415,14 +413,14 @@ const createCardObjects = async (cardArray, backImgData, isLandscape) => {
         },
         back: {
           data: backImgBuffer,
-          contentType: "image/jpeg",
+          contentType: "image/png",
         }
 
       },
       pile: [],
       type: "front",
       isFlipped: false,
-      isLandscape: isLandscape,
+      isLandscape: isLandscape === "true", // value passed in as string
     };
     cardObjects.push(cardObject);
   }

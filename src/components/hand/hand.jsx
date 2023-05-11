@@ -4,21 +4,6 @@ import * as Constants from '../../util/constants';
 
 // deck data
 const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
-    const onClickCard = (e, cardID) => {
-        // flip card
-        setCanEmit(true);
-        setTableData((prevTable) => {
-            prevTable.hand = prevTable.hand.map((card) => {
-                if (card.id === cardID) {
-                    card.isFlipped = !card.isFlipped;
-                    // card.imageSource = card.imageSource;
-                }
-                return card;
-            });
-            return { ...prevTable };
-        });
-    }
-
     const onDragEndCard = (e, cardID) => {
         const position = e.target.attrs;
         setCanEmit(true);
@@ -92,14 +77,13 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
             {tableData?.hand?.map((card) => (
                 <Card
                     key={"hand_" + card.id}
-                    src={card.imageSource}
+                    src={card.isFlipped
+                            ? card.imageSource.front
+                            : card.imageSource.back}
                     id={card.id}
                     x={card.x}
                     y={card.y}
-                    isFlipped={card.isFlipped}
                     isLandscape={card.isLandscape}
-                    onClick={onClickCard}
-                    // onDragStart={() => { }}
                     onDragEnd={onDragEndCard}
                     onDragMove={onDragMoveCard}
                     draggable

@@ -28,6 +28,7 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDecks, decks })
     formData.append("cardsDown", inputs.numDown);
     formData.append("totalCards", inputs.numTotal);
     formData.append("hasSameBack", isChecked);
+    formData.append("isLandscape", isChecked2);
 
     axios
       .post(`${BASE_URL}/api/upload`, formData, {
