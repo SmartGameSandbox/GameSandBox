@@ -46,7 +46,6 @@ const Card = ({
       height={Constants.CARD_HEIGHT}
       width={Constants.CARD_WIDTH}
       image={image}
-      isLandscape={isLandscape}
       rotation={isLandscape ? 90: 0}
       draggable
       onDragMove={(e) => {onDragMove(e, id);}}

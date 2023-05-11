@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AppBar from "@mui/material/AppBar";
@@ -11,7 +11,7 @@ import { BASE_URL } from '../../../util/constants'
 const Buffer = require("buffer").Buffer;
 
 
-const BottomToolbar = ({setDisplayCards}) => {
+const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) => {
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,6 +21,10 @@ const BottomToolbar = ({setDisplayCards}) => {
   const [images, setImages] = useState([]);
   const [imageURLs, setImageURLs] = useState([]);
   const [decks, setDecks] = useState([]);
+  const [tokens, setTokens] = useState([]);
+  const [pieces, setPieces] = useState([]);
+
+  const nodeRef = useRef(null);
 
   useEffect(() => {
     if (images.length < 1) return;
@@ -33,52 +37,23 @@ const BottomToolbar = ({setDisplayCards}) => {
     setImages([...images, ...e.target.files]);
   };
 
-  function handleSave() {
-    const promises = decks.map((obj) => {
-      return axios
-              .post(`${BASE_URL}/api/addDecks`, obj, {
-                headers: { "Content-Type": "application/json" }
-              }).then((res) => res.data);
-    })
-    Promise.all(promises)
-      .then((values) => values.map(({ deckId }) => deckId))
-      .then((deckIds) => {
-        const gameInfo = {
-          ...location.state,
-          creatorId: localStorage.getItem('id'),
-          newDeckIds: deckIds,
-        };
-        axios
-          .post(`${BASE_URL}/api/saveGame`, gameInfo, {
-            headers: { "Content-Type": "application/json" },
-        })
-          .then(async () => {
-            navigate("/dashboard");
-        })
-          .catch((err) => console.log(err));
-      })
-      .catch((err) => console.log(err));
-  }
-
   useEffect(() => {
-    const cardImages = [];
-    decks.forEach(({ deck }) => {
-      const currentDeck = [];
-      for (const imageObject of deck) {
-        const img = new window.Image();
-        img.src = `data:image/${
-          imageObject.imageSource.contentType
-        };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
-        img.onload = async () => {
-          currentDeck.push(img);
-        };
-      }
-      cardImages.push(currentDeck);
-    });
     setTimeout(() => {
-      setDisplayCards(cardImages);
+      setDisplayCards(createImages(decks));
     }, 100);
   }, [decks, setDisplayCards]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setDisplayTokens(createImages(tokens));
+    }, 100);
+  }, [tokens, setDisplayTokens]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setDisplayPieces(createImages(pieces));
+    }, 100);
+  }, [pieces, setDisplayPieces]);
 
   return (
     <>
@@ -115,7 +90,7 @@ const BottomToolbar = ({setDisplayCards}) => {
                 marginRight: "10px",
               }}
             >
-              SAVE
+              SAVE GAME
             </SMARTButton>
           </div>
         </div>
@@ -124,6 +99,7 @@ const BottomToolbar = ({setDisplayCards}) => {
         title="Upload Item"
         onClose={() => setShowForm(false)}
         show={showForm}
+        nodeRef={nodeRef}
       >
         <ImageUploadForm
           closePopup={() => setShowForm(false)}
@@ -132,10 +108,51 @@ const BottomToolbar = ({setDisplayCards}) => {
           imageURLs={imageURLs}
           setImageURLs={setImageURLs}
           setDecks={setDecks}
-          decks={decks}
+          setTokens={setTokens}
+          setPieces={setPieces}
         />
       </Modal>
     </>
   );
+
+  function handleSave() {
+    const promises = decks.map((obj) => {
+      return axios
+              .post(`${BASE_URL}/api/addDecks`, obj, {
+                headers: { "Content-Type": "application/json" }
+              }).then((res) => res.data);
+    })
+    Promise.all(promises)
+      .then((values) => values.map(({ deckId }) => deckId))
+      .then((deckIds) => {
+        const gameInfo = {
+          ...location.state,
+          creatorId: localStorage.getItem('id'),
+          newDeckIds: deckIds,
+        };
+        axios
+          .post(`${BASE_URL}/api/saveGame`, gameInfo, {
+            headers: { "Content-Type": "application/json" },
+        })
+          .then(async () => {
+            navigate("/dashboard");
+        })
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => console.log(err));
+  }
+
+  function createImages(state) {
+    return state.map(({ deck }) => {
+      return deck.map(imageObject => {
+        const img = new window.Image();
+        img.src = `data:image/${
+          imageObject.imageSource.contentType
+        };base64,${Buffer.from(imageObject.imageSource.data).toString("base64")}`;
+        img.className = imageObject.isLandscape ? 'landscape' : '';
+        return img;
+      });
+    });
+  }
 }
 export default BottomToolbar;

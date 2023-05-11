@@ -5,12 +5,15 @@ import { FaArrowLeft, FaEdit, FaSave } from "react-icons/fa";
 import "./buildGamePage.css";
 import BottomToolbar from "./buildGameComponents/bottomToolbar";
 import { SMARTButton } from "../button/button";
+import { CARD_HEIGHT, CARD_WIDTH } from "../../util/constants";
 
 const BuildGamePage = () => {
 
   const location = useLocation();
   const [header, setHeader] = useState(location.state.name);
   const [displayCards, setDisplayCards] = useState([]);
+  const [displayTokens, setDisplayTokens] = useState([]);
+  const [displayPieces, setDisplayPieces] = useState([]);
   const [editHeader, setEditHeader] = useState(false);
 
   const gameName = useRef(location.state.name);
@@ -95,12 +98,38 @@ const BuildGamePage = () => {
                 image={img}
                 x={(index+1)*120 + index2}
                 y={window.innerHeight / 5 - index2}
-                width={window.innerWidth / 20}
-                height={window.innerHeight / 8}
+                width={CARD_WIDTH}
+                height={CARD_HEIGHT}
                 draggable
                 stroke="#163B6E"
                 strokeWidth={5}
-                rotation = {item.isLandscape ? 90 : 0}
+                rotation = {img.className === "landscape" ? 90 : 0}
+              />
+              ))
+            ))}
+            {displayTokens.map((item, index) => (
+              item.map((img, index2) => (
+                <Image
+                key={`${index}-${index2}`}
+                image={img}
+                x={(index+3)*120 + index2}
+                y={window.innerHeight / 5 - index2}
+                width={CARD_WIDTH}
+                height={CARD_WIDTH}
+                draggable
+              />
+              ))
+            ))}
+            {displayPieces.map((item, index) => (
+              item.map((img, index2) => (
+                <Image
+                key={`${index}-${index2}`}
+                image={img}
+                x={(index+5)*120 + index2}
+                y={window.innerHeight / 5 - index2}
+                width={CARD_WIDTH}
+                height={CARD_HEIGHT}
+                draggable
               />
               ))
             ))}
@@ -108,7 +137,11 @@ const BuildGamePage = () => {
         </Stage>
       </div>
       <div className="bgame-toolbar">
-        <BottomToolbar setDisplayCards = {setDisplayCards}/>
+        <BottomToolbar 
+          setDisplayCards={setDisplayCards}
+          setDisplayTokens={setDisplayTokens}
+          setDisplayPieces={setDisplayPieces}
+        />
       </div>
     </>
   );

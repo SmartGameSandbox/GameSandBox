@@ -13,7 +13,6 @@ const idGenerator = require("./utils/id_generator");
 const cron = require("node-cron");
 
 const { Room } = require("./schemas/room");
-// const { Card } = require("./schemas/card");
 const { CardV2 } = require("./schemas/cardv2");
 const { Grid } = require("./schemas/grid");
 const { Game } = require("./schemas/game");
@@ -22,7 +21,8 @@ const { User } = require("./schemas/user");
 const app = express();
 const http = require("http").Server(app);
 app.use(cors());
-app.use(express.json({limit: '200kb'}));
+// TODO: try to optimize the upload size in the future
+app.use(express.json({limit: '500kb'}));
 app.use(express.urlencoded({ extended: false }));
 
 const io = require("socket.io")(http, { cors: { origin: "*" } });
@@ -246,20 +246,22 @@ app.get("/api/games", async (req, res) => {
 //Image Upload REST APIs Deck making logics
 app.post("/api/upload", upload.single("image"), async (req, res) => {
   try {
-    const totalCards = parseInt(req.body.totalCards);
     const cardDeckName = req.file.filename;
     const imageData = fs.readFileSync(
       path.join(__dirname + "/uploads/" + req.file.filename)
     );
 
-    const numCols = parseInt(req.body.cardsAcross);
-    const numRows = parseInt(req.body.cardsDown);
-    const isLandscape = req.body.isLandscape === "true";
+    const {
+      isLandscape,
+      itemType,
+      cardsAcross,
+      cardsDown,
+      totalCards
+    } = req.body;
 
-    const cardArray = await sliceImages(imageData, numCols, numRows);
+    const cardArray = await sliceImages(imageData, cardsAcross, cardsDown);
 
-
-    let cardDocuments = await createCardObjects(cardArray, req.body.isLandscape);
+    let cardDocuments = await createCardObjects(cardArray, isLandscape, itemType);
 
     const cardDeck = {
       name: cardDeckName,
@@ -355,12 +357,9 @@ const sliceImages = async (BufferData, cols, rows) => {
   return cardArray;
 };
 
-const createCardObjects = async (cardArray, isLandscape) => {
+const createCardObjects = async (cardArray, isLandscape, itemType) => {
   //Card Array consists of buffers for every card in the deck.
-  const cardObjects = [];
-
-  for (const buffer of cardArray) {
-    const cardObject = {
+  return cardArray.map(buffer => ({
       id: uuidv4(),
       x: 600,
       y: 200,
@@ -369,14 +368,10 @@ const createCardObjects = async (cardArray, isLandscape) => {
         contentType: "image/png",
       },
       pile: [],
-      type: "front",
+      type: itemType,
       isFlipped: false,
-      isLandscape: isLandscape,
-    };
-    cardObjects.push(cardObject);
-  }
-
-  return cardObjects;
+      isLandscape: isLandscape === "true",
+    }));
 };
 
 if (process.env.NODE_ENV === "production") {
