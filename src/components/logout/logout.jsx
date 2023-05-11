@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 
 const Logout = () => {
     useEffect(() => {
-        localStorage.clear();
+        sessionStorage.clear();
     }, []);
 
     return (

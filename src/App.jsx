@@ -16,7 +16,7 @@ import Sidebar from "./components/sidebar/Sidebar";
 
 const App = () => {
 
-  const userAuthed = useContext(UserContext)
+  const userAuthed = sessionStorage.getItem("token");
 
   return (
     <UserContext.Provider value={localStorage.getItem('username')}>

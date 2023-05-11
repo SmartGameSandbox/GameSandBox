@@ -35,8 +35,9 @@ const Login = () => {
           bcryptjs.compare(password, response.data.user.password, (err, result) => {
             if (result) {
               setErrorMessage("");
-              localStorage.setItem("username", response.data.user.username);
-              localStorage.setItem("id", response.data.user._id);
+              sessionStorage.setItem("username", response.data.user.username);
+              sessionStorage.setItem("id", response.data.user._id);
+              sessionStorage.setItem("token", response.data.token); 
               window.location.href = "/dashboard";
             } else {
               setErrorMessage("Incorrect password");

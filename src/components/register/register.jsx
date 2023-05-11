@@ -8,6 +8,8 @@ import Button from "@mui/material/Button";
 import {SMARTButton} from '../button/button';
 import logo from "../icons/Group_89.png";
 import bcryptjs from "bcryptjs";
+import { FaCheck, FaTimes } from "react-icons/fa";
+import Typography from "@mui/material/Typography";
 
 
 const Register = () => {
@@ -16,6 +18,8 @@ const Register = () => {
   const [emailInputText, setEmailInputText] = useState("");
   const [passwordInputText, setPasswordInputText] = useState("");
   const [confirmPasswordInputText, setConfirmPasswordInputText] = useState("");
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const isPasswordEmpty = passwordInputText.trim() === '';
 
   const handleUsernameTextInputChange = (event) => {
     setUsernameInputText(event.target.value);
@@ -24,12 +28,20 @@ const Register = () => {
   const handleEmailInputtTextChange = (event) => {
     setEmailInputText(event.target.value);
   };
+
   const handlePasswordTextInputChange = (event) => {
-    setPasswordInputText(event.target.value);
+    const newPassword = event.target.value;
+    setPasswordInputText(newPassword);
+    setIsPasswordValid(validatePassword(newPassword));
   };
 
   const handleConfirmPasswordTextInputChange = (event) => {
     setConfirmPasswordInputText(event.target.value);
+  };
+
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
   };
 
   console.log(process.env.NODE_ENV);
@@ -37,6 +49,11 @@ const Register = () => {
   const handleSubmit = () => {
     if (passwordInputText !== confirmPasswordInputText) {
       setErrorMessage("Passwords do not match");
+      return;
+    }
+
+    if (!isPasswordValid) {
+      setErrorMessage("Password must contain at least 8 characters, including at least one lowercase letter, one uppercase letter, one number, and one special character");
       return;
     }
 
@@ -85,7 +102,7 @@ const Register = () => {
                 size="large"
                 InputLabelProps={{
                   style: {
-                    color: "white",
+                    color: "gray",
                     position: "relative",
                     top: "10px",
                   },
@@ -111,7 +128,7 @@ const Register = () => {
                 size="large"
                 InputLabelProps={{
                   style: {
-                    color: "white",
+                    color: "gray",
                     position: "relative",
                     top: "10px",
                   },
@@ -126,7 +143,14 @@ const Register = () => {
               <br />
               <TextField
                 id="password-input"
-                sx={styles.textFieldStyle}
+                sx={{
+                  ...styles.textFieldStyle,
+                  border: isPasswordEmpty
+                    ? "none"
+                    : isPasswordValid
+                      ? "1px solid green"
+                      : "1px solid red",
+                }}
                 placeholder="Please create your password"
                 value={passwordInputText}
                 onChange={handlePasswordTextInputChange}
@@ -137,18 +161,36 @@ const Register = () => {
                 size="large"
                 InputLabelProps={{
                   style: {
-                    color: "white",
+                    color: "gray",
                     position: "relative",
                     top: "10px",
                   },
                 }}
                 InputProps={{
                   style: {
-                    backgroundColor: "#f2f2f2",
+                    backgroundColor: isPasswordEmpty
+                    ? "#f2f2f2"
+                    : isPasswordValid
+                      ? "lightgreen"
+                      : "pink",
                     borderRadius: "15px",
                   },
+                  endAdornment: isPasswordEmpty ? null : (
+                    <div style={{ position: "absolute", right: 10 }}>
+                      {isPasswordValid ? (
+                        <FaCheck style={{ color: "green" }} />
+                      ) : (
+                        <FaTimes style={{ color: "red" }} />
+                      )}
+                    </div>
+                  ),
                 }}
               />
+              {isPasswordEmpty === false && (
+                <Typography variant="body2" gutterBottom>
+                  *Password must contain at least 8 characters, including at least one lowercase letter, one uppercase letter, one number, and one special character.
+                </Typography>
+)}
               <br />
               <TextField
                 id="confirm-password-input"
@@ -163,7 +205,7 @@ const Register = () => {
                 size="large"
                 InputLabelProps={{
                   style: {
-                    color: "white",
+                    color: "gray",
                     position: "relative",
                     top: "10px",
                   },

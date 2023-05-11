@@ -12,6 +12,7 @@ const mongoose = require("mongoose");
 const idGenerator = require("./utils/id_generator");
 const cron = require("node-cron");
 const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const { Room } = require("./schemas/room");
 // const { Card } = require("./schemas/card");
@@ -219,10 +220,17 @@ app.post("/api/login", async (req, res) => {
       throw new Error("Invalid password");
     }
 
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      process.env.JWT_SECRET, //JWT_SECRET var stored in .env file *delete comment later*
+      { expiresIn: '1h' }
+    );
+
     res.json({
       status: "success",
       message: "User login successful",
       user: user,
+      token: token,
     });
   } catch (err) {
     res.status(400).json({ message: err.message });
