@@ -58,15 +58,15 @@ const Sidebar = () => {
   return (
     <nav className="navbar">
       <div id="options">
-        <div id="profile">
+        <div id="profile" className="option">
           <img src={profileIcon} alt="Profile" />
           <a href="/profile">Profile</a>
         </div>
-        <div id="settings">
+        <div id="settings" className="option">
           <img src={settingsIcon} alt="Settings" />
           <a href="/settings">Settings</a>
         </div>
-        <div id="logout" onClick={() => { window.location.href = "/logout" }}>
+        <div id="logout" className="option" onClick={() => { window.location.href = "/logout" }}>
           <img src={logoutIcon} alt="Logout" />
           <a href="/logout">Logout</a>
         </div>
