@@ -49,7 +49,6 @@ const BuildGamePage = () => {
 
   return (
     <>
-      <div className="bgame-container"></div>
       <div className="bgame-header">
         <SMARTButton
           variant="text"
@@ -97,8 +96,8 @@ const BuildGamePage = () => {
                 <Image
                 key={`${index}-${index2}`}
                 image={img}
-                x={(index+1)*120 + index2}
-                y={window.innerHeight / 5 - index2}
+                x={(index+1)*150 + index2}
+                y={window.innerHeight / 4 - index2}
                 width={CARD_WIDTH}
                 height={CARD_HEIGHT}
                 draggable
@@ -113,8 +112,8 @@ const BuildGamePage = () => {
                 <Image
                 key={`${index}-${index2}`}
                 image={img}
-                x={(index+3)*120 + index2}
-                y={window.innerHeight / 5 - index2}
+                x={(index+1)*150 + index2}
+                y={window.innerHeight / 3 - index2 + CARD_WIDTH}
                 width={CARD_WIDTH}
                 height={CARD_WIDTH}
                 draggable
@@ -126,8 +125,8 @@ const BuildGamePage = () => {
                 <Image
                 key={`${index}-${index2}`}
                 image={img}
-                x={(index+5)*120 + index2}
-                y={window.innerHeight / 5 - index2}
+                x={(index+1)*150 + index2}
+                y={window.innerHeight / 9  - index2}
                 width={CARD_WIDTH}
                 height={CARD_HEIGHT}
                 draggable

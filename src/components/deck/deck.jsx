@@ -84,10 +84,6 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
     }
   };
 
-  if (!tableData) {
-    return null; //prevent loading before tableData is set*
-  }
-
   return (
     <>
       <Rect

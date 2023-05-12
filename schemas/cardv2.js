@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
-const {
-  Schema
-} = mongoose;
 
-const cardv2Schema = new Schema({
+const cardv2Schema = new mongoose.Schema({
   id: {
     type: String,
     required: true,
@@ -29,7 +26,7 @@ const cardv2Schema = new Schema({
     }
   },
   pile: {type: Array, default: []},
-  type: { type: String, required: true, enum: ["front", "back"] },
+  type: { type: String, required: true, enum: ["Card", "Token", "Piece", "Board"] },
   isFlipped: { type: Boolean, required: true },
   isLandscape: { type: Boolean, default: false },
   },

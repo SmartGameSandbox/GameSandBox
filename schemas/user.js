@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
 const { gameSchema } = require("./game");
 
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
   username: {
     type: String,
     maxlength: 20,

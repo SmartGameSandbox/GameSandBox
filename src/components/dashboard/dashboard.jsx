@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState } from "react";
+import { useState, useRef } from "react";
 import { TextField } from "@mui/material";
 import { SMARTButton } from '../button/button';
 import { BASE_URL } from '../../util/constants'
@@ -13,23 +13,9 @@ const Dashboard = () => {
     const [roomLink, setroomLink] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleRoomLinkTextInputChange = event => {
-        setroomLink(event.target.value);
-    };
+    const nodeRef = useRef(null);
 
-    const joinRoom = () => {
-        axios.get(`${BASE_URL}/api/room?id=${roomLink}`)
-        .then(() => {
-            window.location.href = `/room?id=${roomLink}`;
-        }).catch((error) => {
-            setErrorMessage(error.response.data.message);
-        });
-    }
 
-    const hostRoom = () => {
-        window.location.href = `/games`;
-    }
-    
     return (
         <div style={styles.body}>
             <Header />
@@ -65,7 +51,7 @@ const Dashboard = () => {
                     theme="primary"
                     variant="contained"
                     size="large"
-                    onClick={() => {hostRoom();}}
+                    onClick={() => window.location.href = '/games'}
                 >
                     Host Room
                 </SMARTButton>
@@ -94,16 +80,27 @@ const Dashboard = () => {
                     title="Build Game"
                     onClose={() => setBuildGameModal(false)}
                     show={showBuildGameModal}
-                    style={{
-                    height: "500px",
-                    width: "700px",
-                    }}
+                    nodeRef={nodeRef}
+                    style={{ height: "500px",width: "700px" }}
                 >
                     <BuildGameForm closePopup={() => setBuildGameModal(false)} />
                 </Modal>
             </div>
         </div>
     );
+
+    function handleRoomLinkTextInputChange(e) {
+        setroomLink(e.target.value);
+    };
+
+    function joinRoom() {
+        axios.get(`${BASE_URL}/api/room?id=${roomLink}`)
+        .then(() => {
+            window.location.href = `/room?id=${roomLink}`;
+        }).catch((error) => {
+            setErrorMessage(error.response.data.message);
+        });
+    }
 }
 
 export default Dashboard;

@@ -25,6 +25,7 @@ const Table = ({ socket, username, roomID }) => {
 
   useEffect(() => {
     socket.on("tableReload", ({ cards, deck, hand }) => {
+      console.log(deck);
       const cardsInDeck = deck.map(pile => pile.map(({id}) => id));
       setTableData({ cards, deck, hand, cardsInDeck });
     });

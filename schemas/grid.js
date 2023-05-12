@@ -1,12 +1,6 @@
-var mongoose = require("mongoose");
-const {
-  cardSchema
-} = require("./card");
-const {
-  Schema
-} = mongoose;
+const mongoose = require("mongoose");
 
-const gridSchema = new Schema({
+const gridSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -47,7 +41,7 @@ const gridSchema = new Schema({
     type: {
       type: String,
       required: true,
-      enum: ["front", "back"]
+      enum: ["Card", "Token", "Piece", "Board"]
     },
     isLandscape: {
       type: Boolean,
@@ -58,6 +52,11 @@ const gridSchema = new Schema({
       required: true
     },
   }],
+  type: {
+    type: String,
+    required: true,
+    enum: ["Card", "Token", "Piece", "Board"]
+  },
 }, {
   timestamps: true
 });

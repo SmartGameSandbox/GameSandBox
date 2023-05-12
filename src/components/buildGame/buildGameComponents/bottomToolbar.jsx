@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AppBar from "@mui/material/AppBar";
@@ -18,24 +18,12 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
 
   const [showForm, setShowForm] = useState(false);
 
-  const [images, setImages] = useState([]);
-  const [imageURLs, setImageURLs] = useState([]);
+  const [thumbnails, setThumbnails] = useState([]);
   const [decks, setDecks] = useState([]);
   const [tokens, setTokens] = useState([]);
   const [pieces, setPieces] = useState([]);
 
   const nodeRef = useRef(null);
-
-  useEffect(() => {
-    if (images.length < 1) return;
-    const newImageURLs = [];
-    images.forEach((image) => newImageURLs.push(URL.createObjectURL(image)));
-    setImageURLs(newImageURLs);
-  }, [images]);
-
-  const onImageChange = (e) => {
-    setImages([...images, ...e.target.files]);
-  };
 
   useEffect(() => {
     setTimeout(() => {
@@ -71,11 +59,14 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
             >
               <FaPlus />
             </SMARTIconButton>
-              {imageURLs.map((imageSrc, key) => (
+              {thumbnails.map(({ imgSrc, name, itemType }, key) => (
                 <div
                   key={key}
-                  className="image-preview"
-                  style={{backgroundImage: `url('${imageSrc}')`}}
+                  className={`image-preview ${itemType}`}
+                  style={{backgroundImage: `url('${URL.createObjectURL(imgSrc)}')`}}
+                  onMouseOver={(e) => {e.target.innerText = "X"}}
+                  onMouseLeave={(e) => {e.target.innerText = ""}}
+                  onClick={() => {deleteItem(name, itemType)}}
                 />
               ))}
           </div>
@@ -103,10 +94,7 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
       >
         <ImageUploadForm
           closePopup={() => setShowForm(false)}
-          images={images}
-          onImageChange={onImageChange}
-          imageURLs={imageURLs}
-          setImageURLs={setImageURLs}
+          setThumbnails={setThumbnails}
           setDecks={setDecks}
           setTokens={setTokens}
           setPieces={setPieces}
@@ -115,8 +103,19 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
     </>
   );
 
+  function deleteItem(deletedName, deletedType) {
+    const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
+    setters[deletedType](prevItems => {
+      return prevItems.filter(({name}) => name !== deletedName);
+    });
+    setThumbnails(prevThumbnails => {
+      return prevThumbnails.filter(({name}) => name !== deletedName);
+    });
+  }
+
   function handleSave() {
-    const promises = decks.map((obj) => {
+    const items = [...decks, ...tokens, ...pieces];
+    const promises = items.map((obj) => {
       return axios
               .post(`${BASE_URL}/api/addDecks`, obj, {
                 headers: { "Content-Type": "application/json" }

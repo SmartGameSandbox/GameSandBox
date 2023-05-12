@@ -1,21 +1,16 @@
 import "./imageUploadForm.css";
-import React, { useState, useRef } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { SMARTButton } from "../../button/button";
 import { BASE_URL } from '../../../util/constants'
 
 const ImageUploadForm = ({
   closePopup,
-  images,
-  onImageChange,
+  setThumbnails,
   setDecks,
   setTokens,
   setPieces,
  }) => {
-
-  const numAcross = useRef();
-  const numDown = useRef();
-  const numTotal = useRef();
   const [isSingleBack, setIsSingleBack] = useState(false);
   const [isLandScape, setIsLandScape] = useState(false);
   const [itemType, setItemType] = useState("Card");
@@ -23,33 +18,21 @@ const ImageUploadForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
-
-    const formData = new FormData();
-    formData.append("image", images[0]);
-    formData.append("image", images[1]);
-    formData.append("cardsAcross", numAcross.current.valueAsNumber);
-    formData.append("cardsDown", numDown.current.valueAsNumber);
-    formData.append("totalCards", numTotal.current.valueAsNumber);
-    formData.append("hasSameBack", isSingleBack);
-    formData.append("isLandscape", isLandScape);
+    const [imgSrc] = e.currentTarget[0].files;
+    const formData = new FormData(e.currentTarget);
     formData.append("itemType", itemType);
 
     axios
       .post(`${BASE_URL}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
-      .then((res) => {
-        const newItems = res.data.newDeck;
-        setters[itemType](prevItems => [...prevItems, newItems]);
+      .then(({ data: { newItem } }) => {
+        setThumbnails(prevThumbnails => [...prevThumbnails, {imgSrc, name: newItem.name, itemType}]);
+        setters[itemType](prevItems => [...prevItems, newItem]);
         closePopup();
       })
       .catch((err) => console.log(err));
   };
-
-  const checkItemType = (inputType) => {
-    if (inputType === itemType) return "active";
-    return "bg-itemtype-button";
-  } 
 
   return (
     <div className="bg-form">
@@ -79,26 +62,23 @@ const ImageUploadForm = ({
         </div>
 
         <div className="row">
-          <label>Upload Image Grid:</label>
+          <label>Upload Face Grid:</label>
           <input
             type="file"
             multiple
             name="image"
-            id="image"
             accept="image/*"
-            onChange={onImageChange}
             required
           />
         </div>
 
-        <div className="row">
-          <label>Upload Image Grid (back page):</label>
+        <div className={`row ${itemType === 'Piece' ? 'hide' : ''}`}>
+          <label>Upload Back Grid/Image:</label>
           <input
             type="file"
             multiple
             accept="image/*"
             name="backFile"
-            onChange={onImageChange}
           />
         </div>
 
@@ -107,7 +87,6 @@ const ImageUploadForm = ({
           <input
             type="number"
             name="numAcross"
-            ref={numAcross}
             defaultValue={1}
             min={1}
           />
@@ -118,7 +97,6 @@ const ImageUploadForm = ({
           <input
             type="number"
             name="numDown"
-            ref={numDown}
             defaultValue={1}
             min={1}
           />
@@ -129,17 +107,17 @@ const ImageUploadForm = ({
           <input
             type="number"
             name="numTotal"
-            ref={numTotal}
             defaultValue={1}
             min={1}
           />
         </div>
 
-        <div className={`checkbox-wrapper ${itemType === 'Piece' && 'hide'}`}>
+        <div className={`checkbox-wrapper ${itemType === 'Piece' ? 'hide' : ''}`}>
           <div>
             <label>{`Same back for all ${itemType}s?`}</label>
             <input
               type="checkbox"
+              name="isSameBack"
               className={isSingleBack ? "checked" : ""}
               checked={isSingleBack}
               onChange={() => setIsSingleBack(!isSingleBack)}
@@ -149,6 +127,7 @@ const ImageUploadForm = ({
             <label>Landscape</label>
             <input
               type="checkbox"
+              name="isLandscape"
               className={isLandScape ? "checked" : ""}
               checked={isLandScape}
               onChange={() => setIsLandScape(!isLandScape)}
@@ -159,7 +138,6 @@ const ImageUploadForm = ({
         <div className="row last">
           <SMARTButton
             type="submit"
-            className="bg-createGameBtn"
             theme="secondary"
             size="large"
             variant="contained"
@@ -170,6 +148,11 @@ const ImageUploadForm = ({
       </form>
     </div>
   );
+
+  function checkItemType(inputType) {
+    if (inputType === itemType) return "active";
+    return "bg-itemtype-button";
+  } 
 };
 
 export default ImageUploadForm;
