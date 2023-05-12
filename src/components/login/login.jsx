@@ -7,6 +7,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import {SMARTButton} from '../button/button';
 import logo from "../icons/Group_89.png";
+import bcryptjs from "bcryptjs";
+
 
 const Login = () => {
   const [usernameInputText, setUsernameInputText] = useState("");
@@ -30,10 +32,17 @@ const Login = () => {
       })
       .then((response) => {
         if (response.status === 200) {
-          setErrorMessage("");
-          localStorage.setItem("username", response.data.user.username);
-          localStorage.setItem("id", response.data.user._id);
-          window.location.href = "/dashboard";
+          bcryptjs.compare(password, response.data.user.password, (err, result) => {
+            if (result) {
+              setErrorMessage("");
+              sessionStorage.setItem("username", response.data.user.username);
+              sessionStorage.setItem("id", response.data.user._id);
+              sessionStorage.setItem("token", response.data.token); 
+              window.location.href = "/dashboard";
+            } else {
+              setErrorMessage("Incorrect password");
+            }
+          });
         }
       })
       .catch((error) => {

@@ -11,6 +11,8 @@ const path = require("path");
 const mongoose = require("mongoose");
 const idGenerator = require("./utils/id_generator");
 const cron = require("node-cron");
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const { Room } = require("./schemas/room");
 const { CardV2 } = require("./schemas/cardv2");
@@ -207,6 +209,7 @@ app.post("/api/register", async (req, res) => {
     email: req.body.email,
     password: req.body.password,
   });
+  console.log(newUser);
   try {
     if (await User.findOne({
         username: req.body.username
@@ -234,15 +237,28 @@ app.post("/api/login", async (req, res) => {
   try {
     const user = await User.findOne({
       username: req.body.username,
-      password: req.body.password,
     });
+    console.log(user);
     if (!user) {
       throw new Error("Invalid username or password");
     }
+
+    const passwordMatch = await bcryptjs.compare(req.body.password, user.password);
+    if (!passwordMatch) {
+      throw new Error("Invalid password");
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      process.env.JWT_SECRET, //JWT_SECRET var stored in .env file *delete comment later*
+      { expiresIn: '1h' }
+    );
+
     res.json({
       status: "success",
       message: "User login successful",
       user: user,
+      token: token,
     });
   } catch (err) {
     res.status(400).json({
