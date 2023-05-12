@@ -74,7 +74,7 @@ const Login = () => {
                 size="large"
                 InputLabelProps={{
                   style: {
-                    color: "white",
+                    color: "gray",
                     position: "relative",
                     top: "10px",
                   },
@@ -100,7 +100,7 @@ const Login = () => {
                 size="large"
                 InputLabelProps={{
                   style: {
-                    color: "white",
+                    color: "gray",
                     position: "relative",
                     top: "10px",
                   },
