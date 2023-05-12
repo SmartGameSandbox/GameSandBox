@@ -238,7 +238,6 @@ app.post("/api/login", async (req, res) => {
     const user = await User.findOne({
       username: req.body.username,
     });
-    console.log(user);
     if (!user) {
       throw new Error("Invalid username or password");
     }
@@ -250,7 +249,7 @@ app.post("/api/login", async (req, res) => {
 
     const token = jwt.sign(
       { userId: user._id, username: user.username },
-      process.env.JWT_SECRET, //JWT_SECRET var stored in .env file *delete comment later*
+      process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
