@@ -224,9 +224,11 @@ const Table = ({ socket, username, roomID }) => {
     setClickedCardID(cardID);
   };
 
+  const handleCloseMenu = () => {setRightClickPos({x:null, y:null})}
+
   return (
     <>
-      <Layer>
+      <Layer onClick={handleCloseMenu}>
         <Rect
           x={0}
           y={0}
