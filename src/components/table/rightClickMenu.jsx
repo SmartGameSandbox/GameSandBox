@@ -11,9 +11,11 @@ const RightClickMenu = ({ x, y, cardId, setTableData, setRightClickPos, setClick
       setTableData((prevTable) => {
         const cards = prevTable.cards.map((card) => {
           if (card.id !== cardId) return card;
-          const changeCard = card;
-          changeCard.isFlipped = !changeCard.isFlipped;
-          return changeCard;
+          if (card.pile.length > 0) {
+            card.pile.map((cardInPile) => cardInPile.isFlipped = !cardInPile.isFlipped)
+          }
+          card.isFlipped = !card.isFlipped
+          return card;
         });
         prevTable.cards = cards;
         return prevTable;
