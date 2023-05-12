@@ -143,14 +143,7 @@ const Register = () => {
               <br />
               <TextField
                 id="password-input"
-                sx={{
-                  ...styles.textFieldStyle,
-                  border: isPasswordEmpty
-                    ? "none"
-                    : isPasswordValid
-                      ? "1px solid green"
-                      : "1px solid red",
-                }}
+                sx={ styles.textFieldStyle }
                 placeholder="Please create your password"
                 value={passwordInputText}
                 onChange={handlePasswordTextInputChange}
