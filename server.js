@@ -164,6 +164,12 @@ app.get("/api/room", async (req, res) => {
 //create room
 app.post("/api/room", async (req, res) => {
   const ROOM_ID_LENGTH = 10;
+  const filterMapItem = (items, itemType) => {
+    return items.reduce((acc, item) => {
+      if (item.type === itemType) return [...acc, item.deck];
+      return acc;
+    }, []);
+  }
   try {
     const deckIds = req.body?.cardDeck;
     if (!deckIds || deckIds.length < 1) {
@@ -175,14 +181,12 @@ app.post("/api/room", async (req, res) => {
     }
     
     const gameItemData = await Grid.find({ _id: { $in: deckIds } });
-    const items = gameItemData.map(({deck}) => deck);
-
     const gameRoomData = {
       id: roomID,
       name: req.body.name,
-      deck: items.filter(({ type }) => type === "Card"),
-      tokens: items.filter(({ type }) => type === "Token"),
-      pieces: items.filter(({ type }) => type === "Piece"),
+      deck: filterMapItem(gameItemData, "Card"),
+      tokens: filterMapItem(gameItemData, "Token"),
+      pieces: filterMapItem(gameItemData, "Piece"),
       hand: {},
       cards: [],
     };

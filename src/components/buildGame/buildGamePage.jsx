@@ -5,7 +5,13 @@ import { FaArrowLeft, FaEdit, FaSave } from "react-icons/fa";
 import "./buildGamePage.css";
 import BottomToolbar from "./buildGameComponents/bottomToolbar";
 import { SMARTButton } from "../button/button";
-import { CARD_HEIGHT, CARD_WIDTH } from "../../util/constants";
+import {
+  CARD_HEIGHT,
+  CANVAS_HEIGHT,
+  HAND_HEIGHT,
+  CARD_WIDTH,
+  CANVAS_WIDTH,
+} from "../../util/constants";
 
 const BuildGamePage = () => {
 
@@ -79,14 +85,13 @@ const BuildGamePage = () => {
       </div>
 
       <div className="bgame-tabletop">
-        <Stage width={8 + window.innerWidth / 1.7} height={window.innerHeight * 0.64}>
+        <Stage width={CANVAS_WIDTH} height={CANVAS_HEIGHT - HAND_HEIGHT}>
           <Layer id="layer">
             <Rect
-              x={4}
-              y={window.innerHeight / 20}
-              width={window.innerWidth / 1.7}
-              height={window.innerHeight / 2}
-              cornerRadius={200}
+              x={0}
+              y={0}
+              width={CANVAS_WIDTH}
+              height={CANVAS_HEIGHT-HAND_HEIGHT}
               stroke="#163B6E"
               strokeWidth={5}
               fill="#EBEBEB"

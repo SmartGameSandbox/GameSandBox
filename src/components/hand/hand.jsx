@@ -81,6 +81,7 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
                             ? card.imageSource.front
                             : card.imageSource.back}
                     id={card.id}
+                    type={card.type}
                     x={card.x}
                     y={card.y}
                     isLandscape={card.isLandscape}
