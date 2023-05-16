@@ -355,10 +355,11 @@ app.post("/api/saveGame", async (req, res) => {
       creatorId,
       newDeckIds,
     } = req.body;
+    console.log(req.body)
     if (creatorId) {
       //Create a game now
       const gameObject = {
-        name,
+        name: name.substring(0, 20),
         players: parseInt(players),
         creator: new ObjectId(creatorId),
         cardDeck: newDeckIds.map((id) => new ObjectId(id)),
