@@ -59,13 +59,8 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
         const found = prevTable.deck[deckIndex].find((card) => card.id === cardID);
         // add card to hand
         prevTable.hand.push(found);
-        found.x =
-          Constants.HAND_PADDING_X +
-          (prevTable.hand.length - 1) * Constants.HAND_CARD_GAP;
-        found.y =
-          Constants.CANVAS_HEIGHT -
-          Constants.HAND_HEIGHT +
-          Constants.HAND_PADDING_Y;
+        found.x = e.target.attrs.x
+        found.y = e.target.attrs.y
         prevTable.deck[deckIndex] = prevTable.deck[deckIndex].filter((card) => card.id !== cardID);
         return { ...prevTable };
       });

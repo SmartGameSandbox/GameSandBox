@@ -22,8 +22,6 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
                 found.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
                 prevTable.hand = prevTable.hand.filter((card) => card.id !== cardID)
                     .map((card, index) => {
-                        card.x = Constants.HAND_PADDING_X + index * Constants.HAND_CARD_GAP;
-                        card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
                         return card;
                     });
                 prevTable.deck[deckIndex].push(found);
@@ -38,8 +36,6 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
                 found.y = position.y;
                 prevTable.hand = prevTable.hand.filter((card) => card.id !== cardID)
                     .map((card, index) => {
-                        card.x = Constants.HAND_PADDING_X + index * Constants.HAND_CARD_GAP;
-                        card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
                         return card;
                     });
                 prevTable.cards = [...prevTable.cards, found];
@@ -49,10 +45,6 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
             // deck area movement
             setTableData((prevTable) => {
                 prevTable.hand.map((card, index) => {
-                    if (card.id === cardID) {
-                        card.x = Constants.HAND_PADDING_X + index * Constants.HAND_CARD_GAP;
-                        card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
-                    }
                     return card;
                 });
                 return { ...prevTable };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Group, Layer, Rect } from "react-konva";
+import { Group, Layer, Rect, Image } from "react-konva";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import Cursors from "../cursor/cursors";
@@ -8,6 +8,8 @@ import Deck from "../deck/deck";
 import Token from "../deck/token";
 import Piece from "../deck/piece";
 import RightClickMenu from './rightClickMenu';
+import useImage from "use-image";
+import handIcon from "../icons/hand-regular.png";
 
 const Table = ({ socket, username, roomID }) => {
   const [tableData, setTableData] = useState(null);
@@ -77,18 +79,20 @@ const Table = ({ socket, username, roomID }) => {
       setTableData((prevTable) => {
         // find card in tableData.cards
         if (draggedCard.pile.length > 0) {
-          draggedCard.pile.forEach(cardInPile => prevTable.hand.push(cardInPile))
-          draggedCard.pile.forEach(cardInPile => cardInPile.x = Constants.HAND_PADDING_X +
-              (prevTable.hand.length - 1) * Constants.HAND_CARD_GAP)
-          draggedCard.pile.forEach(cardInPile => cardInPile.y =
-              draggedCard.y = HAND_POS_Y)
+          draggedCard.pile.forEach((cardInPile, index) => {
+            prevTable.hand.push(cardInPile)
+            if (e.target.attrs.x + index*25 + Constants.CARD_WIDTH <= Constants.HAND_WIDTH) {
+              cardInPile.x = e.target.attrs.x + index*25
+            } else {
+              cardInPile.x = e.target.attrs.x
+            }
+            cardInPile.y = e.target.attrs.y
+          })
           draggedCard.pile = []
         }
         prevTable.hand.push(draggedCard);
-        draggedCard.x =
-          Constants.HAND_PADDING_X +
-          (prevTable.hand.length - 1) * Constants.HAND_CARD_GAP;
-          draggedCard.y = HAND_POS_Y;
+        draggedCard.x = e.target.attrs.x
+        draggedCard.y = e.target.attrs.y
         // add card to hand
         prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
         return { ...prevTable };
@@ -178,6 +182,17 @@ const Table = ({ socket, username, roomID }) => {
     });
   };
 
+  const HandImage = () => {
+    const [image] = useImage(handIcon)
+    return <Image
+        image={image}
+        x={Constants.CANVAS_WIDTH/2 - 25}
+        y={Constants.CANVAS_HEIGHT/2 + Constants.HAND_HEIGHT}
+        opacity={0.6}
+        width={50}
+        height={50}
+    />;
+  }
   return (
     <>
       <Layer onClick={handleCloseMenu}>
@@ -267,6 +282,7 @@ const Table = ({ socket, username, roomID }) => {
         />
       </Layer>
       <Layer>
+        <HandImage/>
         <Cursors key={`cursor_${username}`} cursors={cursors} />
       </Layer>
     </>
