@@ -3,14 +3,12 @@ import { Navigate } from "react-router-dom";
 
 const Logout = () => {
     useEffect(() => {
-        localStorage.clear();
+        sessionStorage.clear();
     }, []);
 
-    setTimeout(() => {
-        return (
-            <Navigate to="/login" />
-        )    
-    }, 0);
-}
+    return (
+        <Navigate to="/login" />
+    );
+};
 
 export default Logout;

@@ -6,6 +6,7 @@ import * as Constants from '../../util/constants';
 const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
     const onDragEndCard = (e, cardID) => {
         const position = e.target.attrs;
+        const deckIndex = tableData.cardsInDeck.findIndex((pile) => pile.includes(cardID));
         setCanEmit(true);
         if (
             position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
@@ -25,7 +26,7 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
                         card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
                         return card;
                     });
-                prevTable.deck = [...prevTable.deck, found];
+                prevTable.deck[deckIndex].push(found);
                 return { ...prevTable };
             });
         } else if (position.y < Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT - 0.8 * Constants.CARD_HEIGHT) {
