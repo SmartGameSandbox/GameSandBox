@@ -1,39 +1,66 @@
-var mongoose = require("mongoose");
-const { cardSchema } = require("./card");
-const { Schema } = mongoose;
+const mongoose = require("mongoose");
 
-const gridSchema = new Schema(
-  {
-    name: {
+const gridSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  numCards: {
+    type: Number
+  },
+  imageGrid: {
+    data: Buffer,
+    contentType: String,
+  },
+  deck: [{
+    id: {
       type: String,
       required: true,
+      immutable: true,
+      unique: true,
     },
-    numCards: { type: Number },
-    imageGrid: {
-      data: Buffer,
-      contentType: String,
+    x: {
+      type: Number,
+      required: true
     },
-    deck: [
-      {
-        id: {
-          type: String,
-          required: true,
-          immutable: true,
-          unique: true,
-        },
-        x: { type: Number, required: true },
-        y: { type: Number, required: true },
-        imageSource: {
-          data: Buffer,
-          contentType: String,
-        },
-        type: { type: String, required: true, enum: ["front", "back"] },
-        isFlipped: { type: Boolean, required: true },
+    y: {
+      type: Number,
+      required: true
+    },
+    pile: [],
+    imageSource: {
+      front: {
+        data: Buffer,
+        contentType: String,
       },
-    ],
+      back: {
+        data: Buffer,
+        contentType: String,
+      }
+    },
+    type: {
+      type: String,
+      required: true,
+      enum: ["Card", "Token", "Piece", "Board"]
+    },
+    isLandscape: {
+      type: Boolean,
+      default: true,
+    },
+    isFlipped: {
+      type: Boolean,
+      required: true
+    },
+  }],
+  type: {
+    type: String,
+    required: true,
+    enum: ["Card", "Token", "Piece", "Board"]
   },
-  { timestamps: true }
-);
+}, {
+  timestamps: true
+});
+
 
 module.exports.gridSchema = gridSchema;
 module.exports.Grid = mongoose.model("grid", gridSchema);

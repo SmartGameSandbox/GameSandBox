@@ -39,7 +39,7 @@
   }
   
   .modal-footer {
-    padding: 10px;
+    padding: 5px;
     display: flex;
     justify-content: center;
   }
@@ -53,6 +53,7 @@
   
   .modal-title {
     padding-left: 1em;
+    margin-block: 1em;
     font-size: 34px;
     font-family: Nunito;
     font-weight: bold;
@@ -68,7 +69,7 @@
     height: 30px;
     width: 30px;
     font-size: 24px;
-    background-color: white;
+    background-color: transparent;
     border-radius: 50%;
     cursor: pointer;
     border: none;

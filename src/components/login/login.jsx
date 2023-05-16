@@ -1,11 +1,14 @@
+import axios from "axios";
 import React, { useState } from "react";
 import styles from "./loginStyle";
+import { BASE_URL } from '../../util/constants'
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import axios from "axios";
 import {SMARTButton} from '../button/button';
 import logo from "../icons/Group_89.png";
+import bcryptjs from "bcryptjs";
+
 
 const Login = () => {
   const [usernameInputText, setUsernameInputText] = useState("");
@@ -22,21 +25,24 @@ const Login = () => {
   const handleSubmit = () => {
     let username = usernameInputText;
     let password = passwordInputText;
-    const url =
-      process.env.NODE_ENV === "production"
-        ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:8000";
     axios
-      .post(`${url}/api/login`, {
+      .post(`${BASE_URL}/api/login`, {
         username: username,
         password: password,
       })
       .then((response) => {
         if (response.status === 200) {
-          setErrorMessage("");
-          localStorage.setItem("username", response.data.user.username);
-          localStorage.setItem("id", response.data.user._id);
-          window.location.href = "/dashboard";
+          bcryptjs.compare(password, response.data.user.password, (err, result) => {
+            if (result) {
+              setErrorMessage("");
+              sessionStorage.setItem("username", response.data.user.username);
+              sessionStorage.setItem("id", response.data.user._id);
+              sessionStorage.setItem("token", response.data.token); 
+              window.location.href = "/dashboard";
+            } else {
+              setErrorMessage("Incorrect password");
+            }
+          });
         }
       })
       .catch((error) => {
@@ -68,7 +74,7 @@ const Login = () => {
                 size="large"
                 InputLabelProps={{
                   style: {
-                    color: "white",
+                    color: "gray",
                     position: "relative",
                     top: "10px",
                   },
@@ -94,7 +100,7 @@ const Login = () => {
                 size="large"
                 InputLabelProps={{
                   style: {
-                    color: "white",
+                    color: "gray",
                     position: "relative",
                     top: "10px",
                   },

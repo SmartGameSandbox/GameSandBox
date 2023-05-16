@@ -4,23 +4,9 @@ import * as Constants from '../../util/constants';
 
 // deck data
 const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
-    const onClickCard = (e, cardID) => {
-        // flip card
-        setCanEmit(true);
-        setTableData((prevTable) => {
-            prevTable.hand = prevTable.hand.map((card) => {
-                if (card.id === cardID) {
-                    card.isFlipped = !card.isFlipped;
-                    // card.imageSource = card.imageSource;
-                }
-                return card;
-            });
-            return { ...prevTable };
-        });
-    }
-
     const onDragEndCard = (e, cardID) => {
         const position = e.target.attrs;
+        const deckIndex = tableData.cardsInDeck.findIndex((pile) => pile.includes(cardID));
         setCanEmit(true);
         if (
             position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
@@ -36,11 +22,9 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
                 found.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
                 prevTable.hand = prevTable.hand.filter((card) => card.id !== cardID)
                     .map((card, index) => {
-                        card.x = Constants.HAND_PADDING_X + index * Constants.HAND_CARD_GAP;
-                        card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
                         return card;
                     });
-                prevTable.deck = [...prevTable.deck, found];
+                prevTable.deck[deckIndex].push(found);
                 return { ...prevTable };
             });
         } else if (position.y < Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT - 0.8 * Constants.CARD_HEIGHT) {
@@ -52,8 +36,6 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
                 found.y = position.y;
                 prevTable.hand = prevTable.hand.filter((card) => card.id !== cardID)
                     .map((card, index) => {
-                        card.x = Constants.HAND_PADDING_X + index * Constants.HAND_CARD_GAP;
-                        card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
                         return card;
                     });
                 prevTable.cards = [...prevTable.cards, found];
@@ -63,10 +45,6 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
             // deck area movement
             setTableData((prevTable) => {
                 prevTable.hand.map((card, index) => {
-                    if (card.id === cardID) {
-                        card.x = Constants.HAND_PADDING_X + index * Constants.HAND_CARD_GAP;
-                        card.y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
-                    }
                     return card;
                 });
                 return { ...prevTable };
@@ -89,16 +67,17 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
 
     return (
         <>
-            {tableData && tableData.hand && tableData.hand.map((card) => (
+            {tableData?.hand?.map((card) => (
                 <Card
                     key={"hand_" + card.id}
-                    src={card.imageSource}
+                    src={card.isFlipped
+                            ? card.imageSource.front
+                            : card.imageSource.back}
                     id={card.id}
+                    type={card.type}
                     x={card.x}
                     y={card.y}
-                    isFlipped={card.isFlipped}
-                    onClick={onClickCard}
-                    onDragStart={() => { }}
+                    isLandscape={card.isLandscape}
                     onDragEnd={onDragEndCard}
                     onDragMove={onDragMoveCard}
                     draggable

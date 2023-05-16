@@ -1,42 +1,25 @@
+import axios from 'axios';
+import { useState, useRef } from "react";
 import { TextField } from "@mui/material";
-import React, { useState } from "react";
 import { SMARTButton } from '../button/button';
+import { BASE_URL } from '../../util/constants'
 import styles from './dashboardStyle';
-import Sidebar from "../sidebar/Sidebar";
 import Modal from "../modal/modal";
 import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
 import Header from "../header/header";
-import axios from 'axios';
 
 const Dashboard = () => {
     const [showBuildGameModal, setBuildGameModal] = useState(false);
     const [roomLink, setroomLink] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleRoomLinkTextInputChange = event => {
-        setroomLink(event.target.value);
-    };
+    const nodeRef = useRef(null);
 
-    const joinRoom = () => {
-        const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
 
-        axios.get(`${url}/api/room?id=${roomLink}`)
-        .then(() => {
-            window.location.href = `/room?id=${roomLink}`;
-        }).catch((error) => {
-            setErrorMessage(error.response.data.message);
-        });
-    }
-
-    const hostRoom = () => {
-        window.location.href = `/games`;
-    }
-    
     return (
         <div style={styles.body}>
             <Header />
             <div style={styles.main}>
-                <Sidebar />
                 <div style={styles.btnGroup}>
                     <div style={styles.joinRoom}>
                         <div style={styles.joinRoomInput}>
@@ -68,7 +51,7 @@ const Dashboard = () => {
                     theme="primary"
                     variant="contained"
                     size="large"
-                    onClick={() => {hostRoom();}}
+                    onClick={() => window.location.href = '/games'}
                 >
                     Host Room
                 </SMARTButton>
@@ -97,16 +80,27 @@ const Dashboard = () => {
                     title="Build Game"
                     onClose={() => setBuildGameModal(false)}
                     show={showBuildGameModal}
-                    style={{
-                    height: "500px",
-                    width: "700px",
-                    }}
+                    nodeRef={nodeRef}
+                    style={{ height: "500px",width: "700px" }}
                 >
                     <BuildGameForm closePopup={() => setBuildGameModal(false)} />
                 </Modal>
             </div>
         </div>
     );
+
+    function handleRoomLinkTextInputChange(e) {
+        setroomLink(e.target.value);
+    };
+
+    function joinRoom() {
+        axios.get(`${BASE_URL}/api/room?id=${roomLink}`)
+        .then(() => {
+            window.location.href = `/room?id=${roomLink}`;
+        }).catch((error) => {
+            setErrorMessage(error.response.data.message);
+        });
+    }
 }
 
 export default Dashboard;

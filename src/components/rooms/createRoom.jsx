@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { BASE_URL } from '../../util/constants'
 import styles from './roomStyle';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -28,9 +29,7 @@ const CreateRoom = () => {
   }
 
   const createRoom = () => {
-    const url = process.env.NODE_ENV === 'production' ? "https://smartgamesandbox.herokuapp.com" : "http://localhost:8000";
-    console.log(item)
-    axios.post(`${url}/api/room`, {
+    axios.post(`${BASE_URL}/api/room`, {
       name: roomNameInputText,
       image: item || null,
     }).then((response) => {

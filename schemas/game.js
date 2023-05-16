@@ -1,8 +1,6 @@
-var mongoose = require("mongoose");
-const { cardv2Schema } = require("./cardv2");
-const { Schema } = mongoose;
+const mongoose = require("mongoose");
 
-const gameSchema = new Schema(
+const gameSchema = new mongoose.Schema(
   {
     name: {
       type: String,

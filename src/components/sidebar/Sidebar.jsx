@@ -18,73 +18,60 @@ const Sidebar = () => {
   React.useEffect(() => {
     if (open) {
       $("#close-arrow").css({
-        animation: "rotationBackwards 1s forwards",
+        animation: "rotationBackwards 0.3s forwards",
       });
       $("#options").css({
         display: "grid",
       });
       $(".navbar").css({
-        animation: "openingColumns 1s forwards",
+        animation: "openingColumns 0.3s forwards",
       });
-  
-      setTimeout(() => {
-        $("#profile").slideToggle();
-        $("#settings").slideToggle();
-        $("#logout").slideToggle();
-  
-        $("#profile").css({
-          display: "grid",
-        });
-        $("#settings").css({
-          display: "grid",
-        });
-        $("#logout").css({
-          display: "grid",
-        });
-      }, 800);
+
+      $("#profile").css({
+        display: "grid",
+      });
+      $("#settings").css({
+        display: "grid",
+      });
+      $("#logout").css({
+        display: "grid",
+      });
     } else {
       if (firstTime.current < currVal) {
         firstTime.current += 1;
         return;
       }
-
-      $("#profile").slideToggle();
-      $("#settings").slideToggle();
-      $("#logout").slideToggle();
-  
+      $("#close-arrow").css({
+        animation: "rotation 0.3s forwards",
+      });
       setTimeout(() => {
-        $("#close-arrow").css({
-          animation: "rotation 1s forwards",
-        });
-        setTimeout(() => {
-          $("#options").css({
-            display: "none",
-          });
-        }, 1000);
-        $(".navbar").css({
-          animation: "closingColumns 1s forwards",
+        $("#options").css({
+          display: "none",
         });
       }, 300);
+      $(".navbar").css({
+        animation: "closingColumns 0.3s forwards",
+      });
     }
   }, [open]);
 
   return (
     <nav className="navbar">
       <div id="options">
-        <div id="profile" >
+        <div id="profile" className="option">
           <img src={profileIcon} alt="Profile" />
-          <p>Profile</p>
+          <a href="/profile">Profile</a>
         </div>
-        <div id="settings" >
+        <div id="settings" className="option">
           <img src={settingsIcon} alt="Settings" />
-          <p>Settings</p>
+          <a href="/settings">Settings</a>
         </div>
-        <div id="logout" onClick={() => {window.location.href = "/logout"}}>
+        <div id="logout" className="option" onClick={() => { window.location.href = "/logout" }}>
           <img src={logoutIcon} alt="Logout" />
           <a href="/logout">Logout</a>
         </div>
       </div>
-      <div id="close-open" onClick={() => {setOpen(!open)}}>
+      <div id="close-open" onClick={() => { setOpen(!open) }}>
         <img id="close-arrow" src={arrowIcon} alt="Close" />
       </div>
     </nav>

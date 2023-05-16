@@ -22,8 +22,9 @@ const Modal = props => {
       in={props.show}
       unmountOnExit
       timeout={{ enter: 0, exit: 300 }}
+      nodeRef={props.nodeRef}
     >
-      <div className="modal" onClick={props.onClose}>
+      <div className="modal" onClick={props.onClose} ref={props.nodeRef}>
         <div className="modal-content" onClick={e => e.stopPropagation()}>
           <div className="modal-header">
             <h4 className="modal-title">{props.title}</h4>
@@ -36,7 +37,6 @@ const Modal = props => {
             {/* <button onClick={props.onClose} className="CloseModalBtn">
               Close
             </button> */}
-            <br />
             <br />
           </div>
         </div>

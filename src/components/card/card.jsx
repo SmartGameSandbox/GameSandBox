@@ -1,68 +1,45 @@
-import React from "react";
+import useImage from "use-image";
+import { useState, useEffect } from "react";
 import { Image } from "react-konva";
 import * as Constants from "../../util/constants";
 const Buffer = require("buffer").Buffer;
 
-class Card extends React.Component {
-  state = {
-    image: null,
-    imageNode: null,
-  };
-
-  componentDidMount() {
-    this.loadImage();
+const Card = ({
+  src,
+  id,
+  type,
+  x,
+  y,
+  isLandscape,
+  onDragMove,
+  onDragEnd,
+}) => {
+  const sizeAdjust = {
+    Card: 1,
+    Token: 0.6,
+    Piece: 0.8,
   }
+  const [itemType, setItemType] = useState(type);
+  useEffect(() => {
+    setItemType(type);
+  }, [type]);
 
-  componentDidUpdate(oldProps) {
-    if (oldProps.src !== this.props.src) {
-      this.loadImage();
-    }
-  }
-
-  componentWillUnmount() {
-    this.image.removeEventListener("load", this.handleLoad);
-  }
-
-  async loadImage() {
-    this.image = new window.Image();
-    let imageObj = this.props.src;
-
-    this.image.src = `data:image/${imageObj.contentType};base64,${Buffer.from(
-      imageObj.data
-    ).toString("base64")}`;
-
-    this.image.addEventListener("load", this.handleLoad);
-  }
-
-  handleLoad = () => {
-    this.setState(() => ({ image: this.image }));
-  };
-
-  render() {
-    return (
-      <Image
-        key={this.props.id}
-        x={this.props.x}
-        y={this.props.y}
-        height={Constants.CARD_HEIGHT}
-        width={Constants.CARD_WIDTH}
-        image={this.state.image}
-        draggable
-        onDragMove={(e) => {
-          this.props.onDragMove(e, this.props.id);
-        }}
-        onDragStart={(e) => {
-          this.props.onDragStart(e, this.props.id);
-        }}
-        onClick={(e) => {
-          this.props.onClick(e, this.props.id);
-        }}
-        onDragEnd={(e) => {
-          this.props.onDragEnd(e, this.props.id);
-        }}
-      />
-    );
-  }
+  const [img] = useImage(`data:image/${src.contentType};base64,${Buffer.from(src.data).toString("base64")}`);
+  return (
+    <Image
+      key={id}
+      x={x}
+      y={y}
+      height={Constants.CARD_HEIGHT * (sizeAdjust[itemType] || 1)}
+      width={Constants.CARD_WIDTH * (sizeAdjust[itemType] || 1)}
+      image={img}
+      isLandscape={isLandscape}
+      rotation={isLandscape ? 90: 0}
+      draggable
+      onDragMove={(e) => {onDragMove(e, id);}}
+      onDragEnd={(e) => {onDragEnd(e, id);}}
+    />
+  );
 }
 
 export default Card;

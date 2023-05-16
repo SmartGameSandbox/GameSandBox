@@ -3,17 +3,18 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
-const bodyParser = require("body-parser");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
 const { ObjectId } = require("bson");
+
 const path = require("path");
 const mongoose = require("mongoose");
 const idGenerator = require("./utils/id_generator");
-var cron = require("node-cron");
+const cron = require("node-cron");
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const { Room } = require("./schemas/room");
-const { Card } = require("./schemas/card");
 const { CardV2 } = require("./schemas/cardv2");
 const { Grid } = require("./schemas/grid");
 const { Game } = require("./schemas/game");
@@ -22,36 +23,41 @@ const { User } = require("./schemas/user");
 const app = express();
 const http = require("http").Server(app);
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit: '500kb'}));
+app.use(express.urlencoded({ extended: false }));
+
 const io = require("socket.io")(http, { cors: { origin: "*" } });
 
 const port = process.env.PORT || 8000;
 
 
-var storage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads");
   },
   filename: (req, file, cb) => {
-    cb(null, file.fieldname + "-" + Date.now());
+    cb(null, file.fieldname + '-' + uuidv4())
   },
 });
-var upload = multer({ storage: storage });
+const upload = multer({ storage: storage });
 
 const ALLROOMSDATA = {};
 cron.schedule(
   "00 04 * * *",
   async () => {
     // find room with id in ALLROOMSDATA index
-    const rooms = await Room.find({ id: { $in: Object.keys(ALLROOMSDATA) } });
+    const rooms = await Room.find({
+      id: {
+        $in: Object.keys(ALLROOMSDATA)
+      }
+    });
     for (const roomID in ALLROOMSDATA) {
       const found = rooms.find((room) => room.id === roomID);
       if (!found) {
         delete ALLROOMSDATA[roomID];
       }
     }
-  },
-  {
+  }, {
     scheduled: true,
     timezone: "America/Vancouver",
   }
@@ -60,36 +66,36 @@ cron.schedule(
 // Web sockets
 io.on("connection", async (socket) => {
   // Join room
-  socket.on("joinRoom", async ({ roomID, password, username }) => {
+  socket.on("joinRoom", async ({ roomID, username }) => {
     if (!roomID) {
       console.error("Room Invalid");
       return;
     }
-    const roomData = await Room.findOne({ id: roomID, password: password });
-    if (roomData) {
-      if (ALLROOMSDATA[roomID] === undefined) {
-        ALLROOMSDATA[roomID] = roomData;
-      }
-      socket.join(roomID);
-      if (ALLROOMSDATA[roomID].hand === undefined) {
-        ALLROOMSDATA[roomID].hand = {};
-      }
-      if (ALLROOMSDATA[roomID].hand[username] === undefined) {
-        ALLROOMSDATA[roomID].hand[username] = [];
-      }
-      io.to(socket.id).emit("tableReload", {
-        cards: ALLROOMSDATA[roomID].cards,
-        deck: ALLROOMSDATA[roomID].deck,
-        hand: ALLROOMSDATA[roomID].hand[username]
-          ? ALLROOMSDATA[roomID].hand[username]
-          : [],
-      });
-      // add user to the user array here
-      console.log(`User ${username} joined room ${roomID}`);
+    ALLROOMSDATA[roomID] ??= await Room.findOne({ id: roomID });
+    if (!ALLROOMSDATA[roomID]) {
+      console.error(`Can not find room: ${roomID}`);
+      return;
     }
+    socket.join(roomID);
+    ALLROOMSDATA[roomID].hand ??= {};
+    ALLROOMSDATA[roomID].hand[username] ??= [];
+
+    io.to(socket.id).emit("tableReload", {
+      cards: ALLROOMSDATA[roomID].cards,
+      deck: ALLROOMSDATA[roomID].deck,
+      tokens: ALLROOMSDATA[roomID].tokens,
+      pieces: ALLROOMSDATA[roomID].pieces,
+      hand: ALLROOMSDATA[roomID].hand[username],
+    });
+    // add user to the user array here
+    console.log(`User ${username} joined room ${roomID}`);
   });
 
-  socket.on("tableChange", ({ username, roomID, tableData }) => {
+  socket.on("tableChange", ({
+    username,
+    roomID,
+    tableData
+  }) => {
     if (ALLROOMSDATA[roomID] && tableData) {
       ALLROOMSDATA[roomID].cards = tableData.cards;
       ALLROOMSDATA[roomID].deck = tableData.deck;
@@ -104,7 +110,12 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("mouseMove", ({ x, y, username, roomID }) => {
+  socket.on("mouseMove", ({
+    x,
+    y,
+    username,
+    roomID
+  }) => {
     io.to(roomID).emit("mousePositionUpdate", {
       x: x,
       y: y,
@@ -123,7 +134,10 @@ app.get("/api/rooms", async (req, res) => {
   try {
     res.json(await Room.find());
   } catch (err) {
-    res.json({ status: "error", message: err });
+    res.json({
+      status: "error",
+      message: err
+    });
     console.log(err);
   }
 });
@@ -136,76 +150,65 @@ app.get("/api/room", async (req, res) => {
       throw new Error("Room ID is required");
     }
     const roomData = await Room.findOne({ id: id });
-    if (roomData) {
-      res.json(roomData);
-    } else {
+    if (!roomData) {
       res.status(400).json({ status: "error", message: "Invalid room ID" });
+      return;
     }
+    res.json(roomData);
   } catch (err) {
-    res.status(404).json({ status: "error", message: err.message });
+    res.status(404).json({
+      status: "error",
+      message: err.message
+    });
   }
 });
 
 //create room
 app.post("/api/room", async (req, res) => {
   const ROOM_ID_LENGTH = 10;
-  let roomID = 0;
-  let cardDeckId = null;
+  const filterMapItem = (items, itemType) => {
+    return items.reduce((acc, item) => {
+      if (item.type === itemType) return [...acc, item.deck];
+      return acc;
+    }, []);
+  }
   try {
-    do {
+    const deckIds = req.body?.cardDeck;
+    if (!deckIds || deckIds.length < 1) {
+      throw new Error("Error: room body missing/corrupted.");
+    }
+    let roomID = idGenerator(ROOM_ID_LENGTH);
+    while (await Room.findOne({ id: roomID })) {
       roomID = idGenerator(ROOM_ID_LENGTH);
-    } while (await Room.findOne({ id: roomID }));
-    if (!req.body) {
-      throw new Error("Error: No room body provided");
     }
-    if (req.body.cardDeck) {
-      cardDeckId = req.body.cardDeck[0];
-    }
-
-    let allCards;
-
-    // cardDeckId = null;
-    if (cardDeckId === null) {
-      allCards = await Card.find();
-    } else {
-      deck = await Grid.find({ _id: new ObjectId(cardDeckId) });
-      allCards = deck[0].deck;
-    }
-
-    // workaround (for now) for type attribute causing bugs
-    allCards = allCards.map((card) => {
-      return {
-        imageSource: card.imageSource,
-        id: card.id,
-        x: card.x,
-        y: card.y,
-        isFlipped: card.isFlipped,
-        _id: card._id,
-      };
-    });
-
+    
+    const gameItemData = await Grid.find({ _id: { $in: deckIds } });
     const gameRoomData = {
       id: roomID,
       name: req.body.name,
-      image: req.body.image,
-      deck: allCards,
+      deck: filterMapItem(gameItemData, "Card"),
+      tokens: filterMapItem(gameItemData, "Token"),
+      pieces: filterMapItem(gameItemData, "Piece"),
       hand: {},
       cards: [],
     };
 
-    const room = new Room(gameRoomData);
-    const result = await room.save();
+    const result = await Room.create(gameRoomData);
     if (!result) {
       throw new Error("Error: Room not created");
     }
     ALLROOMSDATA[roomID] = gameRoomData;
     res.json(result);
   } catch (err) {
-    res.json({ status: "error", message: err });
+    res.json({
+      status: "error",
+      message: err
+    });
     console.log(err);
   }
 });
 
+// Register
 // createAccount
 app.post("/api/register", async (req, res) => {
   const newUser = new User({
@@ -213,17 +216,26 @@ app.post("/api/register", async (req, res) => {
     email: req.body.email,
     password: req.body.password,
   });
+  console.log(newUser);
   try {
-    if (await User.findOne({ username: req.body.username })) {
+    if (await User.findOne({
+        username: req.body.username
+      })) {
       throw new Error("Username already exists");
     }
     const result = await newUser.save();
     if (!result) {
       throw new Error("Error: User failed to be created");
     }
-    res.json({ status: "success", message: "User created", user: newUser });
+    res.json({
+      status: "success",
+      message: "User created",
+      user: newUser
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      message: err.message
+    });
   }
 });
 
@@ -232,18 +244,32 @@ app.post("/api/login", async (req, res) => {
   try {
     const user = await User.findOne({
       username: req.body.username,
-      password: req.body.password,
     });
     if (!user) {
       throw new Error("Invalid username or password");
     }
+
+    const passwordMatch = await bcryptjs.compare(req.body.password, user.password);
+    if (!passwordMatch) {
+      throw new Error("Invalid password");
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
     res.json({
       status: "success",
       message: "User login successful",
       user: user,
+      token: token,
     });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      message: err.message
+    });
   }
 });
 
@@ -251,16 +277,20 @@ app.get("/api/games", async (req, res) => {
   try {
     let games = null;
     if (req.query.gameId) {
-      games = await Game.findOne({ _id: new ObjectId(req.query.gameId) });
+      games = await Game.findOne({
+        _id: new ObjectId(req.query.gameId)
+      });
     } else {
-      games = await Game.find({ creator: new ObjectId(req.query.creatorId) });
+      games = await Game.find({
+        creator: new ObjectId(req.query.creatorId)
+      });
     }
     if (!games) {
       throw new Error("No games");
     }
-    res.status(200).send({ 
-      message: "Games received", 
-      savedGames: games 
+    res.status(200).send({
+      message: "Games received",
+      savedGames: games
     });
 
   } catch (err) {
@@ -269,39 +299,62 @@ app.get("/api/games", async (req, res) => {
   }
 });
 
-app.use(bodyParser.urlencoded({ extended: false }));
-
 //Image Upload REST APIs Deck making logics
-app.post("/api/upload", upload.single("image"), async (req, res) => {
+app.post("/api/upload",
+          upload.fields([{
+            name: "image", maxCount: 1}, {
+            name: "backFile", maxCount: 1}]), async (req, res) => {
   try {
-    const totalCards = parseInt(req.body.totalCards);
-    const cardDeckName = req.file.filename;
+    const { image, backFile } = req.files;
+    const [{ filename: facefile, mimetype: faceType }] = image;
+    const {
+      isLandscape,
+      isSameBack,
+      itemType,
+      numAcross,
+      numDown,
+      numTotal
+    } = req.body;
+
     const imageData = fs.readFileSync(
-      path.join(__dirname + "/uploads/" + req.file.filename)
+      path.join(__dirname + "/uploads/" + facefile)
     );
 
-    const numCols = parseInt(req.body.cardsAcross);
-    const numRows = parseInt(req.body.cardsDown);
+    const cardArray = await sliceImages(imageData, numAcross, numDown);
+    const cardDocuments = await createCardObjects(cardArray, backFile, faceType, isLandscape, itemType);
 
-    cardArray = await sliceImages(imageData, numCols, numRows);
+      const cardDeck = {
+        name: facefile,
+        numCards: parseInt(numTotal),
+        imageGrid: {
+          data: imageData,
+          contentType: faceType,
+        },
+        deck: cardDocuments,
+        type: itemType,
+      };
 
-    let cardDocuments = await createCardObjects(cardArray);
+      console.log(cardDeck);
 
-    const cardDeck = {
-      name: cardDeckName,
-      numCards: totalCards,
-      imageGrid: {
-        data: imageData,
-        contentType: "image/png",
-      },
-      deck: cardDocuments,
-    };
-
-    const result = await Grid.create(cardDeck);
     res.status(200).send({
-      message: "Grid inserted successfully",
-      newDeckId: result._id,
-      displayDeck: cardDocuments,
+      message: "Deck created successfully",
+      newItem: cardDeck,
+    });
+  } catch (error) {
+    console.error("Failed to insert grid", error);
+    res.status(500).send("Failed to insert grid");
+  }
+});
+
+//Image Upload REST APIs Deck making logics
+app.post("/api/addDecks", async (req, res) => {
+  try {
+    const gameObject = req.body;
+    await CardV2.create(gameObject.deck);
+    console.log(gameObject);
+    const result = await Grid.create(gameObject);
+    res.status(200).send({
+      deckId: result._id,
     });
   } catch (error) {
     console.error("Failed to insert grid", error);
@@ -311,19 +364,22 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
 
 app.post("/api/saveGame", async (req, res) => {
   try {
-    let name = req.body.name; //Game name.
-    let numPlayers = parseInt(req.body.players);
-    let creatorId = req.body.creatorId; //id for the creator of the game
-    let carDeckId = req.body.newDeckId;
+    const {
+      name,
+      players,
+      creatorId,
+      newDeckIds,
+    } = req.body;
+    console.log(req.body)
     if (creatorId) {
       //Create a game now
       const gameObject = {
-        name: name,
-        players: numPlayers,
+        name: name.substring(0, 20),
+        players: parseInt(players),
         creator: new ObjectId(creatorId),
-        cardDeck: [new ObjectId(carDeckId)],
+        cardDeck: newDeckIds.map((id) => new ObjectId(id)),
       };
-      const result = await Game.create(gameObject);
+      await Game.create(gameObject);
       res.status(200).send("Game created successfully");
     }
   } catch (error) {
@@ -332,61 +388,77 @@ app.post("/api/saveGame", async (req, res) => {
   }
 });
 
-const sliceImages = async (BufferData, cols, rows) => {
-  cardArray = [];
-  const inputBuffer = Buffer.from(BufferData);
-  const numCols = cols;
-  const numRows = rows;
+const sliceImages = async (ImageData, cols, rows) => {
+  const cardArray = [];
+  const inputBuffer = Buffer.from(ImageData);
+  const numCols = parseInt(cols);
+  const numRows = parseInt(rows);
+  const imageInput = sharp(inputBuffer);
+  const { width: imgWidth, height: imgHeight } = await imageInput.metadata();
 
-  const inputImage = sharp(inputBuffer);
-  const metadata = await inputImage.metadata();
-
-  const cardWidth = Math.floor(metadata.width / numCols);
-  const cardHeight = Math.floor(metadata.height / numRows);
+  const cardWidth = Math.floor(imgWidth / numCols);
+  const cardHeight = Math.floor(imgHeight / numRows);
 
   // extract the cards
   for (let i = 0; i < numRows; i++) {
+    const y = i * cardHeight;
     for (let j = 0; j < numCols; j++) {
-      const input = sharp(inputBuffer); //Need to create instance every time as extract alters the instance.
-      let x = j * cardWidth;
-      let y = i * cardHeight;
+      const input = sharp(inputBuffer);
+      const x = j * cardWidth;
 
-      let cardImage;
       if (
-        x + cardWidth <= metadata.width &&
-        y + cardHeight <= metadata.height
+        x + cardWidth <= imgWidth &&
+        y + cardHeight <= imgHeight
       ) {
-        cardImage = await input
-          .extract({ left: x, top: y, width: cardWidth, height: cardHeight })
-          .toBuffer();
-        cardArray.push(cardImage);
+        await input
+          .extract({
+            left: x,
+            top: y,
+            width: cardWidth,
+            height: cardHeight
+          })
+          .toBuffer()
+          .then((res) => {
+            cardArray.push(res);
+          });
       }
     }
   }
   return cardArray;
 };
 
-const createCardObjects = async (cardArray) => {
+const createCardObjects = async (cardArray, backFile, faceType, isLandscape, itemType) => {
   //Card Array consists of buffers for every card in the deck.
-  const cardObjects = [];
+  let backImgBuffer = Buffer.allocUnsafe(1);
+  let backType = "";
+  if (backFile?.length > 0) {
+    const backImgData = fs.readFileSync(
+        path.join(__dirname + "/uploads/" + backFile[0].filename)
+      );
+    backImgBuffer = Buffer.from(backImgData);
+    backType = backFile[0].mimetype;
+  }
 
-  for (const buffer of cardArray) {
-    const cardObject = {
+  return cardArray.map(buffer => ({
       id: uuidv4(),
       x: 600,
       y: 200,
       imageSource: {
-        data: buffer,
-        contentType: "image/png",
-      },
-      type: "front",
-      isFlipped: false,
-    };
-    await CardV2.create(cardObject);
-    cardObjects.push(cardObject);
-  }
+        front: {
+          data: buffer,
+          contentType: faceType,
+        },
+        back: {
+          data: backImgBuffer,
+          contentType: backType,
+        }
 
-  return cardObjects;
+      },
+      pile: [],
+      type: itemType,
+      isFlipped: false,
+      isLandscape: !!isLandscape,
+    }));
 };
 
 if (process.env.NODE_ENV === "production") {

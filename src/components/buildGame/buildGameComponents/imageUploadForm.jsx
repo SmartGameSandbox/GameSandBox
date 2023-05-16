@@ -1,45 +1,34 @@
 import "./imageUploadForm.css";
-import React, { useState } from "react";
-import { SMARTButton } from "../../button/button";
+import { useState } from "react";
 import axios from "axios";
+import { SMARTButton } from "../../button/button";
+import { BASE_URL } from '../../../util/constants'
 
-const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
-
-  const [inputs, setInputs] = useState({});
-  const [isChecked, setIsChecked] = useState(false);
-
-  const handleChange = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setInputs((values) => ({ ...values, [name]: value }));
-  };
+const ImageUploadForm = ({
+  closePopup,
+  setThumbnails,
+  setDecks,
+  setTokens,
+  setPieces,
+ }) => {
+  const [isSingleBack, setIsSingleBack] = useState(false);
+  const [isLandScape, setIsLandScape] = useState(false);
+  const [itemType, setItemType] = useState("Card");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("image", images[0]);
-    formData.append("cardsAcross", inputs.numAcross);
-    formData.append("cardsDown", inputs.numDown);
-    formData.append("totalCards", inputs.numTotal);
-    formData.append("hasSameBack", isChecked);
-
-    // todo: move to constant
-    const url =
-      process.env.NODE_ENV === "production"
-        ? "https://smartgamesandbox.herokuapp.com"
-        : "http://localhost:8000";
+    const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
+    const [imgSrc] = e.currentTarget[0].files;
+    const formData = new FormData(e.currentTarget);
+    formData.append("itemType", itemType);
 
     axios
-      .post(`${url}/api/upload`, formData, {
+      .post(`${BASE_URL}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
-      .then(async (res) => {
-        console.log(res);
-        const deckUploaded = await res.data.displayDeck;
-        await setDeck(deckUploaded);
-        localStorage.setItem("newDeckId", res.data.newDeckId);
-
+      .then(({ data: { newItem } }) => {
+        setThumbnails(prevThumbnails => [...prevThumbnails, {imgSrc, name: newItem.name, itemType}]);
+        setters[itemType](prevItems => [...prevItems, newItem]);
         closePopup();
       })
       .catch((err) => console.log(err));
@@ -48,86 +37,122 @@ const ImageUploadForm = ({ closePopup, images, onImageChange, setDeck }) => {
   return (
     <div className="bg-form">
       <form onSubmit={handleSubmit}>
+      <div className="row">
+          <label>Item Type:</label>
+          <div style={{width: "50%", display: "flex", justifyContent: "space-between"}}>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Card")}`}
+              onClick={() => {setItemType("Card")}}
+            >   
+              Card
+            </div>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Token")}`}
+              onClick={() => {setItemType("Token")}}
+            >
+              Token
+            </div>
+            <div
+              className={`bg-itemtype-button ${checkItemType("Piece")}`}
+              onClick={() => {setItemType("Piece")}}
+            >
+              Piece
+            </div>
+          </div>
+        </div>
+
         <div className="row">
-          <label>Upload Image Grid:</label>
+          <label>Upload Face Grid:</label>
           <input
             type="file"
             multiple
             name="image"
-            id="image"
             accept="image/*"
-            onChange={onImageChange}
             required
           />
         </div>
 
-        {/* <div className="row">
-          <label>Upload Image Grid (back page):</label>
+        <div className={`row ${itemType === 'Piece' ? 'hide' : ''}`}>
+          <label>Upload Back Grid/Image:</label>
           <input
             type="file"
             multiple
             accept="image/*"
             name="backFile"
-            onChange={onImageChange}
           />
-        </div> */}
+        </div>
 
         <div className="row">
-          <label>Number of Cards Across:</label>
+          <label>{`Number of ${itemType}s Across:`}</label>
           <input
             type="number"
             name="numAcross"
-            value={inputs.numAcross || ""}
-            onChange={handleChange}
+            defaultValue={1}
+            min={1}
           />
         </div>
 
         <div className="row">
-          <label>Number of Cards Down:</label>
+          <label>{`Number of ${itemType}s Down:`}</label>
           <input
             type="number"
             name="numDown"
-            value={inputs.numDown || ""}
-            onChange={handleChange}
+            defaultValue={1}
+            min={1}
           />
         </div>
 
         <div className="row">
-          <label>Numer of Cards In Deck:</label>
+          <label>{`Total Number of ${itemType}s:`}</label>
           <input
             type="number"
             name="numTotal"
-            value={inputs.numTotal || ""}
-            onChange={handleChange}
+            defaultValue={1}
+            min={1}
           />
         </div>
 
-        <div className="checkbox-wrapper">
+        <div className={`checkbox-wrapper ${itemType === 'Piece' ? 'hide' : ''}`}>
           <div>
+            <label>{`Same back for all ${itemType}s?`}</label>
             <input
               type="checkbox"
-              className={isChecked ? "checked" : ""}
-              checked={isChecked}
-              onChange={() => setIsChecked((prev) => !prev)}
+              name="isSameBack"
+              className={isSingleBack ? "checked" : ""}
+              checked={isSingleBack}
+              onChange={() => setIsSingleBack(!isSingleBack)}
             />
-            <span>Same back for all cards? </span>
+          </div>
+          <div className={itemType !== 'Card' ? 'hide' : ""}>
+            <label>Landscape</label>
+            <input
+              type="checkbox"
+              name="isLandscape"
+              className={isLandScape ? "checked" : ""}
+              checked={isLandScape}
+              onChange={() => setIsLandScape(!isLandScape)}
+            />
           </div>
         </div>
 
-        <div className="row">
+        <div className="row last">
           <SMARTButton
             type="submit"
-            className="bg-createGameBtn"
             theme="secondary"
             size="large"
             variant="contained"
           >
-            Create Game
+            Create Item
           </SMARTButton>
         </div>
       </form>
     </div>
   );
+
+  function checkItemType(inputType) {
+    if (inputType === itemType) return "active";
+    return "bg-itemtype-button";
+  } 
 };
 
 export default ImageUploadForm;
