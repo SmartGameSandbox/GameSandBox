@@ -1,11 +1,11 @@
 
 // Hand Constants
 export const HAND_WIDTH = 1400
-export const HAND_HEIGHT = 120
+export const HAND_HEIGHT = 250
 export const CARD_DIVIDER_WIDTH_X = 30
 
 // Canvas Constants
-export const CANVAS_HEIGHT = 600;
+export const CANVAS_HEIGHT = 800;
 export const CANVAS_WIDTH = 1300;
 
 // Card Constants
