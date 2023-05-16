@@ -32,11 +32,7 @@ const Games = () => {
     const { cardDeck, name } = game;
 
     await axios
-      .post(`${BASE_URL}/api/room`, {
-        name,
-        image: null,
-        cardDeck,
-      })
+      .post(`${BASE_URL}/api/room`, { name, cardDeck })
       .then((response) => {
         window.location.href = `/room?id=${response.data.id}`;
       })

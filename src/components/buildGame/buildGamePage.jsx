@@ -5,12 +5,21 @@ import { FaArrowLeft, FaEdit, FaSave } from "react-icons/fa";
 import "./buildGamePage.css";
 import BottomToolbar from "./buildGameComponents/bottomToolbar";
 import { SMARTButton } from "../button/button";
+import {
+  CARD_HEIGHT,
+  CANVAS_HEIGHT,
+  HAND_HEIGHT,
+  CARD_WIDTH,
+  CANVAS_WIDTH,
+} from "../../util/constants";
 
 const BuildGamePage = () => {
 
   const location = useLocation();
   const [header, setHeader] = useState(location.state.name);
   const [displayCards, setDisplayCards] = useState([]);
+  const [displayTokens, setDisplayTokens] = useState([]);
+  const [displayPieces, setDisplayPieces] = useState([]);
   const [editHeader, setEditHeader] = useState(false);
 
   const gameName = useRef(location.state.name);
@@ -46,7 +55,6 @@ const BuildGamePage = () => {
 
   return (
     <>
-      <div className="bgame-container"></div>
       <div className="bgame-header">
         <SMARTButton
           variant="text"
@@ -77,14 +85,13 @@ const BuildGamePage = () => {
       </div>
 
       <div className="bgame-tabletop">
-        <Stage width={8 + window.innerWidth / 1.7} height={window.innerHeight * 0.64}>
+        <Stage width={CANVAS_WIDTH} height={CANVAS_HEIGHT - HAND_HEIGHT}>
           <Layer id="layer">
             <Rect
-              x={4}
-              y={window.innerHeight / 20}
-              width={window.innerWidth / 1.7}
-              height={window.innerHeight / 2}
-              cornerRadius={200}
+              x={0}
+              y={0}
+              width={CANVAS_WIDTH}
+              height={CANVAS_HEIGHT-HAND_HEIGHT}
               stroke="#163B6E"
               strokeWidth={5}
               fill="#EBEBEB"
@@ -94,14 +101,40 @@ const BuildGamePage = () => {
                 <Image
                 key={`${index}-${index2}`}
                 image={img}
-                x={(index+1)*120 + index2}
-                y={window.innerHeight / 5 - index2}
-                width={window.innerWidth / 20}
-                height={window.innerHeight / 8}
+                x={(index+1)*150 + index2}
+                y={window.innerHeight / 4 - index2}
+                width={CARD_WIDTH}
+                height={CARD_HEIGHT}
                 draggable
                 stroke="#163B6E"
                 strokeWidth={5}
-                rotation = {item.isLandscape ? 90 : 0}
+                rotation = {img.className === "landscape" ? 90 : 0}
+              />
+              ))
+            ))}
+            {displayTokens.map((item, index) => (
+              item.map((img, index2) => (
+                <Image
+                key={`${index}-${index2}`}
+                image={img}
+                x={(index+1)*150 + index2}
+                y={window.innerHeight / 3 - index2 + CARD_WIDTH}
+                width={CARD_WIDTH}
+                height={CARD_WIDTH}
+                draggable
+              />
+              ))
+            ))}
+            {displayPieces.map((item, index) => (
+              item.map((img, index2) => (
+                <Image
+                key={`${index}-${index2}`}
+                image={img}
+                x={(index+1)*150 + index2}
+                y={window.innerHeight / 9  - index2}
+                width={CARD_WIDTH}
+                height={CARD_HEIGHT}
+                draggable
               />
               ))
             ))}
@@ -109,7 +142,11 @@ const BuildGamePage = () => {
         </Stage>
       </div>
       <div className="bgame-toolbar">
-        <BottomToolbar setDisplayCards = {setDisplayCards}/>
+        <BottomToolbar 
+          setDisplayCards={setDisplayCards}
+          setDisplayTokens={setDisplayTokens}
+          setDisplayPieces={setDisplayPieces}
+        />
       </div>
     </>
   );

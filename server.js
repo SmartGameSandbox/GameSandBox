@@ -83,6 +83,8 @@ io.on("connection", async (socket) => {
     io.to(socket.id).emit("tableReload", {
       cards: ALLROOMSDATA[roomID].cards,
       deck: ALLROOMSDATA[roomID].deck,
+      tokens: ALLROOMSDATA[roomID].tokens,
+      pieces: ALLROOMSDATA[roomID].pieces,
       hand: ALLROOMSDATA[roomID].hand[username],
     });
     // add user to the user array here
@@ -164,6 +166,12 @@ app.get("/api/room", async (req, res) => {
 //create room
 app.post("/api/room", async (req, res) => {
   const ROOM_ID_LENGTH = 10;
+  const filterMapItem = (items, itemType) => {
+    return items.reduce((acc, item) => {
+      if (item.type === itemType) return [...acc, item.deck];
+      return acc;
+    }, []);
+  }
   try {
     const deckIds = req.body?.cardDeck;
     if (!deckIds || deckIds.length < 1) {
@@ -174,14 +182,13 @@ app.post("/api/room", async (req, res) => {
       roomID = idGenerator(ROOM_ID_LENGTH);
     }
     
-    const decks = await Grid.find({ _id: { $in: deckIds } });
-    const cardPiles = decks.map(({deck}) => deck);
-
+    const gameItemData = await Grid.find({ _id: { $in: deckIds } });
     const gameRoomData = {
       id: roomID,
       name: req.body.name,
-      image: req.body.image,
-      deck: cardPiles,
+      deck: filterMapItem(gameItemData, "Card"),
+      tokens: filterMapItem(gameItemData, "Token"),
+      pieces: filterMapItem(gameItemData, "Piece"),
       hand: {},
       cards: [],
     };
@@ -293,38 +300,45 @@ app.get("/api/games", async (req, res) => {
 });
 
 //Image Upload REST APIs Deck making logics
-app.post("/api/upload", upload.array("image", 2), async (req, res) => {
+app.post("/api/upload",
+          upload.fields([{
+            name: "image", maxCount: 1}, {
+            name: "backFile", maxCount: 1}]), async (req, res) => {
   try {
-    const totalCards = parseInt(req.body.totalCards);
-    const cardDeckName = req.files[0].filename;
+    const { image, backFile } = req.files;
+    const [{ filename: facefile, mimetype: faceType }] = image;
+    const {
+      isLandscape,
+      isSameBack,
+      itemType,
+      numAcross,
+      numDown,
+      numTotal
+    } = req.body;
+
     const imageData = fs.readFileSync(
-      path.join(__dirname + "/uploads/" + req.files[0].filename)
-    );
-    const backImgData= fs.readFileSync(
-      path.join(__dirname + "/uploads/" + req.files[1].filename)
+      path.join(__dirname + "/uploads/" + facefile)
     );
 
-    const numCols = parseInt(req.body.cardsAcross);
-    const numRows = parseInt(req.body.cardsDown);
-
-    const cardArray = await sliceImages(imageData, numCols, numRows);
-
-
-    let cardDocuments = await createCardObjects(cardArray, req.body.isLandscape, backImgData);
+    const cardArray = await sliceImages(imageData, numAcross, numDown);
+    const cardDocuments = await createCardObjects(cardArray, backFile, faceType, isLandscape, itemType);
 
       const cardDeck = {
-        name: cardDeckName,
-        numCards: totalCards,
+        name: facefile,
+        numCards: parseInt(numTotal),
         imageGrid: {
           data: imageData,
-          contentType: "image/png",
+          contentType: faceType,
         },
         deck: cardDocuments,
+        type: itemType,
       };
+
+      console.log(cardDeck);
 
     res.status(200).send({
       message: "Deck created successfully",
-      newDeck: cardDeck,
+      newItem: cardDeck,
     });
   } catch (error) {
     console.error("Failed to insert grid", error);
@@ -337,6 +351,7 @@ app.post("/api/addDecks", async (req, res) => {
   try {
     const gameObject = req.body;
     await CardV2.create(gameObject.deck);
+    console.log(gameObject);
     const result = await Grid.create(gameObject);
     res.status(200).send({
       deckId: result._id,
@@ -375,72 +390,74 @@ app.post("/api/saveGame", async (req, res) => {
 const sliceImages = async (ImageData, cols, rows) => {
   const cardArray = [];
   const inputBuffer = Buffer.from(ImageData);
-  const numCols = cols;
-  const numRows = rows;
+  const numCols = parseInt(cols);
+  const numRows = parseInt(rows);
+  const imageInput = sharp(inputBuffer);
+  const { width: imgWidth, height: imgHeight } = await imageInput.metadata();
 
-  const inputImage = sharp(inputBuffer);
-  const metadata = await inputImage.metadata();
-
-  const cardWidth = Math.floor(metadata.width / numCols);
-  const cardHeight = Math.floor(metadata.height / numRows);
+  const cardWidth = Math.floor(imgWidth / numCols);
+  const cardHeight = Math.floor(imgHeight / numRows);
 
   // extract the cards
   for (let i = 0; i < numRows; i++) {
+    const y = i * cardHeight;
     for (let j = 0; j < numCols; j++) {
-      const input = sharp(inputBuffer); //Need to create instance every time as extract alters the instance.
-      let x = j * cardWidth;
-      let y = i * cardHeight;
+      const input = sharp(inputBuffer);
+      const x = j * cardWidth;
 
-      let cardImage;
       if (
-        x + cardWidth <= metadata.width &&
-        y + cardHeight <= metadata.height
+        x + cardWidth <= imgWidth &&
+        y + cardHeight <= imgHeight
       ) {
-        cardImage = await input
+        await input
           .extract({
             left: x,
             top: y,
             width: cardWidth,
             height: cardHeight
           })
-          .toBuffer();
-        cardArray.push(cardImage);
+          .toBuffer()
+          .then((res) => {
+            cardArray.push(res);
+          });
       }
     }
   }
   return cardArray;
 };
 
-const createCardObjects = async (cardArray, isLandscape, backImgData) => {
+const createCardObjects = async (cardArray, backFile, faceType, isLandscape, itemType) => {
   //Card Array consists of buffers for every card in the deck.
-  const cardObjects = [];
-  const backImgBuffer = Buffer.from(backImgData);
+  let backImgBuffer = Buffer.allocUnsafe(1);
+  let backType = "";
+  if (backFile?.length > 0) {
+    const backImgData = fs.readFileSync(
+        path.join(__dirname + "/uploads/" + backFile[0].filename)
+      );
+    backImgBuffer = Buffer.from(backImgData);
+    backType = backFile[0].mimetype;
+  }
 
-  for (const buffer of cardArray) {
-    const cardObject = {
+  return cardArray.map(buffer => ({
       id: uuidv4(),
       x: 600,
       y: 200,
       imageSource: {
         front: {
           data: buffer,
-          contentType: "image/png",
+          contentType: faceType,
         },
         back: {
           data: backImgBuffer,
-          contentType: "image/png",
+          contentType: backType,
         }
 
       },
       pile: [],
-      type: "front",
+      type: itemType,
       isFlipped: false,
-      isLandscape: isLandscape === "true", // value passed in as string
-    };
-    cardObjects.push(cardObject);
-  }
-
-  return cardObjects;
+      isLandscape: !!isLandscape,
+    }));
 };
 
 if (process.env.NODE_ENV === "production") {
