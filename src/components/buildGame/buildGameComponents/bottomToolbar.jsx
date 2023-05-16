@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AppBar from "@mui/material/AppBar";
@@ -11,30 +11,111 @@ import { BASE_URL } from '../../../util/constants'
 const Buffer = require("buffer").Buffer;
 
 
-const BottomToolbar = ({setDisplayCards}) => {
+const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) => {
 
   const location = useLocation();
   const navigate = useNavigate();
 
   const [showForm, setShowForm] = useState(false);
 
-  const [images, setImages] = useState([]);
-  const [imageURLs, setImageURLs] = useState([]);
+  const [thumbnails, setThumbnails] = useState([]);
   const [decks, setDecks] = useState([]);
+  const [tokens, setTokens] = useState([]);
+  const [pieces, setPieces] = useState([]);
+
+  const nodeRef = useRef(null);
 
   useEffect(() => {
-    if (images.length < 1) return;
-    const newImageURLs = [];
-    images.forEach((image) => newImageURLs.push(URL.createObjectURL(image)));
-    setImageURLs(newImageURLs);
-  }, [images]);
+    setTimeout(() => {
+      setDisplayCards(createImages(decks));
+    }, 100);
+  }, [decks, setDisplayCards]);
 
-  const onImageChange = (e) => {
-    setImages([...images, ...e.target.files]);
-  };
+  useEffect(() => {
+    setTimeout(() => {
+      setDisplayTokens(createImages(tokens));
+    }, 100);
+  }, [tokens, setDisplayTokens]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setDisplayPieces(createImages(pieces));
+    }, 100);
+  }, [pieces, setDisplayPieces]);
+
+  return (
+    <>
+      <AppBar
+        position="static"
+        style={{ backgroundColor: "#163B6E", borderRadius: "20px" }}
+      >
+        <div className="tb-container">
+          <div className="bt-IconBtnContainer">
+            <SMARTIconButton
+              theme="secondary"
+              size="large"
+              variant="contained"
+              onClick={() => setShowForm(true)}
+            >
+              <FaPlus />
+            </SMARTIconButton>
+              {thumbnails.map(({ imgSrc, name, itemType }, key) => (
+                <div
+                  key={key}
+                  className={`image-preview ${itemType}`}
+                  style={{backgroundImage: `url('${URL.createObjectURL(imgSrc)}')`}}
+                  onMouseOver={(e) => {e.target.innerText = "X"}}
+                  onMouseLeave={(e) => {e.target.innerText = ""}}
+                  onClick={() => {deleteItem(name, itemType)}}
+                />
+              ))}
+          </div>
+
+          <div className="bt-BtnContainer">
+            <SMARTButton
+              theme="secondary"
+              size="large"
+              variant="contained"
+              onClick={handleSave}
+              style={{
+                marginRight: "10px",
+              }}
+            >
+              SAVE GAME
+            </SMARTButton>
+          </div>
+        </div>
+      </AppBar>
+      <Modal
+        title="Upload Item"
+        onClose={() => setShowForm(false)}
+        show={showForm}
+        nodeRef={nodeRef}
+      >
+        <ImageUploadForm
+          closePopup={() => setShowForm(false)}
+          setThumbnails={setThumbnails}
+          setDecks={setDecks}
+          setTokens={setTokens}
+          setPieces={setPieces}
+        />
+      </Modal>
+    </>
+  );
+
+  function deleteItem(deletedName, deletedType) {
+    const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
+    setters[deletedType](prevItems => {
+      return prevItems.filter(({name}) => name !== deletedName);
+    });
+    setThumbnails(prevThumbnails => {
+      return prevThumbnails.filter(({name}) => name !== deletedName);
+    });
+  }
 
   function handleSave() {
-    const promises = decks.map((obj) => {
+    const items = [...decks, ...tokens, ...pieces];
+    const promises = items.map((obj) => {
       return axios
               .post(`${BASE_URL}/api/addDecks`, obj, {
                 headers: { "Content-Type": "application/json" }
@@ -60,82 +141,17 @@ const BottomToolbar = ({setDisplayCards}) => {
       .catch((err) => console.log(err));
   }
 
-  useEffect(() => {
-    const cardImages = [];
-    decks.forEach(({ deck }) => {
-      const currentDeck = [];
-      for (const imageObject of deck) {
+  function createImages(state) {
+    return state.map(({ deck }) => {
+      return deck.map(imageObject => {
         const img = new window.Image();
         img.src = `data:image/${
           imageObject.imageSource.front.contentType
         };base64,${Buffer.from(imageObject.imageSource.front.data).toString("base64")}`;
-        img.onload = async () => {
-          currentDeck.push(img);
-        };
-      }
-      cardImages.push(currentDeck);
+        img.className = imageObject.isLandscape ? 'landscape' : '';
+        return img;
+      });
     });
-    setTimeout(() => {
-      setDisplayCards(cardImages);
-    }, 100);
-  }, [decks, setDisplayCards]);
-
-  return (
-    <>
-      <AppBar
-        position="static"
-        style={{ backgroundColor: "#163B6E", borderRadius: "20px" }}
-      >
-        <div className="tb-container">
-          <div className="bt-IconBtnContainer">
-            <SMARTIconButton
-              theme="secondary"
-              size="large"
-              variant="contained"
-              onClick={() => setShowForm(true)}
-            >
-              <FaPlus />
-            </SMARTIconButton>
-              {imageURLs.map((imageSrc, key) => (
-                <div
-                  key={key}
-                  className="image-preview"
-                  style={{backgroundImage: `url('${imageSrc}')`}}
-                />
-              ))}
-          </div>
-
-          <div className="bt-BtnContainer">
-            <SMARTButton
-              theme="secondary"
-              size="large"
-              variant="contained"
-              onClick={handleSave}
-              style={{
-                marginRight: "10px",
-              }}
-            >
-              SAVE
-            </SMARTButton>
-          </div>
-        </div>
-      </AppBar>
-      <Modal
-        title="Upload Item"
-        onClose={() => setShowForm(false)}
-        show={showForm}
-      >
-        <ImageUploadForm
-          closePopup={() => setShowForm(false)}
-          images={images}
-          onImageChange={onImageChange}
-          imageURLs={imageURLs}
-          setImageURLs={setImageURLs}
-          setDecks={setDecks}
-          decks={decks}
-        />
-      </Modal>
-    </>
-  );
+  }
 }
 export default BottomToolbar;

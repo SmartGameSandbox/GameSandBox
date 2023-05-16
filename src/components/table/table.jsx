@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
-import {Group, Image, Layer, Rect, Text} from "react-konva";
+import { useState, useEffect } from "react";
+import { Group, Layer, Rect, Image } from "react-konva";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import Cursors from "../cursor/cursors";
 import Hand from "../hand/hand";
 import Deck from "../deck/deck";
+import Token from "../deck/token";
+import Piece from "../deck/piece";
 import RightClickMenu from './rightClickMenu';
 import useImage from "use-image";
 import handIcon from "../icons/hand-regular.png";
@@ -18,92 +20,52 @@ const Table = ({ socket, username, roomID }) => {
 
 
   useEffect(() => {
-    if (canEmit && tableData) {
-      socket.emit("tableChange", { username, roomID, tableData },
-        (err) => {if (err) console.error(err);}
-      );
-    }
+    if (!canEmit || !tableData) return;
+    socket.emit("tableChange", { username, roomID, tableData },
+      (err) => {if (err) console.error(err);}
+    );
   }, [tableData, canEmit, roomID, username, socket]);
 
   useEffect(() => {
-    socket.on("tableReload", ({ cards, deck, hand }) => {
-      const cardsInDeck = deck.map(pile => pile.map(({id}) => id));
-      setTableData({ cards, deck, hand, cardsInDeck });
+    socket.on("tableReload", (data) => {
+      const cardsInDeck = data.deck.map(pile => pile.map(({id}) => id));
+      setTableData({ ...data, cardsInDeck });
     });
 
     socket.on("tableChangeUpdate", (data) => {
-      if (data.username !== username) {
-        setCanEmit(false);
-        setTableData((prevTable) => {
-          prevTable.cards = data.tableData.cards;
-          prevTable.deck = data.tableData.deck;
-          return { ...prevTable };
-        });
-      }
+      if (data.username === username) return;
+      setCanEmit(false);
+      setTableData((prevTable) => ({
+        ...prevTable,
+        cards: data.tableData.cards,
+        deck: data.tableData.deck,
+        pieces: data.tableData.pieces,
+      }));
     });
 
     socket.on("mousePositionUpdate", ({ username: cursorMoved, x, y }) => {
-      if (cursorMoved === username) {
-        return;
-      }
+      if (cursorMoved === username) return;
       // update cursor position in object inside cursors
       setCursors((prevCursors) => {
-        const found = prevCursors.find(
-          (cursor) => cursor.username === cursorMoved
-        );
-        if (found) {
-          return prevCursors.map((cursor) => {
-            if (cursor.username === cursorMoved) {
-              cursor.x = x;
-              cursor.y = y;
-            }
-            return cursor;
-          });
-        }
-        return prevCursors.concat([
-          { username: cursorMoved, x, y },
-        ]);
+        const found = prevCursors.find(({username}) => username === cursorMoved);
+        if (!found) return [...prevCursors, { username: cursorMoved, x, y }];
+        return prevCursors.map((cursor) => {
+          if (cursor.username === cursorMoved) {
+            cursor.x = x;
+            cursor.y = y;
+          }
+          return cursor;
+        });
       });
     });
 
+    // on Unmount(when leaving room, the below happens)
     return () => {
       socket.off("roomCardData");
       socket.off("tableChangeUpdate");
       socket.off("mousePositionUpdate");
     };
   }, [socket, username]);
-
-  const emitMouseChange = (e) => {
-    socket.emit(
-      "mouseMove",
-      {
-        x: e.evt.offsetX,
-        y: e.evt.offsetY,
-        username: username,
-        roomID: roomID,
-      },
-      (err) => {
-        if (err) {
-          alert(err);
-        }
-      }
-    );
-  };
-
-  const onDragMoveCard = (e, cardID) => {
-    setCanEmit(true);
-    setTableData((prevTable) => {
-      // find card in cards array
-      const found = prevTable.cards.find((card) => card.id === cardID);
-      found.x = e.target.attrs.x;
-      found.y = e.target.attrs.y;
-      // move found to the last index of cards array
-      prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
-      prevTable.cards = [...prevTable.cards, found];
-      return { ...prevTable };
-    });
-    emitMouseChange(e);
-  };
 
   const onDragEndCard = (e, cardID) => {
     const position = e.target.attrs;
@@ -220,15 +182,6 @@ const Table = ({ socket, username, roomID }) => {
     });
   };
 
-  const handleContextMenu = (event, cardID) => {
-    event.evt.preventDefault();
-    const { top: konvaTop, left: konvaLeft } = document.querySelector(".konvajs-content").getBoundingClientRect();
-    const {clientY, clientX} = event.evt;
-    setRightClickPos({ x: clientX - konvaLeft, y: clientY - konvaTop });
-    setClickedCardID(cardID);
-  };
-
-  const handleCloseMenu = () => {setRightClickPos({x:null, y:null})}
   const HandImage = () => {
     const [image] = useImage(handIcon)
     return <Image
@@ -240,7 +193,6 @@ const Table = ({ socket, username, roomID }) => {
         height={50}
     />;
   }
-
   return (
     <>
       <Layer onClick={handleCloseMenu}>
@@ -267,7 +219,6 @@ const Table = ({ socket, username, roomID }) => {
           deckIndex={index}
           setCanEmit={setCanEmit}
           setTableData={setTableData}
-          canEmit={canEmit}
           emitMouseChange={emitMouseChange}
         />
         ))}
@@ -282,6 +233,7 @@ const Table = ({ socket, username, roomID }) => {
                       ? card.imageSource.front 
                       : card.imageSource.back}
                 id={card.id}
+                type={card.type}
                 x={card.x}
                 y={card.y}
                 isLandscape={card.isLandscape}
@@ -292,6 +244,26 @@ const Table = ({ socket, username, roomID }) => {
 
           ))
         }
+        {tableData?.tokens?.map((token, index) => (
+          <Token
+          key={`tokens_${index}`}
+          tableData={tableData}
+          deckIndex={index}
+          setCanEmit={setCanEmit}
+          setTableData={setTableData}
+          emitMouseChange={emitMouseChange}
+        />
+        ))}
+        {tableData?.pieces?.map((piece, index) => (
+          <Piece
+          key={`pieces_${index}`}
+          tableData={tableData}
+          deckIndex={index}
+          setCanEmit={setCanEmit}
+          setTableData={setTableData}
+          emitMouseChange={emitMouseChange}
+        />
+        ))}
         {rightClickPos.x !== null && rightClickPos.y !== null && (
           <RightClickMenu
             x={rightClickPos.x}
@@ -302,24 +274,59 @@ const Table = ({ socket, username, roomID }) => {
             setClickedCardID={setClickedCardID}
           />
         )}
-
         <Hand
           tableData={tableData}
           setCanEmit={setCanEmit}
           setTableData={setTableData}
-          canEmit={canEmit}
           emitMouseChange={emitMouseChange}
-          x={"500px"}
-          fill="red"
         />
       </Layer>
       <Layer>
         <HandImage/>
         <Cursors key={`cursor_${username}`} cursors={cursors} />
-
       </Layer>
     </>
   );
+
+  function emitMouseChange(e) {
+    socket.emit("mouseMove",
+      {
+        x: e.evt.offsetX,
+        y: e.evt.offsetY,
+        username: username,
+        roomID: roomID,
+      },
+      (err) => {if (err) {alert(err);}}
+    );
+  }
+
+  function onDragMoveCard(e, cardID) {
+    setCanEmit(true);
+    setTableData((prevTable) => {
+      // find card in cards array
+      const found = prevTable.cards.find((card) => card.id === cardID);
+      found.x = e.target.attrs.x;
+      found.y = e.target.attrs.y;
+      // move found to the last index of cards array
+      prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
+      prevTable.cards = [...prevTable.cards, found];
+      return { ...prevTable };
+    });
+    emitMouseChange(e);
+  }
+
+  function handleCloseMenu() {setRightClickPos({x:null, y:null})}
+
+  function handleContextMenu(event, cardID) {
+    event.evt.preventDefault();
+    const {
+      top: konvaTop,
+      left: konvaLeft
+    } = document.querySelector(".konvajs-content").getBoundingClientRect();
+    const {clientY, clientX} = event.evt;
+    setRightClickPos({ x: clientX - konvaLeft, y: clientY - konvaTop });
+    setClickedCardID(cardID);
+  }
 };
 
 export default Table;

@@ -1,23 +1,20 @@
-import { useRef } from "react";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
-import { Rect } from "react-konva";
+import { Rect, Text } from "react-konva";
 
 // deck data
-const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
-  const isLandScape = useRef(null);
-  isLandScape.current ??= tableData.deck[deckIndex][0].isLandscape;
+const Piece = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
 
   const onDragMoveCard = (e, cardID) => {
     setCanEmit(true);
     setTableData((prevTable) => {
       // find card in cards array
-      const found = prevTable.deck[deckIndex].find((card) => card.id === cardID);
+      const found = prevTable.pieces[deckIndex].find((card) => card.id === cardID);
       found.x = e.target.attrs.x - deckIndex * 140;
       found.y = e.target.attrs.y;
       // move found to the last index of cards array
-      prevTable.deck[deckIndex] = prevTable.deck[deckIndex].filter((card) => card.id !== cardID);
-      prevTable.deck[deckIndex].push(found);
+      prevTable.pieces[deckIndex] = prevTable.pieces[deckIndex].filter((card) => card.id !== cardID);
+      prevTable.pieces[deckIndex].push(found);
       return { ...prevTable };
     });
     emitMouseChange(e);
@@ -37,7 +34,7 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
     ) {
       // deck area movement
       setTableData((prevTable) => {
-        prevTable.deck[deckIndex] = prevTable.deck[deckIndex].map((card) => {
+        prevTable.pieces[deckIndex] = prevTable.pieces[deckIndex].map((card) => {
           if (card.id === cardID) {
             card.x =
               Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
@@ -56,24 +53,28 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
     ) {
       setTableData((prevTable) => {
         // find card in tableData.deck
-        const found = prevTable.deck[deckIndex].find((card) => card.id === cardID);
+        const found = prevTable.pieces[deckIndex].find((card) => card.id === cardID);
         // add card to hand
         prevTable.hand.push(found);
-        found.x = e.target.attrs.x
-        found.y = e.target.attrs.y
-        prevTable.deck[deckIndex] = prevTable.deck[deckIndex].filter((card) => card.id !== cardID);
+        found.x =
+          Constants.HAND_PADDING_X +
+          (prevTable.hand.length - 1) * Constants.HAND_CARD_GAP;
+        found.y =
+          Constants.CANVAS_HEIGHT -
+          Constants.HAND_HEIGHT +
+          Constants.HAND_PADDING_Y;
+        prevTable.pieces[deckIndex] = prevTable.pieces[deckIndex].filter((card) => card.id !== cardID);
         return { ...prevTable };
       });
     } else {
       // deck to table
       setTableData((prevTable) => {
         // find card in tableData.deck
-        const found = prevTable.deck[deckIndex].find((card) => card.id === cardID);
+        const found = prevTable.pieces[deckIndex].find((card) => card.id === cardID);
         found.x = position.x;
         found.y = position.y;
-        // add card to hand
         prevTable.cards.push(found);
-        prevTable.deck[deckIndex] = prevTable.deck[deckIndex].filter((card) => card.id !== cardID);
+        prevTable.pieces[deckIndex] = prevTable.pieces[deckIndex].filter((card) => card.id !== cardID);
         return { ...prevTable };
       });
     }
@@ -82,31 +83,33 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
   return (
     <>
       <Rect
-        key={`deck_square_${deckIndex}`}
-        x={
-          Constants.DECK_STARTING_POSITION_X
-          + deckIndex * 140
-          + (isLandScape.current ? 20 : 0)
-        }
-        y={Constants.DECK_STARTING_POSITION_Y}
-        width={Constants.DECK_AREA_WIDTH}
+        key={`piece_area_${deckIndex}`}
+        x={Constants.CANVAS_WIDTH - Constants.DECK_AREA_WIDTH * tableData.pieces.length - 10}
+        y={10}
+        width={Constants.DECK_AREA_WIDTH * tableData.pieces.length}
         height={Constants.DECK_AREA_HEIGHT}
-        cornerRadius={10}
         fill={"rgba(177, 177, 177, 0.6)"}
-        rotation={isLandScape.current ? 90 : 0} // rotate by 90 degrees if any card is landscape
+      />
+      <Text
+        key={`pieces_label`}
+        x={Constants.CANVAS_WIDTH - Constants.DECK_AREA_WIDTH * tableData.pieces.length - 10}
+        y={10}
+        padding={10}
+        fill={"black"}
+        fontSize={20}
+        text={"pieces"}
       />
 
-      {tableData?.deck?.[deckIndex].map((card) => (
+      {tableData?.pieces?.[deckIndex].map((card, index) => (
           <Card
-            key={`deck_card_${card.id}`}
+            key={`deck_card_${card.id}${index}`}
             src={card.isFlipped 
                   ? card.imageSource.front 
                   : card.imageSource.back}
             id={card.id}
             type={card.type}
-            x={card.x + deckIndex * 140}
-            y={card.y}
-            isLandscape={card.isLandscape}
+            x={Constants.CANVAS_WIDTH - Constants.DECK_AREA_WIDTH * tableData.pieces.length - Constants.CARD_WIDTH / 2}
+            y={Constants.CARD_HEIGHT / 2}
             onDragEnd={onDragEnd}
             onDragMove={onDragMoveCard}
             draggable
@@ -116,4 +119,4 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
   );
 };
 
-export default Deck;
+export default Piece;

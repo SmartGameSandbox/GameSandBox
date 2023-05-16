@@ -6,6 +6,8 @@ const roomSchema = new Schema({
     name: { type: String, maxlength: 20, required: true },
     cards: { type: Array, required: false },
     deck: { type: Array, required: false },
+    tokens: { type: Array, required: false },
+    pieces: { type: Array, required: false },
     hands: { type: Object, required: false },
     users: {
         type: Array,
@@ -16,7 +18,6 @@ const roomSchema = new Schema({
         type: Date,
         expires: "24h", default: Date.now
     },
-    image: String,
 }, { timestamps: true });
 
 module.exports.roomSchema = roomSchema;
