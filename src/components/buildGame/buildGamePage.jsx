@@ -42,6 +42,7 @@ const BuildGamePage = () => {
     const lastItem = decks.at(-1);
     if (removeItems(lastItem, "Card")) return;
     setItemToAdd({images: createImages(lastItem), type: "Card", name: lastItem.name});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decks]);
 
   useEffect(() => {
@@ -49,6 +50,7 @@ const BuildGamePage = () => {
     const lastItem = tokens.at(-1);
     if (removeItems(lastItem, "Token")) return;
     setItemToAdd({images: createImages(lastItem), type: "Token", name: lastItem.name});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokens]);
 
   useEffect(() => {
@@ -56,6 +58,7 @@ const BuildGamePage = () => {
     const lastItem = pieces.at(-1);
     if (removeItems(lastItem, "Piece")) return;
     setItemToAdd({images: createImages(lastItem), type: "Piece", name: lastItem.name});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pieces]);
 
   return (

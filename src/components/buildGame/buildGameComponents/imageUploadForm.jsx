@@ -37,7 +37,7 @@ const ImageUploadForm = ({
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(({ data: { newItem } }) => {
-        setThumbnails(prevThumbnails => [...prevThumbnails, {faceImage, name: newItem.name, itemType}]);
+        setThumbnails(prevThumbnails => [...prevThumbnails, {faceImage: formData.get('image'), name: newItem.name, itemType}]);
         setters[itemType](prevItems => [...prevItems, newItem]);
         closePopup();
       })
@@ -134,7 +134,7 @@ const ImageUploadForm = ({
             />
           </div>
           <div className={itemType !== 'Card' ? 'hide' : ""}>
-            <label>Landscape</label>
+            <label>Rotate 90°? &#x27F3;</label>
             <input
               type="checkbox"
               name="isLandscape"
@@ -161,15 +161,19 @@ const ImageUploadForm = ({
 
   async function formatImage(file, itemLength) {
     const bitmap = await createImageBitmap(file);
-    const { width, height } = bitmap;
+    let { width, height } = bitmap;
     const size = itemLength * CARD_HEIGHT;
     const ratio = Math.max(size/width, size/height);
     if (width < size || height < size) return file;
+    width *= ratio;
+    height *= ratio;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = height;
     
-    ctx.drawImage(bitmap, 0, 0, width * ratio, height * ratio);
+    ctx.drawImage(bitmap, 0, 0, width, height);
 
     return new Promise(res => {
       canvas.toBlob(blob => res(blob), 'image/webp')

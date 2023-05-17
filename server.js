@@ -15,7 +15,7 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const { Room } = require("./schemas/room");
-const { CardV2 } = require("./schemas/cardv2");
+// const { CardV2 } = require("./schemas/cardv2");
 const { Grid } = require("./schemas/grid");
 const { Game } = require("./schemas/game");
 const { User } = require("./schemas/user");
@@ -315,7 +315,6 @@ app.post("/api/upload",
       numDown,
       numTotal
     } = req.body;
-
     const imageData = fs.readFileSync(
       path.join(__dirname + "/uploads/" + facefile)
     );
@@ -357,8 +356,7 @@ app.post("/api/upload",
 app.post("/api/addDecks", async (req, res) => {
   try {
     const gameObject = req.body;
-    await CardV2.create(gameObject.deck);
-    console.log(gameObject);
+    // await CardV2.create(gameObject.deck);
     const result = await Grid.create(gameObject);
     res.status(200).send({
       deckId: result._id,
@@ -417,7 +415,6 @@ const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true
 
   const cardWidth = Math.floor(imgWidth / numCols);
   const cardHeight = Math.floor(imgHeight / numRows);
-
   if (itemType !== "Piece") {
     if (cardWidth > cardHeight) {
       resize.width = 91;
