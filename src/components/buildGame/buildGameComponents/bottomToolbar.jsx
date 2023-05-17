@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AppBar from "@mui/material/AppBar";
@@ -8,10 +8,10 @@ import Modal from "../../modal/modal";
 import ImageUploadForm from "./imageUploadForm";
 import "./bottomToolbar.css";
 import { BASE_URL } from '../../../util/constants'
-const Buffer = require("buffer").Buffer;
 
 
-const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) => {
+const BottomToolbar = ({
+  decks, setDecks, tokens, setTokens, pieces, setPieces }) => {
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -19,29 +19,8 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
   const [showForm, setShowForm] = useState(false);
 
   const [thumbnails, setThumbnails] = useState([]);
-  const [decks, setDecks] = useState([]);
-  const [tokens, setTokens] = useState([]);
-  const [pieces, setPieces] = useState([]);
 
   const nodeRef = useRef(null);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setDisplayCards(createImages(decks));
-    }, 100);
-  }, [decks, setDisplayCards]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setDisplayTokens(createImages(tokens));
-    }, 100);
-  }, [tokens, setDisplayTokens]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setDisplayPieces(createImages(pieces));
-    }, 100);
-  }, [pieces, setDisplayPieces]);
 
   return (
     <>
@@ -59,11 +38,11 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
             >
               <FaPlus />
             </SMARTIconButton>
-              {thumbnails.map(({ imgSrc, name, itemType }, key) => (
+              {thumbnails.map(({ faceImage, name, itemType }, key) => (
                 <div
                   key={key}
                   className={`image-preview ${itemType}`}
-                  style={{backgroundImage: `url('${URL.createObjectURL(imgSrc)}')`}}
+                  style={{backgroundImage: `url('${URL.createObjectURL(faceImage)}')`}}
                   onMouseOver={(e) => {e.target.innerText = "X"}}
                   onMouseLeave={(e) => {e.target.innerText = ""}}
                   onClick={() => {deleteItem(name, itemType)}}
@@ -115,6 +94,7 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
 
   function handleSave() {
     const items = [...decks, ...tokens, ...pieces];
+    console.log(items);
     const promises = items.map((obj) => {
       return axios
               .post(`${BASE_URL}/api/addDecks`, obj, {
@@ -140,18 +120,5 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
       })
       .catch((err) => console.log(err));
   }
-
-  function createImages(state) {
-    return state.map(({ deck }) => {
-      return deck.map(imageObject => {
-        const img = new window.Image();
-        img.src = `data:image/${
-          imageObject.imageSource.front.contentType
-        };base64,${Buffer.from(imageObject.imageSource.front.data).toString("base64")}`;
-        img.className = imageObject.isLandscape ? 'landscape' : '';
-        return img;
-      });
-    });
-  }
 }
-export default BottomToolbar;
+export default React.memo(BottomToolbar);

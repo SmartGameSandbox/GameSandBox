@@ -319,9 +319,18 @@ app.post("/api/upload",
     const imageData = fs.readFileSync(
       path.join(__dirname + "/uploads/" + facefile)
     );
+    const cardArray = await sliceImages(itemType, imageData, numAcross, numDown, numTotal);
+    let backArray = null;
+    const backType = backFile?.mimetype || "";
 
-    const cardArray = await sliceImages(imageData, numAcross, numDown);
-    const cardDocuments = await createCardObjects(cardArray, backFile, faceType, isLandscape, itemType);
+    if (backFile?.filename) {
+      const backImageData = fs.readFileSync(
+        path.join(__dirname + "/uploads/" + backFile.filename)
+      );
+      backArray = await sliceImages(itemType, backImageData, numAcross, numDown, numTotal, false, isSameBack);
+    }
+    const cardDocuments = await createCardObjects(
+                            cardArray, backArray, faceType, backType, isLandscape, itemType);
 
       const cardDeck = {
         name: facefile,
@@ -333,8 +342,6 @@ app.post("/api/upload",
         deck: cardDocuments,
         type: itemType,
       };
-
-      console.log(cardDeck);
 
     res.status(200).send({
       message: "Deck created successfully",
@@ -387,16 +394,37 @@ app.post("/api/saveGame", async (req, res) => {
   }
 });
 
-const sliceImages = async (ImageData, cols, rows) => {
-  const cardArray = [];
+const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true, isSameBack = false) => {
   const inputBuffer = Buffer.from(ImageData);
+  const imageInput = sharp(inputBuffer);
   const numCols = parseInt(cols);
   const numRows = parseInt(rows);
-  const imageInput = sharp(inputBuffer);
+  const numTotal = parseInt(total);
   const { width: imgWidth, height: imgHeight } = await imageInput.metadata();
+  const resize = {};
+  const extend = itemType === "Card" ? 2 : {};
+  
+  if (!isFace && isSameBack) {
+    if (imgWidth > imgHeight) {
+      resize.width = 91;
+    } else {
+      resize.height = 91;
+    }
+    const formattedImageBuffer = await imageInput.resize(resize).extend(extend).toBuffer()
+    return Array(Math.min(numTotal, cols*rows)).fill(formattedImageBuffer);
+  }
+  const cardArray = [];
 
   const cardWidth = Math.floor(imgWidth / numCols);
   const cardHeight = Math.floor(imgHeight / numRows);
+
+  if (itemType !== "Piece") {
+    if (cardWidth > cardHeight) {
+      resize.width = 91;
+    } else {
+      resize.height = 91;
+    }
+  }
 
   // extract the cards
   for (let i = 0; i < numRows; i++) {
@@ -416,6 +444,8 @@ const sliceImages = async (ImageData, cols, rows) => {
             width: cardWidth,
             height: cardHeight
           })
+          .resize(resize)
+          .extend(extend)
           .toBuffer()
           .then((res) => {
             cardArray.push(res);
@@ -423,32 +453,25 @@ const sliceImages = async (ImageData, cols, rows) => {
       }
     }
   }
-  return cardArray;
+  return cardArray.slice(0, numTotal);
 };
 
-const createCardObjects = async (cardArray, backFile, faceType, isLandscape, itemType) => {
+const createCardObjects = async (
+  cardArray, backArray, faceType, backType, isLandscape, itemType) => {
   //Card Array consists of buffers for every card in the deck.
-  let backImgBuffer = Buffer.allocUnsafe(1);
-  let backType = "";
-  if (backFile?.length > 0) {
-    const backImgData = fs.readFileSync(
-        path.join(__dirname + "/uploads/" + backFile[0].filename)
-      );
-    backImgBuffer = Buffer.from(backImgData);
-    backType = backFile[0].mimetype;
-  }
+  backArray ??= Array(cardArray.length).fill(Buffer.allocUnsafe(1));
 
-  return cardArray.map(buffer => ({
+  return cardArray.map((buffer, index) => ({
       id: uuidv4(),
-      x: 600,
-      y: 200,
+      x: null,
+      y: null,
       imageSource: {
         front: {
           data: buffer,
           contentType: faceType,
         },
         back: {
-          data: backImgBuffer,
+          data: backArray[index],
           contentType: backType,
         }
 

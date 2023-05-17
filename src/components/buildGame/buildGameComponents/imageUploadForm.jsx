@@ -2,7 +2,7 @@ import "./imageUploadForm.css";
 import { useState } from "react";
 import axios from "axios";
 import { SMARTButton } from "../../button/button";
-import { BASE_URL } from '../../../util/constants'
+import { BASE_URL, CARD_HEIGHT } from '../../../util/constants';
 
 const ImageUploadForm = ({
   closePopup,
@@ -18,16 +18,26 @@ const ImageUploadForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
-    const [imgSrc] = e.currentTarget[0].files;
+    
     const formData = new FormData(e.currentTarget);
     formData.append("itemType", itemType);
+    const faceImage = await formatImage(formData.get('image'),
+                        Math.max(formData.get('numAcross'), formData.get('numDown')));
+    formData.set('image', faceImage);
 
+    if (formData.get('backFile').size > 0) {
+      const backImage = await formatImage(formData.get('backFile'),
+                          formData.get('isSameBack')
+                            ? 1
+                            : Math.max(formData.get('numAcross'), formData.get('numDown')));
+      formData.set('backFile', backImage);
+    }
     axios
       .post(`${BASE_URL}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(({ data: { newItem } }) => {
-        setThumbnails(prevThumbnails => [...prevThumbnails, {imgSrc, name: newItem.name, itemType}]);
+        setThumbnails(prevThumbnails => [...prevThumbnails, {faceImage, name: newItem.name, itemType}]);
         setters[itemType](prevItems => [...prevItems, newItem]);
         closePopup();
       })
@@ -148,6 +158,23 @@ const ImageUploadForm = ({
       </form>
     </div>
   );
+
+  async function formatImage(file, itemLength) {
+    const bitmap = await createImageBitmap(file);
+    const { width, height } = bitmap;
+    const size = itemLength * CARD_HEIGHT;
+    const ratio = Math.max(size/width, size/height);
+    if (width < size || height < size) return file;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    ctx.drawImage(bitmap, 0, 0, width * ratio, height * ratio);
+
+    return new Promise(res => {
+      canvas.toBlob(blob => res(blob), 'image/webp')
+    });
+  }
 
   function checkItemType(inputType) {
     if (inputType === itemType) return "active";
