@@ -2,6 +2,8 @@ import { useRef } from "react";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import { Rect } from "react-konva";
+import { onDragMoveCardGA } from "../gameaction/gameaction";
+
 
 // deck data
 const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
@@ -9,18 +11,7 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
   isLandScape.current ??= tableData.deck[deckIndex][0].isLandscape;
 
   const onDragMoveCard = (e, cardID) => {
-    setCanEmit(true);
-    setTableData((prevTable) => {
-      // find card in cards array
-      const found = prevTable.deck[deckIndex].find((card) => card.id === cardID);
-      found.x = e.target.attrs.x - deckIndex * 140;
-      found.y = e.target.attrs.y;
-      // move found to the last index of cards array
-      prevTable.deck[deckIndex] = prevTable.deck[deckIndex].filter((card) => card.id !== cardID);
-      prevTable.deck[deckIndex].push(found);
-      return { ...prevTable };
-    });
-    emitMouseChange(e);
+    onDragMoveCardGA(e, cardID, deckIndex, setCanEmit, setTableData, emitMouseChange, "deck");
   };
 
   const onDragEnd = (e, cardID) => {

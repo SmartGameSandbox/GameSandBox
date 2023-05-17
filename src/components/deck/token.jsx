@@ -1,23 +1,14 @@
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import { Rect, Text } from "react-konva";
+import { onDragMoveCardGA } from "../gameaction/gameaction";
+
 
 // deck data
 const Token = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
 
   const onDragMoveCard = (e, cardID) => {
-    setCanEmit(true);
-    setTableData((prevTable) => {
-      // find card in cards array
-      const found = prevTable.tokens[deckIndex].find((card) => card.id === cardID);
-      found.x = e.target.attrs.x - deckIndex * 140;
-      found.y = e.target.attrs.y;
-      // move found to the last index of cards array
-      prevTable.tokens[deckIndex] = prevTable.tokens[deckIndex].filter((card) => card.id !== cardID);
-      prevTable.tokens[deckIndex].push(found);
-      return { ...prevTable };
-    });
-    emitMouseChange(e);
+    onDragMoveCardGA(e, cardID, deckIndex, setCanEmit, setTableData, emitMouseChange, "tokens");
   };
 
   const onDragEnd = (e, cardID) => {
