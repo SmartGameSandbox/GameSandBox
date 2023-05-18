@@ -1,3 +1,7 @@
+// Schema for registered users.
+// Used for authentication and data retrieval.
+// The field "games" contains array of game objects that have been created by this user (see game.js).
+
 const mongoose = require("mongoose");
 const { gameSchema } = require("./game");
 
