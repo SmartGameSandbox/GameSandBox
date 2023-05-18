@@ -1,3 +1,6 @@
+// This module contains the UI for the createRoom page (see app.jsx -> path="/createroom").
+// Notes: not currently possible to navigate to createRoom page unless explicitly directed to via url.
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { BASE_URL } from '../../util/constants'
@@ -11,7 +14,7 @@ const CreateRoom = () => {
   const [item, setItem] = useState('');
   const [roomNameInputText, setRoomNameInputText] = useState('Card Game Sandbox');
   const [errorMsg, setErrorMsg] = useState('');
-  
+
   const handleRoomNameTextInputChange = event => {
     setRoomNameInputText(event.target.value);
   };

@@ -1,3 +1,6 @@
+// This module contains the actions that can be performed on a deck of (exclusively) cards.
+// Should be renamed to deckOfCards or whatever you see fit to avoid confusion with deck of tokens or pieces.
+
 import { useRef } from "react";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";

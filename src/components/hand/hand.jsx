@@ -1,3 +1,8 @@
+// This module the actions that can be performed on the hand zone of a player.
+// Notes: Card should be renamed (see card.jsx).
+// Notes: OnDragEndCard should be renamed as any game object (token, etc) can exist within a player's hand.
+// Notes: Potentially refactor into gameaction.jsx.
+
 import React from 'react';
 import Card from '../card/card'
 import * as Constants from '../../util/constants';

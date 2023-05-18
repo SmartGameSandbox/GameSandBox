@@ -1,3 +1,6 @@
+// This module contains the actions that can be performed on a deck of (exclusively) tokens.
+// Should be renamed to deckOfTokens or whatever you see fit to avoid confusion with deck of cards or pieces.
+
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import { Rect, Text } from "react-konva";

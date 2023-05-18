@@ -1,3 +1,7 @@
+// This module holds the UI and logic of a live game room.
+// Provides the stage of the room where table.jsx will then populate with components such as hand zone, game area,
+// and individual game objects.
+
 import { useEffect, useState } from 'react';
 import { io } from "socket.io-client";
 import axios from 'axios';

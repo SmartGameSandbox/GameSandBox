@@ -1,4 +1,18 @@
-//gameaction.jsx contains commonly used functions for game actions for each game piece type.
+// This module contains commonly used functions for game actions for each game piece type.
+// Actions used by game objects should be placed here for organizational sake.
+// When creating a Card (see card.jsx), assign an action to their corresponding Konva actions (onDragMove),
+/**
+ *  Example: (inside deck.jsx)
+ *           <Card
+ *             key={`deck_card_${card.id}${index}`}
+ *             .
+ *             .
+ *             .
+ *             onDragMove={onDragMoveCardGA}
+ *             draggable
+ *           />
+ */
+// Notes: OnDragMoveCardGA should be renamed to onDragMoveGA, as it can apply to tokens and pieces as well.
 
 import * as Constants from "../../util/constants";
 
