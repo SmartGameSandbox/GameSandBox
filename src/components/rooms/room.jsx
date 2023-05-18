@@ -56,7 +56,7 @@ const Room = () => {
                             onMouseMove={(e) => handleMouseMove(e)}
                             
                         >
-                            <Table socket={socket} username={username} roomId={roomID} />
+                            <Table socket={socket} username={username} roomID={roomID} />
                         </Stage>
                     </div>
                 </div>
