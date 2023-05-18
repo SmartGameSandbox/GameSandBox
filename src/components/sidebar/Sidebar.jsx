@@ -15,6 +15,11 @@ const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const firstTime = React.useRef(0);
 
+  const handleLogout = () => {
+    sessionStorage.clear();
+    window.location.href = "/logout";
+  }
+
   React.useEffect(() => {
     if (open) {
       $("#close-arrow").css({
@@ -66,7 +71,7 @@ const Sidebar = () => {
           <img src={settingsIcon} alt="Settings" />
           <a href="/settings">Settings</a>
         </div>
-        <div id="logout" className="option" onClick={() => { window.location.href = "/logout" }}>
+        <div id="logout" className="option" onClick={handleLogout}>
           <img src={logoutIcon} alt="Logout" />
           <a href="/logout">Logout</a>
         </div>
