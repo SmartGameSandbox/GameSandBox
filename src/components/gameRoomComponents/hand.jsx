@@ -1,25 +1,28 @@
 import React from 'react';
-import Card from '../card/card'
+import Card from './card'
 import * as Constants from '../../util/constants';
 
 // deck data
 const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
     const onDragEndCard = (e, cardID) => {
         const position = e.target.attrs;
-        const deckIndex = tableData.cardsInDeck.findIndex((pile) => pile.includes(cardID));
+        let deckX, deckY, deckW, deckH;
+        const deckIndex = tableData.cardsInDeck.findIndex((pile) => pile.includes(cardID)) ?? -1;
+        if (deckIndex > -1) {
+            deckX = tableData.deckDimension[deckIndex].x;
+            deckY = tableData.deckDimension[deckIndex].y;
+            deckW = tableData.deckDimension[deckIndex].width * 0.8;
+            deckH = tableData.deckDimension[deckIndex].height * 0.8;
+          }
         setCanEmit(true);
-        if (
-            position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
-            position.x <= Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
-            position.y >= Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT &&
-            position.y <= Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
-        ) {
+        if (deckX && position.x >= deckX - deckW && position.x <= deckX + deckW
+            && position.y >= deckY - deckH && position.y <= deckY + deckH) {
             // hand to deck
             setTableData((prevTable) => {
                 // find card
                 const found = prevTable.hand.find((card) => card.id === cardID);
-                found.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
-                found.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
+                found.x = deckX;
+                found.y = deckY;
                 prevTable.hand = prevTable.hand.filter((card) => card.id !== cardID)
                     .map((card, index) => {
                         return card;
@@ -72,7 +75,9 @@ const Hand = ({ tableData, setCanEmit, setTableData, emitMouseChange }) => {
                     key={"hand_" + card.id}
                     src={card.isFlipped
                             ? card.imageSource.front
-                            : card.imageSource.back}
+                            : card.imageSource.back.data
+                                ? card.imageSource.back
+                                : card.imageSource.front}
                     id={card.id}
                     type={card.type}
                     x={card.x}

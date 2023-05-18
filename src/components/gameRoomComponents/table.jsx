@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Group, Layer, Rect, Image } from "react-konva";
-import Card from "../card/card";
+import Card from "./card";
 import * as Constants from "../../util/constants";
-import Cursors from "../cursor/cursors";
-import Hand from "../hand/hand";
-import Deck from "../deck/deck";
-import Token from "../deck/token";
-import Piece from "../deck/piece";
+import Cursors from "./cursors";
+import Hand from "./hand";
+import Deck from "./deck";
+import Token from "./token";
+import Piece from "./piece";
 import RightClickMenu from './rightClickMenu';
 import useImage from "use-image";
 import handIcon from "../icons/hand-regular.png";
@@ -28,8 +28,17 @@ const Table = ({ socket, username, roomID }) => {
 
   useEffect(() => {
     socket.on("tableReload", (data) => {
-      const cardsInDeck = data.deck.map(pile => pile.map(({id}) => id));
-      setTableData({ ...data, cardsInDeck });
+      const cardsInDeck = data.deck.map(deck => deck.map(({id}) => id));
+      const tokens = setUpTokenAndPiece(data.tokens);
+      const pieces = setUpTokenAndPiece(data.pieces);
+
+      const deckDimension = data.deck.map(deck => ({
+          x: deck[0].x,
+          y: deck[0].y,
+          width: deck[0].width,
+          height: deck[0].height,
+        }));
+      setTableData({ ...data, pieces, tokens, cardsInDeck, deckDimension });
     });
 
     socket.on("tableChangeUpdate", (data) => {
@@ -68,14 +77,21 @@ const Table = ({ socket, username, roomID }) => {
   }, [socket, username]);
 
   const onDragEndCard = (e, cardID) => {
+    let deckX, deckY, deckW, deckH;
     const position = e.target.attrs;
     const draggedCard = tableData.cards.find(({id}) => id === cardID);
-    const deckIndex = tableData.cardsInDeck.findIndex((pile) => pile.includes(cardID));
+    const deckIndex = tableData.cardsInDeck.findIndex((pile) => pile.includes(cardID)) ?? -1;
+    if (deckIndex > -1) {
+      deckX = tableData.deckDimension[deckIndex].x;
+      deckY = tableData.deckDimension[deckIndex].y;
+      deckW = tableData.deckDimension[deckIndex].width * 0.8;
+      deckH = tableData.deckDimension[deckIndex].height * 0.8;
+    }
     setCanEmit(true);
     const HAND_POS_Y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
-    const DECK_X = Constants.DECK_STARTING_POSITION_X + deckIndex * 140;
     // Draw Card from table to hand
     if (position.y > HAND_POS_Y - Constants.HAND_PADDING_Y - 0.5 * Constants.CARD_HEIGHT) {
+      console.log('here')
       setTableData((prevTable) => {
         // find card in tableData.cards
         if (draggedCard.pile.length > 0) {
@@ -100,23 +116,17 @@ const Table = ({ socket, username, roomID }) => {
       return;
     }
     // card from table to deck
-    if (
-      position.x >= DECK_X - Constants.CARD_WIDTH
-      && position.x <= DECK_X + Constants.DECK_AREA_WIDTH
-      && position.y >=
-        Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT
-      && position.y <=
-        Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
-    ) {
+    if (deckX && position.x >= deckX - deckW && position.x <= deckX + deckW
+        && position.y >= deckY - deckH && position.y <= deckY + deckH) {
       setTableData((prevTable) => {
         if (draggedCard.pile.length > 0) {
           draggedCard.pile.forEach(cardInPile => prevTable.deck[deckIndex].push(cardInPile))
-          draggedCard.pile.forEach(cardInPile => cardInPile.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING)
-          draggedCard.pile.forEach(cardInPile => cardInPile.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING)
+          draggedCard.pile.forEach(cardInPile => cardInPile.x = deckX)
+          draggedCard.pile.forEach(cardInPile => cardInPile.y = deckY)
           draggedCard.pile = []
         }
-        draggedCard.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
-        draggedCard.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
+        draggedCard.x = deckX;
+        draggedCard.y = deckY;
         prevTable.deck[deckIndex].push(draggedCard);
         prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
         return { ...prevTable };
@@ -139,47 +149,6 @@ const Table = ({ socket, username, roomID }) => {
         return { ...prevTable };
       });
     }
-  };
-
-  const collectCards = () => {
-    setCanEmit(true);
-    setTableData((prevTable) => {
-      // put cards to deck
-      console.log(prevTable.deck);
-      prevTable.deck = prevTable.deck
-                        .map((pile, index) => pile
-                          .concat(prevTable.cards
-                            .filter(card => prevTable.cardsInDeck[index]
-                              .includes(card))));
-      // set cards in deck to starting position
-      console.log(prevTable.deck);
-      prevTable.deck = prevTable.deck.map((pile) => pile.map((card) => {
-        card.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
-        card.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
-        return card;
-      }));
-      console.log(prevTable.deck);
-      prevTable.cards = [];
-      // flip all deck
-      // prevTable.deck = prevTable.deck[0].map((card) => {
-      //   card.isFlipped = true;
-      //   // card.imageSource = card.imageSource;
-      //   return card;
-      // });
-      return { ...prevTable };
-    });
-  };
-  const shuffleCards = () => {
-    setCanEmit(true);
-    setTableData((prevTable) => {
-      prevTable.deck = prevTable.deck.map((card) => {
-        card.isFlipped = true;
-        // card.imageSource = card.imageSource;
-        return card;
-      });
-      prevTable.deck = prevTable.deck.sort(() => Math.random() - 0.5);
-      return { ...prevTable };
-    });
   };
 
   const HandImage = () => {
@@ -222,28 +191,6 @@ const Table = ({ socket, username, roomID }) => {
           emitMouseChange={emitMouseChange}
         />
         ))}
-        {tableData?.cards?.map((card) => (
-            <Group 
-              key={`card_${card.id}`}
-              onContextMenu={(e) => handleContextMenu(e, card.id)}
-            >
-              <Card
-                key={`card_${card.id}`}
-                src={card.isFlipped 
-                      ? card.imageSource.front 
-                      : card.imageSource.back}
-                id={card.id}
-                type={card.type}
-                x={card.x}
-                y={card.y}
-                isLandscape={card.isLandscape}
-                onDragMove={onDragMoveCard}
-                onDragEnd={onDragEndCard}
-              />
-            </Group>
-
-          ))
-        }
         {tableData?.tokens?.map((token, index) => (
           <Token
           key={`tokens_${index}`}
@@ -264,6 +211,30 @@ const Table = ({ socket, username, roomID }) => {
           emitMouseChange={emitMouseChange}
         />
         ))}
+        {tableData?.cards?.map((card) => (
+            <Group 
+              key={`card_${card.id}`}
+              onContextMenu={(e) => handleContextMenu(e, card.id)}
+            >
+              <Card
+                key={`card_${card.id}`}
+                src={card.isFlipped 
+                      ? card.imageSource.front 
+                      : card.imageSource.back.data
+                        ? card.imageSource.back
+                        : card.imageSource.front}
+                id={card.id}
+                type={card.type}
+                x={card.x}
+                y={card.y}
+                isLandscape={card.isLandscape}
+                onDragMove={onDragMoveCard}
+                onDragEnd={onDragEndCard}
+              />
+            </Group>
+
+          ))
+        }
         {rightClickPos.x !== null && rightClickPos.y !== null && (
           <RightClickMenu
             x={rightClickPos.x}
@@ -327,6 +298,65 @@ const Table = ({ socket, username, roomID }) => {
     setRightClickPos({ x: clientX - konvaLeft, y: clientY - konvaTop });
     setClickedCardID(cardID);
   }
+
+  function setUpTokenAndPiece(data) {
+    return data.map(item => {
+      if (item.deck.length < item.totalNum) {
+        const maxIndex = item.deck.length;
+        const newTokenArray = Array.from({length: item.totalNum}, (_, i) => {
+          return structuredClone(item.deck[i % maxIndex]);
+        });
+        newTokenArray.map((token, index) => {
+          token.id += index;
+          return token;
+        })
+        item.deck = newTokenArray;
+      }
+      return item.deck;
+    });
+  }
+
+  // To Do: assign these functions to individual deck so that each decks can be collected/shuffled.
+  // function collectCards() {
+  //   setCanEmit(true);
+  //   setTableData((prevTable) => {
+  //     // put cards to deck
+  //     console.log(prevTable.deck);
+  //     prevTable.deck = prevTable.deck
+  //                       .map((pile, index) => pile
+  //                         .concat(prevTable.cards
+  //                           .filter(card => prevTable.cardsInDeck[index]
+  //                             .includes(card))));
+  //     // set cards in deck to starting position
+  //     console.log(prevTable.deck);
+  //     prevTable.deck = prevTable.deck.map((pile) => pile.map((card) => {
+  //       card.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
+  //       card.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
+  //       return card;
+  //     }));
+  //     console.log(prevTable.deck);
+  //     prevTable.cards = [];
+  //     // flip all deck
+  //     // prevTable.deck = prevTable.deck[0].map((card) => {
+  //     //   card.isFlipped = true;
+  //     //   // card.imageSource = card.imageSource;
+  //     //   return card;
+  //     // });
+  //     return { ...prevTable };
+  //   });
+  // }
+  // function shuffleCards() {
+  //   setCanEmit(true);
+  //   setTableData((prevTable) => {
+  //     prevTable.deck = prevTable.deck.map((card) => {
+  //       card.isFlipped = true;
+  //       // card.imageSource = card.imageSource;
+  //       return card;
+  //     });
+  //     prevTable.deck = prevTable.deck.sort(() => Math.random() - 0.5);
+  //     return { ...prevTable };
+  //   });
+  // }
 };
 
 export default Table;

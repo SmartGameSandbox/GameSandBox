@@ -1,19 +1,26 @@
-import Card from "../card/card";
+import { useRef } from "react";
+import Card from "./card";
 import * as Constants from "../../util/constants";
-import { Rect, Text } from "react-konva";
+import { Rect } from "react-konva";
 
 // deck data
 const Token = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
-
+  const deckDimension = useRef(null);
+  deckDimension.current ??= {
+    x: tableData.tokens[deckIndex][0].x,
+    y: tableData.tokens[deckIndex][0].y,
+    width: tableData.tokens[deckIndex][0].width,
+    height: tableData.tokens[deckIndex][0].height
+  };
   const onDragMoveCard = (e, cardID) => {
     setCanEmit(true);
     setTableData((prevTable) => {
-      // find card in cards array
-      const found = prevTable.tokens[deckIndex].find((card) => card.id === cardID);
-      found.x = e.target.attrs.x - deckIndex * 140;
+      // find top of the token pile.
+      const found = prevTable.tokens[deckIndex].at(-1);
+      found.x = e.target.attrs.x;
       found.y = e.target.attrs.y;
       // move found to the last index of cards array
-      prevTable.tokens[deckIndex] = prevTable.tokens[deckIndex].filter((card) => card.id !== cardID);
+      prevTable.tokens[deckIndex].pop();
       prevTable.tokens[deckIndex].push(found);
       return { ...prevTable };
     });
@@ -24,28 +31,6 @@ const Token = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange
     const position = e.target.attrs;
     setCanEmit(true);
     if (
-      position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
-      position.x <=
-        Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
-      position.y >=
-        Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT &&
-      position.y <=
-        Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
-    ) {
-      // deck area movement
-      setTableData((prevTable) => {
-        prevTable.tokens[deckIndex] = prevTable.tokens[deckIndex].map((card) => {
-          if (card.id === cardID) {
-            card.x =
-              Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
-            card.y =
-              Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
-          }
-          return card;
-        });
-        return { ...prevTable };
-      });
-    } else if (
       position.y >
       Constants.CANVAS_HEIGHT -
         Constants.HAND_HEIGHT -
@@ -70,46 +55,36 @@ const Token = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange
       // deck to table
       setTableData((prevTable) => {
         // find card in tableData.deck
-        const found = prevTable.tokens[deckIndex].find((card) => card.id === cardID);
+        const found = prevTable.tokens[deckIndex].at(-1);
         found.x = position.x;
         found.y = position.y;
         prevTable.cards.push(found);
-        prevTable.tokens[deckIndex] = prevTable.tokens[deckIndex].filter((card) => card.id !== cardID);
+        prevTable.tokens[deckIndex].pop();
         return { ...prevTable };
       });
     }
   };
-
   return (
     <>
       <Rect
         key={`token_area_${deckIndex}`}
-        x={10}
-        y={10}
-        width={Constants.DECK_AREA_WIDTH * tableData.tokens.length}
-        height={Constants.DECK_AREA_HEIGHT}
+        x={(deckDimension.current.x)}
+        y={deckDimension.current.y}
+        width={deckDimension.current.width + 2*Constants.DECK_PADDING}
+        height={deckDimension.current.height + 2*Constants.DECK_PADDING}
+        cornerRadius={40}
         fill={"rgba(177, 177, 177, 0.6)"}
-      />
-      <Text
-        key={`token_label`}
-        x={10}
-        y={10}
-        padding={10}
-        fill={"black"}
-        fontSize={20}
-        text={"Tokens"}
       />
 
       {tableData?.tokens?.[deckIndex].map((card, index) => (
           <Card
-            key={`deck_card_${card.id}${index}`}
+            key={`token_${card.id}${index}`}
             src={card.isFlipped 
                   ? card.imageSource.front 
                   : card.imageSource.back}
-            id={card.id}
             type={card.type}
-            x={Constants.CARD_WIDTH / 2}
-            y={Constants.CARD_HEIGHT / 2}
+            x={deckDimension.current.x + Constants.DECK_PADDING}
+            y={deckDimension.current.y + Constants.DECK_PADDING}
             onDragEnd={onDragEnd}
             onDragMove={onDragMoveCard}
             draggable

@@ -116,8 +116,8 @@ const BuildGamePage = () => {
                 <Image
                 key={`${index}-${index2}`}
                 image={img}
-                x={x - img.width / 4}
-                y={y - img.height / 4}
+                x={x}
+                y={y}
                 width={img.width}
                 height={img.height}
                 draggable
@@ -167,8 +167,11 @@ const BuildGamePage = () => {
     return deck.map(imageObject => {
       const img = new window.Image();
       img.src = `data:image/${
-        imageObject.imageSource.front.contentType
-      };base64,${Buffer.from(imageObject.imageSource.front.data).toString("base64")}`;
+        imageObject.imageSource.back.contentType
+        || imageObject.imageSource.front.contentType
+      };base64,${Buffer.from(
+        imageObject.imageSource.back.data
+        || imageObject.imageSource.front.data).toString("base64")}`;
       img.className = imageObject.isLandscape ? 'landscape' : '';
       return img;
     });
@@ -184,11 +187,15 @@ const BuildGamePage = () => {
 
   function placeItem() {
     if (!itemToAdd) return;
-    setDisplayItems(prevItem => [...prevItem, {...itemToAdd, ...toggleLocation }]);
+    let { x, y } = toggleLocation;
+    const {width, height} = itemToAdd.images[0];
+    x -= width/2;
+    y -= height/2;
+    setDisplayItems(prevItem => [...prevItem, {...itemToAdd, x, y }]);
     setters[itemToAdd.type](prevItems => {
       const lastItem = prevItems.at(-1);
       if (!lastItem) return prevItems;
-      lastItem.deck = lastItem.deck.map((item) => ({...item, ...toggleLocation}));
+      lastItem.deck = lastItem.deck.map((item) => ({...item, x, y, width, height}));
       return [...prevItems.filter(({name}) => name !== lastItem.name), lastItem];
     })
     setTimeout(() => {

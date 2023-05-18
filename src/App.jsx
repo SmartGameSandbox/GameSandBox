@@ -1,9 +1,7 @@
-import React, { useContext } from "react";
+import React from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import RoomCreation from "./components/rooms/createRoom";
-import Room from "./components/rooms/room";
-// import JoinRoom from "./components/rooms/joinRoom";
+import Room from "./components/gameRoomComponents/room";
 import SavedGames from "./components/savedGames/savedGames";
 import Login from "./components/login/login";
 import Logout from "./components/logout/logout";
@@ -11,7 +9,6 @@ import Register from "./components/register/register";
 import BuildGamePage from "./components/buildGame/buildGamePage";
 import Dashboard from './components/dashboard/dashboard';
 import Games from './components/games/games.jsx';
-import UserContext from "./components/userContext";
 import Sidebar from "./components/sidebar/Sidebar";
 
 const App = () => {
@@ -19,7 +16,7 @@ const App = () => {
   const userAuthed = sessionStorage.getItem("token");
 
   return (
-    <UserContext.Provider value={localStorage.getItem('username')}>
+    <>
       {userAuthed && <Sidebar/>}
       <BrowserRouter>
         <Routes>
@@ -36,18 +33,9 @@ const App = () => {
             path="/games"
             element={userAuthed ? <Games /> : <Navigate to="/login" />}
           />
-          <Route
-            path="/createroom"
-            element={userAuthed ? <RoomCreation /> : <Navigate to="/login" />}
-          />
           <Route 
             path="/buildgame" 
             element={userAuthed ? <BuildGamePage />: <Navigate to="/login" />} />
-
-          {/* <Route
-            path="/joinroom"
-            element={isAuthed() ? <JoinRoom /> : <Navigate to="/login" />}
-          /> */}
           <Route
             path="/mygames"
             element={userAuthed ? <SavedGames /> : <Navigate to="/login" />}
@@ -59,7 +47,7 @@ const App = () => {
           <Route path="/logout" element={<Logout />} />
         </Routes>
       </BrowserRouter>
-    </UserContext.Provider>
+    </>
   );
 };
 

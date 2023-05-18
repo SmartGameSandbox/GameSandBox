@@ -94,7 +94,6 @@ const BottomToolbar = ({
 
   function handleSave() {
     const items = [...decks, ...tokens, ...pieces];
-    console.log(items);
     const promises = items.map((obj) => {
       return axios
               .post(`${BASE_URL}/api/addDecks`, obj, {
