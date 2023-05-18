@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Group, Layer, Rect, Image } from "react-konva";
+import { Group, Layer, Rect, Image, Text} from "react-konva";
 import Card from "../card/card";
 import * as Constants from "../../util/constants";
 import Cursors from "../cursor/cursors";
@@ -17,7 +17,6 @@ const Table = ({ socket, username, roomID }) => {
   const [rightClickPos, setRightClickPos] = useState({ x: null, y: null });
   const [clickedCardID, setClickedCardID] = useState(null);
   const [canEmit, setCanEmit] = useState(true);
-
 
   useEffect(() => {
     if (!canEmit || !tableData) return;
@@ -193,6 +192,7 @@ const Table = ({ socket, username, roomID }) => {
         height={50}
     />;
   }
+
   return (
     <>
       <Layer onClick={handleCloseMenu}>
@@ -205,6 +205,13 @@ const Table = ({ socket, username, roomID }) => {
           strokeWidth={5}
           fill="#EBEBEB"
         />
+        {roomID && <Text
+            x={20}
+            y={20}
+            text={`Room: ${roomID}\nUsername: ${username}`}
+            fontSize={14}
+          />}
+        
         <Rect
           x={0}
           y={Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT}
@@ -324,7 +331,7 @@ const Table = ({ socket, username, roomID }) => {
       left: konvaLeft
     } = document.querySelector(".konvajs-content").getBoundingClientRect();
     const {clientY, clientX} = event.evt;
-    setRightClickPos({ x: clientX - konvaLeft, y: clientY - konvaTop });
+    setRightClickPos({ x: clientX - konvaLeft - 1, y: clientY - konvaTop - 1});
     setClickedCardID(cardID);
   }
 };

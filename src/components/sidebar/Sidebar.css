@@ -123,7 +123,7 @@
 
 @keyframes closingColumns {
     from {
-        width: 40vh;
+        width: 30vh;
     }
     to {
         width: 3.5rem;
@@ -135,6 +135,6 @@
         width: 3.5rem;
     }
     to {
-        width: 40vh;
+        width: 30vh;
     }
 }
