@@ -17,6 +17,7 @@ const Table = ({ socket, username, roomID }) => {
   const [rightClickPos, setRightClickPos] = useState({ x: null, y: null });
   const [clickedCardID, setClickedCardID] = useState(null);
   const [canEmit, setCanEmit] = useState(true);
+  console.log(socket, username, roomID);
 
 
   useEffect(() => {
@@ -193,6 +194,16 @@ const Table = ({ socket, username, roomID }) => {
         height={50}
     />;
   }
+  const handleContextMenu = (event, cardID) => {
+    event.evt.preventDefault();
+    const { top: konvaTop, left: konvaLeft } = document.querySelector(".konvajs-content").getBoundingClientRect();
+    const {clientY, clientX} = event.evt;
+    setRightClickPos({ x: clientX - konvaLeft - 2, y: clientY - konvaTop - 2});
+    setClickedCardID(cardID);
+  };
+
+  const handleCloseMenu = () => {setRightClickPos({x:null, y:null})}
+
   return (
     <>
       <Layer onClick={handleCloseMenu}>
@@ -205,6 +216,13 @@ const Table = ({ socket, username, roomID }) => {
           strokeWidth={5}
           fill="#EBEBEB"
         />
+        {roomID && <Text
+            x={20}
+            y={20}
+            text={`Room: ${roomID}\nUsername: ${username}`}
+            fontSize={14}
+          />}
+        
         <Rect
           x={0}
           y={Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT}
