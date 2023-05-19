@@ -33,7 +33,7 @@ export function onDragMoveGA(
       if (["cards", "hand"].includes(gamePieceType)) {
         draggedItem.x = x;
         draggedItem.y = y;
-        prevTable[gamePieceType].filter((item) => item.id !== itemID).push(draggedItem);
+        prevTable[gamePieceType] = prevTable[gamePieceType].filter((item) => item.id !== itemID).push(draggedItem);
         return {...prevTable};
       }
       if (["deck", "tokens"].includes(gamePieceType)) {
@@ -43,7 +43,7 @@ export function onDragMoveGA(
         draggedItem.x = x;
         draggedItem.y = y;
       }
-      prevTable[gamePieceType][deckIndex].filter((item) => item.id !== itemID).push(draggedItem);
+      prevTable[gamePieceType][deckIndex] = prevTable[gamePieceType][deckIndex].filter((item) => item.id !== itemID).push(draggedItem);
       return {...prevTable};
     });
     setItemBeingUpdated({itemID, gamePieceType, deckIndex, x, y});
