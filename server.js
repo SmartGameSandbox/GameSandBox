@@ -23,7 +23,7 @@ const { User } = require("./schemas/user");
 const app = express();
 const http = require("http").Server(app);
 app.use(cors());
-app.use(express.json({limit: '500kb'}));
+app.use(express.json({limit: '500mb'}));
 app.use(express.urlencoded({ extended: false }));
 
 const io = require("socket.io")(http, { cors: { origin: "*" } });
@@ -65,7 +65,7 @@ cron.schedule(
 
 // Web sockets
 io.on("connection", async (socket) => {
-  // Join room
+  // Attempt to join room given roomID
   socket.on("joinRoom", async ({ roomID, username }) => {
     if (!roomID) {
       console.error("Room Invalid");
@@ -77,12 +77,34 @@ io.on("connection", async (socket) => {
       return;
     }
     socket.join(roomID);
+
+    // Create server-side array "hand" for this roomID if it doesn't exist.
+    // Collection of hands of all players that have and will join this room.
     ALLROOMSDATA[roomID].hand ??= {};
+
+    // Create server-side array "hand[username]" if it doesn't exist.
+    // Collection of game objects inside the hand of userID.
     ALLROOMSDATA[roomID].hand[username] ??= [];
 
+    // Create server-side array "cardsInDeck" if it doesn't exist.
+    // Collection of id of cards that belong to specific deck.
+    ALLROOMSDATA[roomID].cardsInDeck ??= ALLROOMSDATA[roomID].deck?.map(deck => deck.map(({id}) => id)) ?? [];
+    
+    // Create server-side array "deckDimension" if it doesn't exist.
+    // Collection of dimension (x, y, width, height) for card decks.
+    ALLROOMSDATA[roomID].deckDimension ??= ALLROOMSDATA[roomID].deck?.map(deck => ({
+                                                                              x: deck[0].x,
+                                                                              y: deck[0].y,
+                                                                              width: deck[0].width,
+                                                                              height: deck[0].height,
+                                                                            })) ?? [];
+
+    // Notify all clients when the following properties are changed.
     io.to(socket.id).emit("tableReload", {
       cards: ALLROOMSDATA[roomID].cards,
       deck: ALLROOMSDATA[roomID].deck,
+      cardsInDeck: ALLROOMSDATA[roomID].cardsInDeck,
+      deckDimension: ALLROOMSDATA[roomID].deckDimension,
       tokens: ALLROOMSDATA[roomID].tokens,
       pieces: ALLROOMSDATA[roomID].pieces,
       hand: ALLROOMSDATA[roomID].hand[username],
@@ -91,6 +113,8 @@ io.on("connection", async (socket) => {
     console.log(`User ${username} joined room ${roomID}`);
   });
 
+  // Listen for tableChanges client-side, then update the server-side information.
+  // Notes: should update game objects other than cards (tokens, etc).
   socket.on("tableChange", ({
     username,
     roomID,
@@ -110,6 +134,7 @@ io.on("connection", async (socket) => {
     }
   });
 
+  // Listen for mouseMoves client-side, and update the server-side information.
   socket.on("mouseMove", ({
     x,
     y,
@@ -129,7 +154,7 @@ io.on("connect_error", (err) => {
 });
 
 // Restful Apis
-// Rooms
+// Get all currently hosted rooms.
 app.get("/api/rooms", async (req, res) => {
   try {
     res.json(await Room.find());
@@ -149,11 +174,16 @@ app.get("/api/room", async (req, res) => {
     if (!id) {
       throw new Error("Room ID is required");
     }
+    // If id is valid, load room data.
     const roomData = await Room.findOne({ id: id });
+
+    // If roomData is invalid, respond with error.
     if (!roomData) {
       res.status(400).json({ status: "error", message: "Invalid room ID" });
       return;
     }
+
+    // If roomData is valid, respond with roomData.
     res.json(roomData);
   } catch (err) {
     res.status(404).json({
@@ -381,10 +411,11 @@ app.post("/api/saveGame", async (req, res) => {
       creatorId,
       newDeckIds,
     } = req.body;
+    console.log(req.body)
     if (creatorId) {
       //Create a game now
       const gameObject = {
-        name,
+        name: name.substring(0, 20),
         players: parseInt(players),
         creator: new ObjectId(creatorId),
         cardDeck: newDeckIds.map((id) => new ObjectId(id)),

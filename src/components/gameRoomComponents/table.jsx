@@ -10,6 +10,7 @@ import Piece from "./piece";
 import RightClickMenu from './rightClickMenu';
 import useImage from "use-image";
 import handIcon from "../icons/hand-regular.png";
+import { onDragMoveGA, onDragEndGA } from "../gameaction/gameaction";
 
 const Table = ({ socket, username, roomID }) => {
   const [tableData, setTableData] = useState(null);
@@ -18,6 +19,7 @@ const Table = ({ socket, username, roomID }) => {
   const [clickedCardID, setClickedCardID] = useState(null);
   const [canEmit, setCanEmit] = useState(true);
 
+  const GA_PARAMS = {setCanEmit, setTableData, emitMouseChange, tableData};
 
   useEffect(() => {
     if (!canEmit || !tableData) return;
@@ -28,17 +30,13 @@ const Table = ({ socket, username, roomID }) => {
 
   useEffect(() => {
     socket.on("tableReload", (data) => {
-      const cardsInDeck = data.deck.map(deck => deck.map(({id}) => id));
-      const tokens = setUpTokenAndPiece(data.tokens);
-      const pieces = setUpTokenAndPiece(data.pieces);
-
-      const deckDimension = data.deck.map(deck => ({
-          x: deck[0].x,
-          y: deck[0].y,
-          width: deck[0].width,
-          height: deck[0].height,
-        }));
-      setTableData({ ...data, pieces, tokens, cardsInDeck, deckDimension });
+      const handAndTable = [...data.cards, ...Object.values(data.hand).flat()].map(({id}) => id);
+      const tokens = setUpTokenAndPiece(data.tokens)
+                      .map(token => token.filter(({id}) => !handAndTable.includes(id)));
+      const pieces = setUpTokenAndPiece(data.pieces)
+                      .map(piece => piece.filter(({id}) => !handAndTable.includes(id)));
+      
+      setTableData({ ...data, pieces, tokens });
     });
 
     socket.on("tableChangeUpdate", (data) => {
@@ -75,81 +73,6 @@ const Table = ({ socket, username, roomID }) => {
       socket.off("mousePositionUpdate");
     };
   }, [socket, username]);
-
-  const onDragEndCard = (e, cardID) => {
-    let deckX, deckY, deckW, deckH;
-    const position = e.target.attrs;
-    const draggedCard = tableData.cards.find(({id}) => id === cardID);
-    const deckIndex = tableData.cardsInDeck.findIndex((pile) => pile.includes(cardID)) ?? -1;
-    if (deckIndex > -1) {
-      deckX = tableData.deckDimension[deckIndex].x;
-      deckY = tableData.deckDimension[deckIndex].y;
-      deckW = tableData.deckDimension[deckIndex].width * 0.8;
-      deckH = tableData.deckDimension[deckIndex].height * 0.8;
-    }
-    setCanEmit(true);
-    const HAND_POS_Y = Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT + Constants.HAND_PADDING_Y;
-    // Draw Card from table to hand
-    if (position.y > HAND_POS_Y - Constants.HAND_PADDING_Y - 0.5 * Constants.CARD_HEIGHT) {
-      console.log('here')
-      setTableData((prevTable) => {
-        // find card in tableData.cards
-        if (draggedCard.pile.length > 0) {
-          draggedCard.pile.forEach((cardInPile, index) => {
-            prevTable.hand.push(cardInPile)
-            if (e.target.attrs.x + index*25 + Constants.CARD_WIDTH <= Constants.HAND_WIDTH) {
-              cardInPile.x = e.target.attrs.x + index*25
-            } else {
-              cardInPile.x = e.target.attrs.x
-            }
-            cardInPile.y = e.target.attrs.y
-          })
-          draggedCard.pile = []
-        }
-        prevTable.hand.push(draggedCard);
-        draggedCard.x = e.target.attrs.x
-        draggedCard.y = e.target.attrs.y
-        // add card to hand
-        prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
-        return { ...prevTable };
-      });
-      return;
-    }
-    // card from table to deck
-    if (deckX && position.x >= deckX - deckW && position.x <= deckX + deckW
-        && position.y >= deckY - deckH && position.y <= deckY + deckH) {
-      setTableData((prevTable) => {
-        if (draggedCard.pile.length > 0) {
-          draggedCard.pile.forEach(cardInPile => prevTable.deck[deckIndex].push(cardInPile))
-          draggedCard.pile.forEach(cardInPile => cardInPile.x = deckX)
-          draggedCard.pile.forEach(cardInPile => cardInPile.y = deckY)
-          draggedCard.pile = []
-        }
-        draggedCard.x = deckX;
-        draggedCard.y = deckY;
-        prevTable.deck[deckIndex].push(draggedCard);
-        prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
-        return { ...prevTable };
-      });
-    } else {
-      setTableData((prevTable) => {
-        const found = prevTable.cards.find((card) => card.id === cardID);
-        prevTable.cards.forEach((pile) => {
-          if (pile !== found && position.x > pile.x - 10 && position.x < pile.x + Constants.CARD_WIDTH + 10 &&
-          position.y > pile.y - 10 && position.y < pile.y + Constants.CARD_HEIGHT + 10) {
-            prevTable.cards = prevTable.cards.filter((card) => card !== found && card !== pile);
-            found.pile = found.pile.concat(pile).concat(pile.pile)
-            pile.pile = []
-            pile.x = -100
-            pile.y = -100
-            prevTable.cards.push(found)
-          }
-        })
-
-        return { ...prevTable };
-      });
-    }
-  };
 
   const HandImage = () => {
     const [image] = useImage(handIcon)
@@ -220,7 +143,7 @@ const Table = ({ socket, username, roomID }) => {
                 key={`card_${card.id}`}
                 src={card.isFlipped 
                       ? card.imageSource.front 
-                      : card.imageSource.back.data
+                      : card.imageSource.back?.data
                         ? card.imageSource.back
                         : card.imageSource.front}
                 id={card.id}
@@ -228,8 +151,8 @@ const Table = ({ socket, username, roomID }) => {
                 x={card.x}
                 y={card.y}
                 isLandscape={card.isLandscape}
-                onDragMove={onDragMoveCard}
-                onDragEnd={onDragEndCard}
+                onDragMove={(e, id) => onDragMoveGA(e, id, GA_PARAMS, "cards")}
+                onDragEnd={(e, id) => onDragEndGA(e, id, GA_PARAMS, "cards")}
               />
             </Group>
 
@@ -271,21 +194,6 @@ const Table = ({ socket, username, roomID }) => {
     );
   }
 
-  function onDragMoveCard(e, cardID) {
-    setCanEmit(true);
-    setTableData((prevTable) => {
-      // find card in cards array
-      const found = prevTable.cards.find((card) => card.id === cardID);
-      found.x = e.target.attrs.x;
-      found.y = e.target.attrs.y;
-      // move found to the last index of cards array
-      prevTable.cards = prevTable.cards.filter((card) => card.id !== cardID);
-      prevTable.cards = [...prevTable.cards, found];
-      return { ...prevTable };
-    });
-    emitMouseChange(e);
-  }
-
   function handleCloseMenu() {setRightClickPos({x:null, y:null})}
 
   function handleContextMenu(event, cardID) {
@@ -304,12 +212,10 @@ const Table = ({ socket, username, roomID }) => {
       if (item.deck.length < item.totalNum) {
         const maxIndex = item.deck.length;
         const newTokenArray = Array.from({length: item.totalNum}, (_, i) => {
-          return structuredClone(item.deck[i % maxIndex]);
+          const newItem = structuredClone(item.deck[i % maxIndex]);
+          newItem.id += i;
+          return newItem;
         });
-        newTokenArray.map((token, index) => {
-          token.id += index;
-          return token;
-        })
         item.deck = newTokenArray;
       }
       return item.deck;
