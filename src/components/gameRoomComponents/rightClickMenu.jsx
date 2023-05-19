@@ -1,6 +1,6 @@
 import { Group, Rect, Text } from "react-konva";
 
-const RightClickMenu = ({ x, y, cardId, setTableData, setRightClickPos, setClickedCardID}) => {
+const RightClickMenu = ({ x, y, cardId, setTableData, setRightClickPos, setClickedCardID, setCanEmit}) => {
   const options = ['Flip', 'Rotate', "Disassemble"];
   const padding = 5;
   const lineHeight = 24;
@@ -18,8 +18,9 @@ const RightClickMenu = ({ x, y, cardId, setTableData, setRightClickPos, setClick
           return card;
         });
         prevTable.cards = cards;
-        return prevTable;
+        return {...prevTable};
       });
+      setCanEmit(true);
     }
     else if (option === 'Disassemble') {
       setTableData((prevTable) => {
@@ -31,8 +32,9 @@ const RightClickMenu = ({ x, y, cardId, setTableData, setRightClickPos, setClick
             card.pile = []
           };
         });
-        return prevTable;
+        return {...prevTable};
       });
+      setCanEmit(true);
     }
     setRightClickPos({ x: null, y: null });
     setClickedCardID(null);

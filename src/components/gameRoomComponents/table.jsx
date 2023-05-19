@@ -166,6 +166,7 @@ const Table = ({ socket, username, roomID }) => {
             y={rightClickPos.y}
             cardId={clickedCardID}
             setTableData={setTableData}
+            setCanEmit={setCanEmit}
             setRightClickPos={setRightClickPos}
             setClickedCardID={setClickedCardID}
           />
