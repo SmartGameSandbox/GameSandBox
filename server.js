@@ -223,8 +223,7 @@ app.post("/api/room", async (req, res) => {
   }
 });
 
-// Register
-// createAccount
+// Registering a new user to the database.
 app.post("/api/register", async (req, res) => {
   const newUser = new User({
     username: req.body.username,
@@ -233,15 +232,18 @@ app.post("/api/register", async (req, res) => {
   });
   console.log(newUser);
   try {
-    if (await User.findOne({
+    // Check if a user with the same username already exists in the database
+    if (await User.findOne({ 
         username: req.body.username
       })) {
       throw new Error("Username already exists");
     }
-    const result = await newUser.save();
+    const result = await newUser.save(); // Save the new user to the database
     if (!result) {
       throw new Error("Error: User failed to be created");
     }
+
+    // Respond with JSON object containing success status, a message, and the newly created user
     res.json({
       status: "success",
       message: "User created",
@@ -254,8 +256,9 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-// Session
+// Logging in and creating a new session.
 app.post("/api/login", async (req, res) => {
+  // Check if a user with the same username already exists in the database.
   try {
     const user = await User.findOne({
       username: req.body.username,
@@ -264,17 +267,21 @@ app.post("/api/login", async (req, res) => {
       throw new Error("Invalid username or password");
     }
 
+    // Check if the inputted password matches the hashed password in the database using bcryptjs.compare().
     const passwordMatch = await bcryptjs.compare(req.body.password, user.password);
     if (!passwordMatch) {
       throw new Error("Invalid password");
     }
 
+    // After successful login, create a JWT authentication token. Sign it with the user's id and username, set to expire in 1 hour,
+    // and send it back to the client.
     const token = jwt.sign(
       { userId: user._id, username: user.username },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
+    // Respond with a JSON object containing a success status, a message, the user object, and the generated token
     res.json({
       status: "success",
       message: "User login successful",
@@ -476,17 +483,22 @@ const createCardObjects = async (cardArray, backFile, faceType, isLandscape, ite
     }));
 };
 
+// If the NODE_ENV variable is set to production, serve static files from build folder
 if (process.env.NODE_ENV === "production") {
   app.use(express.static("build"));
+
+  // Handle all routes with a wildcard (*) and send the "index.html" file
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "build", "index.html"));
   });
 }
 
+// Start the server and establish a MongoDB connection
 http.listen(port, async (err) => {
   if (err) return console.log(err);
 
   try {
+    // Connect to the MongoDB database using provided connection string
     await mongoose.connect(
       "mongodb+srv://root:S4ndB0x@game-sandbox.altns89.mongodb.net/data?retryWrites=true&w=majority"
     );
