@@ -11,6 +11,7 @@ const Games = () => {
   const [games, setGames] = useState([]);
 
   useEffect(() => {
+    //Query server with the user id and set games based on the response
     axios
       .get(`${BASE_URL}/api/games`, {
         params: {
@@ -26,6 +27,7 @@ const Games = () => {
       });
   }, [isLoading, games]);
 
+  //Creating a room by sending a post request with the cardDeck and game name and redirecting to the live room created
   const createroom = async (gameId) => {
     const game = games.find(({ _id }) => _id === gameId);
     if (!game) return;

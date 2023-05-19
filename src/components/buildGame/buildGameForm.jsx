@@ -1,27 +1,20 @@
-import React, { useRef } from "react";
-import "./buildGameForm.css";
-import { SMARTButton } from "../../button/button";
+import { useRef } from "react";
+import { SMARTButton } from "../button/button";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * Take user Input to initialize the name and number of players of the game.
+ * @component
+ * @property {function} closePopup toggle visibility of parent modal.
+ */
 const BuildGameForm = ({ closePopup }) => {
   const gameNameRef = useRef('');
   const numPlayerRef = useRef(2);
   const navigate = useNavigate();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const data = { name: gameNameRef.current.value, players: numPlayerRef.current.value };
-    await event.target.reset(); // reset the form
-    await closePopup();
-
-    navigate("/buildgame", {
-      state: data,
-    });
-  };
-
   return (
     <div className="bg-form">
-      <form onSubmit={handleSubmit} id="build-game-from">
+      <form onSubmit={handleSubmit} id="build-game-form">
         <label>GAME NAME:</label>
         <input
           type="text"
@@ -54,6 +47,22 @@ const BuildGameForm = ({ closePopup }) => {
       </form>
     </div>
   );
+
+  /**
+   * Take the user Input and pass the data to the BuildGamePage as location.state
+   * 
+   * @param {SubmitEvent} event 
+   */
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const data = { name: gameNameRef.current.value, players: numPlayerRef.current.value };
+    await event.target.reset(); // reset the form
+    await closePopup();
+
+    navigate("/buildgame", {
+      state: data,
+    });
+  };
 };
 
 export default BuildGameForm;

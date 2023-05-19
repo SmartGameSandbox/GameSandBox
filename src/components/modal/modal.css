@@ -1,5 +1,6 @@
 .modal {
     position: fixed;
+    z-index: 102;
     left: 0;
     top: 0;
     right: 0;
@@ -53,7 +54,7 @@
   
   .modal-title {
     padding-left: 1em;
-    margin-block: 1em;
+    margin-block: 0.8em;
     font-size: 34px;
     font-family: Nunito;
     font-weight: bold;
@@ -61,7 +62,7 @@
   }
   
   .modal-body {
-    padding-left: 0.8em;
+    padding: 0;
     align-items: center;
   }
 

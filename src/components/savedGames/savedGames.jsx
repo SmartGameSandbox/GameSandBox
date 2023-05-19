@@ -1,3 +1,10 @@
+/*
+  File: savedGames.jsx
+
+  Description: Contains the SavedGames component. Retrieves a list of saved games for the user and
+  renders a list of the user's saved games.
+*/
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { SMARTButton } from "../button/button";
@@ -6,15 +13,15 @@ import "./savedGames.css";
 import { BASE_URL } from '../../util/constants'
 import Themes from "./savedGamesTheme";
 import Header from "../header/header";
-import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
+import BuildGameForm from "../buildGame/buildGameForm";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 
 
 const SavedGames = () => {
   const [showBuildGameModal, setBuildGameModal] = useState(false);
   const [isLoading, setLoading] = useState(true); // Loading state
-  const [gamesThings, setGames] = useState();
-  let list = [];
+  const [gamesThings, setGames] = useState(); // State variable for the list of saved games
+  let list = []; 
   let no_games = false;
   let games_list = null;
   let counter = false;
@@ -23,9 +30,11 @@ const SavedGames = () => {
     setTimeout(() => {
       // simulate a delay
 
-      if (!counter) {
-        counter = true;
+      if (!counter) { 
+        counter = true; 
         let games = null;
+
+        // Get the list of saved games for the user from database
         axios
           .get(`${BASE_URL}/api/games`, {
             params: {
@@ -35,19 +44,23 @@ const SavedGames = () => {
           .then((response) => {
 
             if (response.status === 200) {
-              games = response.data.savedGames;
+              games = response.data.savedGames; // set games to the list of saved games
+              
+              // For every saved game, add the name to the list
               for (let i = 0; i < games.length; i++) {
                 list.push(games[i].name);
               }
               if (list.length === 0) {
                 no_games = true;
               }
+
+              // Create a list of SMARTButtons for each saved game
               games_list = list.map((games, index) => (
                 <SMARTButton key={index} sx={Themes.item}>
                   {games}
                 </SMARTButton>
               ));
-              setGames(games_list);
+              setGames(games_list); // set the list of SMARTButtons to the state variable
               setLoading(false);
             }
           })
@@ -97,9 +110,10 @@ const SavedGames = () => {
           Create New Game
         </SMARTButton>
       </div>
-      {/* Modals */}
+      {/* Modals */} 
       <Modal
-        title="Build Game"
+      // Build Game Modal redirects to the build game page
+        title="Build Game" 
         onClose={() => setBuildGameModal(false)}
         show={showBuildGameModal}
         style={{

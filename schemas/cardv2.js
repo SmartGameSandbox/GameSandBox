@@ -1,3 +1,7 @@
+// Schema for card objects.
+// Named cardv2 by team 2.
+// Not currently in use as game objects are loaded from the Grid schema.
+
 const mongoose = require("mongoose");
 
 const cardv2Schema = new mongoose.Schema({

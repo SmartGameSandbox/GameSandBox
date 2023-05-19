@@ -1,3 +1,10 @@
+/*
+    File: dashboard.jsx
+
+    Description: Contains the Dashboard component. It represents the dashboard page
+    where users can join rooms through a shared link, host rooms, build games, and view their saved games
+*/
+
 import axios from 'axios';
 import { useState, useRef } from "react";
 import { TextField } from "@mui/material";
@@ -5,15 +12,15 @@ import { SMARTButton } from '../button/button';
 import { BASE_URL } from '../../util/constants'
 import styles from './dashboardStyle';
 import Modal from "../modal/modal";
-import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
+import BuildGameForm from "../buildGame/buildGameForm";
 import Header from "../header/header";
 
 const Dashboard = () => {
-    const [showBuildGameModal, setBuildGameModal] = useState(false);
+    const [showBuildGameModal, setBuildGameModal] = useState(false); // toggle for build game modal
     const [roomLink, setroomLink] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const nodeRef = useRef(null);
+    const nodeRef = useRef(null); // reference to the build game modal
 
 
     return (
@@ -28,7 +35,7 @@ const Dashboard = () => {
                                 variant="contained"
                                 size="large"
                                 sx={styles.joinBtn}
-                                onClick={() => {joinRoom();}}
+                                onClick={() => {joinRoom();}} // join room button. redirects to room page from link
                             >
                             Join Room
                             </SMARTButton>
@@ -51,7 +58,7 @@ const Dashboard = () => {
                     theme="primary"
                     variant="contained"
                     size="large"
-                    onClick={() => window.location.href = '/games'}
+                    onClick={() => window.location.href = '/games'} // host room button. redirects to games page
                 >
                     Host Room
                 </SMARTButton>
@@ -60,7 +67,7 @@ const Dashboard = () => {
                     theme="primary"
                     variant="contained"
                     size="large"
-                    onClick={() => setBuildGameModal(true)}
+                    onClick={() => setBuildGameModal(true)} // build game button. opens build game modal
                 >
                     Build Games
                 </SMARTButton>
@@ -69,7 +76,7 @@ const Dashboard = () => {
                     theme="primary"
                     variant="contained"
                     size="large"
-                    onClick={() => window.location.href = '/mygames'}
+                    onClick={() => window.location.href = '/mygames'} // my games button. redirects to mygames page
                 >
                     My Games
                 </SMARTButton>
@@ -89,14 +96,17 @@ const Dashboard = () => {
         </div>
     );
 
+    // function to handle the change in the room link text input
     function handleRoomLinkTextInputChange(e) {
-        setroomLink(e.target.value);
+        setroomLink(e.target.value); // set the room link to the value of the text input
     };
 
+    // Join a room based on the provided room link
     function joinRoom() {
+        // Make a GET request to the server to join the room using the provided room link
         axios.get(`${BASE_URL}/api/room?id=${roomLink}`)
         .then(() => {
-            window.location.href = `/room?id=${roomLink}`;
+            window.location.href = `/room?id=${roomLink}`; // redirect to the specific room page
         }).catch((error) => {
             setErrorMessage(error.response.data.message);
         });

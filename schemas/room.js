@@ -1,3 +1,13 @@
+// Schema for currently hosted rooms.
+// The field "cards" is an array of all cards that are on the table and not in a deck or hand.
+// The field "tokens" is an array of all tokens that are on the table and not in a deck or hand.
+// The field "pieces" is an array of all tokens that are on the table and not in a deck or hand.
+// The field "hands" is an array of all participants hands.
+// Hand is an array that contains any game object that the user possesses (and are inacccessible to others).
+// Users is an array that contains the current participants.
+// The field "deck" is an array of decks of homogeneously-typed game objects (see grid.js).
+
+
 const mongoose = require('mongoose')
 const { Schema } = mongoose;
 

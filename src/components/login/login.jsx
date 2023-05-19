@@ -1,3 +1,12 @@
+/*
+  File: login.jsx
+
+  Description: Contains the Login component. Renders a form for users to enter their username and password, and handles 
+  the submission of the input to the backend for authentication. Utilizes bcryptjs to compare the hashed password from
+  the database with the password input by the user. Once the user is authenticated, the component stores the user's
+  information and authentication token in the session storage and redirects the user to dashboard.
+*/
+
 import axios from "axios";
 import React, { useState } from "react";
 import styles from "./loginStyle";
@@ -9,12 +18,14 @@ import {SMARTButton} from '../button/button';
 import logo from "../icons/Group_89.png";
 import bcryptjs from "bcryptjs";
 
-
+// Login Component
 const Login = () => {
+  // State variables for username and password input text fields initialized to empty strings
   const [usernameInputText, setUsernameInputText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [passwordInputText, setPasswordInputText] = useState("");
 
+  // Sets the value of usernameInputText and passwordInputText to the value of the username and password input text fields
   const handleUsernameTextInputChange = (event) => {
     setUsernameInputText(event.target.value);
   };
@@ -22,6 +33,7 @@ const Login = () => {
     setPasswordInputText(event.target.value);
   };
 
+  // Function to handle login form submission to backend
   const handleSubmit = () => {
     let username = usernameInputText;
     let password = passwordInputText;
@@ -32,12 +44,13 @@ const Login = () => {
       })
       .then((response) => {
         if (response.status === 200) {
+          // Compare hashed password from database with password input by user using bcryptjs.compare
           bcryptjs.compare(password, response.data.user.password, (err, result) => {
             if (result) {
               setErrorMessage("");
               sessionStorage.setItem("username", response.data.user.username);
               sessionStorage.setItem("id", response.data.user._id);
-              sessionStorage.setItem("token", response.data.token); 
+              sessionStorage.setItem("token", response.data.token); // Store generated authentication token in session storage
               window.location.href = "/dashboard";
             } else {
               setErrorMessage("Incorrect password");
@@ -93,6 +106,10 @@ const Login = () => {
                 placeholder="Please enter your password"
                 value={passwordInputText}
                 onChange={handlePasswordTextInputChange}
+                onKeyDown={(e) => {
+                  if (e.code !== "Enter") return;
+                  handleSubmit();
+                }}
                 className="text-field"
                 required
                 label="Password"

@@ -1,47 +1,35 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AppBar from "@mui/material/AppBar";
-import { SMARTButton, SMARTIconButton } from "../../button/button";
+import { SMARTButton, SMARTIconButton } from "../button/button";
 import { FaPlus } from "react-icons/fa";
-import Modal from "../../modal/modal";
+import Modal from "../modal/modal";
 import ImageUploadForm from "./imageUploadForm";
-import "./bottomToolbar.css";
-import { BASE_URL } from '../../../util/constants'
-const Buffer = require("buffer").Buffer;
+import { BASE_URL } from '../../util/constants'
 
-
-const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) => {
+/**
+ * Bottom bar for toggling imageUploadForm and game save UI.
+ * @component
+ * 
+ * @property {Array} decks
+ * @property {function} setDecks
+ * @property {Array} tokens
+ * @property {function} setTokens
+ * @property {Array} pieces
+ * @property {function} setPieces
+ */
+const BottomToolbar = ({
+  decks, setDecks, tokens, setTokens, pieces, setPieces }) => {
 
   const location = useLocation();
   const navigate = useNavigate();
 
   const [showForm, setShowForm] = useState(false);
-
   const [thumbnails, setThumbnails] = useState([]);
-  const [decks, setDecks] = useState([]);
-  const [tokens, setTokens] = useState([]);
-  const [pieces, setPieces] = useState([]);
 
+  // for modal
   const nodeRef = useRef(null);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setDisplayCards(createImages(decks));
-    }, 100);
-  }, [decks, setDisplayCards]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setDisplayTokens(createImages(tokens));
-    }, 100);
-  }, [tokens, setDisplayTokens]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setDisplayPieces(createImages(pieces));
-    }, 100);
-  }, [pieces, setDisplayPieces]);
 
   return (
     <>
@@ -59,11 +47,11 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
             >
               <FaPlus />
             </SMARTIconButton>
-              {thumbnails.map(({ imgSrc, name, itemType }, key) => (
+              {thumbnails.map(({ faceImage, name, itemType }, key) => (
                 <div
                   key={key}
                   className={`image-preview ${itemType}`}
-                  style={{backgroundImage: `url('${URL.createObjectURL(imgSrc)}')`}}
+                  style={{backgroundImage: `url('${URL.createObjectURL(faceImage)}')`}}
                   onMouseOver={(e) => {e.target.innerText = "X"}}
                   onMouseLeave={(e) => {e.target.innerText = ""}}
                   onClick={() => {deleteItem(name, itemType)}}
@@ -86,6 +74,7 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
           </div>
         </div>
       </AppBar>
+
       <Modal
         title="Upload Item"
         onClose={() => setShowForm(false)}
@@ -103,6 +92,12 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
     </>
   );
 
+  /**
+   * Delete clicked item from the data and bottom bar.
+   * 
+   * @param {String} deletedName 
+   * @param {String} deletedType Card, Token or Piece
+   */
   function deleteItem(deletedName, deletedType) {
     const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
     setters[deletedType](prevItems => {
@@ -113,14 +108,19 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
     });
   }
 
+  /**
+   * Create game data from the buildGamePage and store it in the database.
+   */
   function handleSave() {
     const items = [...decks, ...tokens, ...pieces];
+    // Create game Item data
     const promises = items.map((obj) => {
       return axios
               .post(`${BASE_URL}/api/addDecks`, obj, {
                 headers: { "Content-Type": "application/json" }
               }).then((res) => res.data);
     })
+    // Create game Data
     Promise.all(promises)
       .then((values) => values.map(({ deckId }) => deckId))
       .then((deckIds) => {
@@ -140,18 +140,6 @@ const BottomToolbar = ({setDisplayCards, setDisplayTokens, setDisplayPieces}) =>
       })
       .catch((err) => console.log(err));
   }
-
-  function createImages(state) {
-    return state.map(({ deck }) => {
-      return deck.map(imageObject => {
-        const img = new window.Image();
-        img.src = `data:image/${
-          imageObject.imageSource.front.contentType
-        };base64,${Buffer.from(imageObject.imageSource.front.data).toString("base64")}`;
-        img.className = imageObject.isLandscape ? 'landscape' : '';
-        return img;
-      });
-    });
-  }
 }
-export default BottomToolbar;
+// React.memo prevent re-rendering of thumbnail images while adding new item.
+export default React.memo(BottomToolbar);
