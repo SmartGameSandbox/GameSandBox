@@ -15,7 +15,7 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const { Room } = require("./schemas/room");
-const { CardV2 } = require("./schemas/cardv2");
+// const { CardV2 } = require("./schemas/cardv2");
 const { Grid } = require("./schemas/grid");
 const { Game } = require("./schemas/game");
 const { User } = require("./schemas/user");
@@ -90,10 +90,25 @@ io.on("connection", async (socket) => {
     // Collection of game objects inside the hand of userID.
     ALLROOMSDATA[roomID].hand[username] ??= [];
 
+    // Create server-side array "cardsInDeck" if it doesn't exist.
+    // Collection of id of cards that belong to specific deck.
+    ALLROOMSDATA[roomID].cardsInDeck ??= ALLROOMSDATA[roomID].deck?.map(deck => deck.map(({id}) => id)) ?? [];
+    
+    // Create server-side array "deckDimension" if it doesn't exist.
+    // Collection of dimension (x, y, width, height) for card decks.
+    ALLROOMSDATA[roomID].deckDimension ??= ALLROOMSDATA[roomID].deck?.map(deck => ({
+                                                                              x: deck[0].x,
+                                                                              y: deck[0].y,
+                                                                              width: deck[0].width,
+                                                                              height: deck[0].height,
+                                                                            })) ?? [];
+
     // Notify all clients when the following properties are changed.
     io.to(socket.id).emit("tableReload", {
       cards: ALLROOMSDATA[roomID].cards,
       deck: ALLROOMSDATA[roomID].deck,
+      cardsInDeck: ALLROOMSDATA[roomID].cardsInDeck,
+      deckDimension: ALLROOMSDATA[roomID].deckDimension,
       tokens: ALLROOMSDATA[roomID].tokens,
       pieces: ALLROOMSDATA[roomID].pieces,
       hand: ALLROOMSDATA[roomID].hand[username],
@@ -187,7 +202,13 @@ app.post("/api/room", async (req, res) => {
   const ROOM_ID_LENGTH = 10;
   const filterMapItem = (items, itemType) => {
     return items.reduce((acc, item) => {
-      if (item.type === itemType) return [...acc, item.deck];
+      if (item.type === itemType) {
+        if (itemType !== "Card") {
+          acc.push({totalNum: item.numCards, deck: item.deck});
+        } else {
+          acc.push(item.deck);
+        }
+      }
       return acc;
     }, []);
   }
@@ -334,13 +355,21 @@ app.post("/api/upload",
       numDown,
       numTotal
     } = req.body;
-
     const imageData = fs.readFileSync(
       path.join(__dirname + "/uploads/" + facefile)
     );
+    const cardArray = await sliceImages(itemType, imageData, numAcross, numDown, numTotal);
+    let backArray = null;
+    const backType = backFile?.[0].mimetype || "";
 
-    const cardArray = await sliceImages(imageData, numAcross, numDown);
-    const cardDocuments = await createCardObjects(cardArray, backFile, faceType, isLandscape, itemType);
+    if (backFile?.[0].filename) {
+      const backImageData = fs.readFileSync(
+        path.join(__dirname + "/uploads/" + backFile[0].filename)
+      );
+      backArray = await sliceImages(itemType, backImageData, numAcross, numDown, numTotal, false, isSameBack);
+    }
+    const cardDocuments = await createCardObjects(
+                            cardArray, backArray, faceType, backType, isLandscape, itemType);
 
       const cardDeck = {
         name: facefile,
@@ -352,8 +381,6 @@ app.post("/api/upload",
         deck: cardDocuments,
         type: itemType,
       };
-
-      console.log(cardDeck);
 
     res.status(200).send({
       message: "Deck created successfully",
@@ -369,8 +396,7 @@ app.post("/api/upload",
 app.post("/api/addDecks", async (req, res) => {
   try {
     const gameObject = req.body;
-    await CardV2.create(gameObject.deck);
-    console.log(gameObject);
+    // await CardV2.create(gameObject.deck);
     const result = await Grid.create(gameObject);
     res.status(200).send({
       deckId: result._id,
@@ -407,16 +433,36 @@ app.post("/api/saveGame", async (req, res) => {
   }
 });
 
-const sliceImages = async (ImageData, cols, rows) => {
-  const cardArray = [];
+const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true, isSameBack = false) => {
   const inputBuffer = Buffer.from(ImageData);
+  const imageInput = sharp(inputBuffer);
   const numCols = parseInt(cols);
   const numRows = parseInt(rows);
-  const imageInput = sharp(inputBuffer);
+  const numTotal = parseInt(total);
   const { width: imgWidth, height: imgHeight } = await imageInput.metadata();
+  const resize = {};
+  const extend = itemType === "Card" ? 2 : {};
+  
+  if (!isFace && isSameBack) {
+    if (imgWidth > imgHeight) {
+      resize.width = 91;
+    } else {
+      resize.height = 91;
+    }
+    const formattedImageBuffer = await imageInput.resize(resize).extend(extend).toBuffer()
+    return Array(Math.min(numTotal, cols*rows)).fill(formattedImageBuffer);
+  }
+  const cardArray = [];
 
   const cardWidth = Math.floor(imgWidth / numCols);
   const cardHeight = Math.floor(imgHeight / numRows);
+  if (itemType !== "Piece") {
+    if (cardWidth > cardHeight) {
+      resize.width = 91;
+    } else {
+      resize.height = 91;
+    }
+  }
 
   // extract the cards
   for (let i = 0; i < numRows; i++) {
@@ -436,6 +482,8 @@ const sliceImages = async (ImageData, cols, rows) => {
             width: cardWidth,
             height: cardHeight
           })
+          .resize(resize)
+          .extend(extend)
           .toBuffer()
           .then((res) => {
             cardArray.push(res);
@@ -443,32 +491,25 @@ const sliceImages = async (ImageData, cols, rows) => {
       }
     }
   }
-  return cardArray;
+  return cardArray.slice(0, numTotal);
 };
 
-const createCardObjects = async (cardArray, backFile, faceType, isLandscape, itemType) => {
+const createCardObjects = async (
+  cardArray, backArray, faceType, backType, isLandscape, itemType) => {
   //Card Array consists of buffers for every card in the deck.
-  let backImgBuffer = Buffer.allocUnsafe(1);
-  let backType = "";
-  if (backFile?.length > 0) {
-    const backImgData = fs.readFileSync(
-        path.join(__dirname + "/uploads/" + backFile[0].filename)
-      );
-    backImgBuffer = Buffer.from(backImgData);
-    backType = backFile[0].mimetype;
-  }
+  backArray ??= Array(cardArray.length).fill(null);
 
-  return cardArray.map(buffer => ({
+  return cardArray.map((buffer, index) => ({
       id: uuidv4(),
-      x: 600,
-      y: 200,
+      x: null,
+      y: null,
       imageSource: {
         front: {
           data: buffer,
           contentType: faceType,
         },
         back: {
-          data: backImgBuffer,
+          data: backArray[index],
           contentType: backType,
         }
 

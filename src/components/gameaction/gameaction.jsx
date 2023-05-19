@@ -12,84 +12,130 @@
  *             draggable
  *           />
  */
-// Notes: OnDragMoveCardGA should be renamed to onDragMoveGA, as it can apply to tokens and pieces as well.
 
 import * as Constants from "../../util/constants";
 
-const onDragMoveCardGA = (e, cardID, deckIndex, setCanEmit, setTableData, emitMouseChange, gamePieceType) => {
+export function onDragMoveGA(e, itemID, {deckIndex, setCanEmit, setTableData, emitMouseChange}, gamePieceType) {
     setCanEmit(true);
+    const { x, y } = e.target.attrs;
     setTableData((prevTable) => {
-      const prevGamePieceType = prevTable[gamePieceType] || [];
-      const found = prevGamePieceType[deckIndex].find((card) => card.id === cardID);
-      found.x = e.target.attrs.x - deckIndex * 140;
-      found.y = e.target.attrs.y;
-      prevGamePieceType[deckIndex] = prevGamePieceType[deckIndex].filter((card) => card.id !== cardID);
-      prevGamePieceType[deckIndex].push(found);
-      return { ...prevTable, [gamePieceType]: prevGamePieceType };
+      if (["cards", "hand"].includes(gamePieceType)) {
+        const found = prevTable[gamePieceType].find((item) => item.id === itemID);
+        found.x = x;
+        found.y = y;
+        prevTable[gamePieceType].filter((item) => item.id !== itemID).push(found);
+        return {...prevTable};
+      }
+      const found = prevTable[gamePieceType][deckIndex].find((item) => item.id === itemID);
+      if (["deck", "tokens"].includes(gamePieceType)) {
+        found.x = x - Constants.DECK_PADDING;
+        found.y = y - Constants.DECK_PADDING;
+      } else {
+        found.x = x;
+        found.y = y;
+      }
+      prevTable[gamePieceType][deckIndex].filter((item) => item.id !== itemID).push(found);
+      return {...prevTable};
     });
     emitMouseChange(e);
   };
 
-const onDragEndGA = (e, cardID, deckIndex, setCanEmit, setTableData, emitMouseChange, gamePieceType) => {
-    const position = e.target.attrs;
+export function onDragEndGA(e, itemID, {deckIndex, setCanEmit, setTableData, tableData, emitMouseChange}, gamePieceType) {
+    const {x: cursorX, y: cursorY} = e.target.attrs;
+    let deckX, deckY, deckW, deckH, draggedItem;
+    if (["cards", "hand"].includes(gamePieceType)) {
+      draggedItem = tableData[gamePieceType].find((item) => item.id === itemID);
+      deckIndex = tableData.cardsInDeck.findIndex(deck => deck.includes(itemID)) ?? -1;
+    } else {
+      draggedItem = tableData[gamePieceType][deckIndex].find((item) => item.id === itemID);
+    }
+    if (deckIndex > -1) {
+      deckX = tableData.deckDimension[deckIndex].x;
+      deckY = tableData.deckDimension[deckIndex].y;
+      deckW = tableData.deckDimension[deckIndex].width * 0.8;
+      deckH = tableData.deckDimension[deckIndex].height * 0.8;
+    }
     setCanEmit(true);
-    if (
-      position.x >= Constants.DECK_STARTING_POSITION_X - Constants.CARD_WIDTH &&
-      position.x <=
-        Constants.DECK_STARTING_POSITION_X + Constants.DECK_AREA_WIDTH &&
-      position.y >=
-        Constants.DECK_STARTING_POSITION_Y - Constants.CARD_HEIGHT &&
-      position.y <=
-        Constants.DECK_STARTING_POSITION_Y + Constants.DECK_AREA_HEIGHT
-    ) {
+    if (deckX && cursorX >= deckX - deckW && cursorX <= deckX + deckW
+        && cursorY >= deckY - deckH && cursorY <= deckY + deckH) {
       // deck area movement
       setTableData((prevTable) => {
-        const prevGamePieceType = prevTable[gamePieceType] || [];
-        prevGamePieceType[deckIndex] = prevGamePieceType[deckIndex].map((card) => {
-        if (card.id === cardID) {
-            card.x =
-              Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
-            card.y =
-              Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
-          }
-          return card;
-        });
-        return { ...prevTable };
+        if (draggedItem.pile.length > 0) {
+          draggedItem.pile.forEach(cardInPile => prevTable.deck[deckIndex].push(cardInPile))
+          draggedItem.pile.forEach(cardInPile => cardInPile.x = deckX)
+          draggedItem.pile.forEach(cardInPile => cardInPile.y = deckY)
+          draggedItem.pile = []
+        }
+        draggedItem.x = deckX;
+        draggedItem.y = deckY;
+        if (gamePieceType === "deck") {
+          prevTable.deck[deckIndex] = prevTable.deck[deckIndex].filter(card => card.id !== itemID);
+        } else {
+          prevTable[gamePieceType] = prevTable[gamePieceType].filter(card => card.id !== itemID);
+        }
+        prevTable.deck[deckIndex].push(draggedItem);
+        return {...prevTable};
       });
-    } else if (
-      position.y >
-      Constants.CANVAS_HEIGHT -
-        Constants.HAND_HEIGHT -
-        0.5 * Constants.CARD_HEIGHT
-    ) {
+    } else if (cursorY > Constants.CANVAS_HEIGHT - Constants.HAND_HEIGHT - Constants.CARD_WIDTH) {
       setTableData((prevTable) => {
         // find card in tableData.deck
-        const prevGamePieceType = prevTable[gamePieceType] || [];
-        const found = prevGamePieceType[deckIndex].find((card) => card.id === cardID);
-        
+        if (draggedItem.pile.length > 0) {
+          draggedItem.pile.forEach((item, index) => {
+            if (cursorX + (index+1)*Constants.DECK_PADDING + Constants.CARD_WIDTH <= Constants.HAND_WIDTH) {
+              item.x = cursorX + (index+1)*Constants.DECK_PADDING;
+            } else {
+              item.x = cursorX;
+            }
+            item.y = cursorY;
+              prevTable.hand.push(item);
+          })
+          draggedItem.pile = []
+        }
         // add card to hand
-        prevTable.hand.push(found);
-        found.x = e.target.attrs.x
-        found.y = e.target.attrs.y
-        prevGamePieceType[deckIndex] = prevGamePieceType[deckIndex].filter((card) => card.id !== cardID);
-        return { ...prevTable };
+        draggedItem.x = cursorX;
+        draggedItem.y = cursorY;
+        if (["cards", "hand"].includes(gamePieceType)) {
+          prevTable[gamePieceType] = prevTable[gamePieceType].filter((card) => card.id !== itemID);
+        } else {
+          prevTable[gamePieceType][deckIndex] = prevTable[gamePieceType][deckIndex].filter((card) => card.id !== itemID);
+        }
+        prevTable.hand.push(draggedItem);
+        return {...prevTable};
       });
-    } else {
+    } else if (gamePieceType !== "cards") {
       // deck to table
       setTableData((prevTable) => {
-        const prevGamePieceType = prevTable[gamePieceType] || [];
         // find card in tableData.deck
-        const found = prevGamePieceType[deckIndex].find((card) => card.id === cardID);
-        found.x = position.x;
-        found.y = position.y;
+        draggedItem.x = cursorX;
+        draggedItem.y = cursorY;
         // add card to hand
-        prevTable.cards.push(found);
-        prevGamePieceType[deckIndex] = prevGamePieceType[deckIndex].filter((card) => card.id !== cardID);
-        return { ...prevTable };
+        if (gamePieceType === "hand") {
+          prevTable.hand = prevTable.hand.filter(item => item.id !== itemID);
+        } else {
+          prevTable[gamePieceType][deckIndex] = prevTable[gamePieceType][deckIndex].filter((card) => card.id !== itemID);
+        }
+        prevTable.cards.push(draggedItem);
+        
+        return {...prevTable};
+      });
+    } else {
+      setTableData((prevTable) => {
+        prevTable.cards.forEach((pile) => {
+          if (pile !== draggedItem
+            && cursorX > pile.x - 10
+            && cursorX < pile.x + Constants.CARD_WIDTH + 10
+            && cursorY > pile.y - 10
+            && cursorY < pile.y + Constants.CARD_HEIGHT + 10) {
+            prevTable.cards = prevTable.cards.filter((card) => card !== draggedItem && card !== pile);
+            draggedItem.pile = draggedItem.pile.concat(pile).concat(pile.pile);
+            pile.pile = []
+            pile.x = -100
+            pile.y = -100
+            prevTable.cards.push(draggedItem)
+          }
+        })
+        return {...prevTable};
       });
     }
     emitMouseChange(e);
-  };
-
-
-export { onDragMoveCardGA, onDragEndGA };
+  }
