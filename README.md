@@ -19,3 +19,8 @@ Database is in mongodb
 5. how to play games Jin
 6. logics behind. Brief outline/diagram like logic for creating an item, room, etc Jin
 7. code style (directory directions) (how actions should go to action, deck specific to deck) Brian
+
+##Technologies and libraries used
+1. MERN Stack: This game is built with React.js on the front end, Express.js and Node.js on the back end, with MongDB being used as our database option.
+2. [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket): We use Websocket for sending and receiving data between the client side and server side.
+3. [Konva](https://konvajs.org/docs/): A Canvas JavaScript framework that allows animations, transitions, layering and event handling etc. We use react-konva to handle the layering and interactions among various game components.
