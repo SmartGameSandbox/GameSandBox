@@ -335,7 +335,9 @@ app.get("/api/games", async (req, res) => {
   }
 });
 
-//Image Upload REST APIs Deck making logics
+/**
+ * Receive game item formData from imageUploadForm and create array of game Item.
+ */
 app.post("/api/upload",
           upload.fields([{
             name: "image", maxCount: 1}, {
@@ -354,44 +356,50 @@ app.post("/api/upload",
     const imageData = fs.readFileSync(
       path.join(__dirname + "/uploads/" + facefile)
     );
-    const cardArray = await sliceImages(itemType, imageData, numAcross, numDown, numTotal);
     let backArray = null;
     const backType = backFile?.[0].mimetype || "";
-
+    
+    // check if backfile exist (card, token)
     if (backFile?.[0].filename) {
       const backImageData = fs.readFileSync(
         path.join(__dirname + "/uploads/" + backFile[0].filename)
       );
       backArray = await sliceImages(itemType, backImageData, numAcross, numDown, numTotal, false, isSameBack);
     }
-    const cardDocuments = await createCardObjects(
-                            cardArray, backArray, faceType, backType, isLandscape, itemType);
-
-      const cardDeck = {
-        name: facefile,
-        numCards: parseInt(numTotal),
-        imageGrid: {
-          data: imageData,
-          contentType: faceType,
-        },
-        deck: cardDocuments,
-        type: itemType,
-      };
+    const faceArray = await sliceImages(itemType, imageData, numAcross, numDown, numTotal);
+    
+    const gameItemDocuments = await createGameObjects(
+                            faceArray, backArray, faceType, backType, isLandscape, itemType);
+    
+    //To Do: change the key to be more general between card, token, piece and additional future items
+    const gameItemDeck = {
+      name: facefile,
+      numCards: parseInt(numTotal),
+      imageGrid: {
+        data: imageData,
+        contentType: faceType,
+      },
+      deck: gameItemDocuments,
+      type: itemType,
+    };
 
     res.status(200).send({
-      message: "Deck created successfully",
-      newItem: cardDeck,
+      message: "Item created successfully",
+      newItem: gameItemDeck,
     });
   } catch (error) {
-    console.error("Failed to insert grid", error);
-    res.status(500).send("Failed to insert grid");
+    console.error("Failed to create item", error);
+    res.status(500).send("Failed to create item");
   }
 });
 
-//Image Upload REST APIs Deck making logics
+/**
+ * create Grid from each items passed in from BuildGamePage.handleSave()
+ */
 app.post("/api/addDecks", async (req, res) => {
   try {
     const gameObject = req.body;
+    // To Do: CardV2 not used. Assess requirement in future and keep/remove.
     // await CardV2.create(gameObject.deck);
     const result = await Grid.create(gameObject);
     res.status(200).send({
@@ -403,15 +411,13 @@ app.post("/api/addDecks", async (req, res) => {
   }
 });
 
+/**
+ * Create Game from Array of Grid Ids from BuildGamePage.handleSave()
+ */
 app.post("/api/saveGame", async (req, res) => {
   try {
-    const {
-      name,
-      players,
-      creatorId,
-      newDeckIds,
-    } = req.body;
-    console.log(req.body)
+    // To Do: change newDeckIds, cardDeck to more general term
+    const { name, players, creatorId, newDeckIds } = req.body;
     if (creatorId) {
       //Create a game now
       const gameObject = {
@@ -429,16 +435,35 @@ app.post("/api/saveGame", async (req, res) => {
   }
 });
 
+/**
+ * Slice image to grid specified by cols and row.
+ * The max dimension is set for cards and tokens.
+ * 
+ * @param {String} itemType Card, Token or Piece
+ * @param {File} ImageData
+ * @param {Number} cols number of items across
+ * @param {Number} rows number of items down
+ * @param {Number} total total number of items in final array
+ * @param {Boolean} isFace whether the image is back or face image file
+ * @param {Boolean} isSameBack if true, retain the back image as whole without slicing
+ * 
+ * @returns Array of processing image buffer
+ */
 const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true, isSameBack = false) => {
-  const inputBuffer = Buffer.from(ImageData);
-  const imageInput = sharp(inputBuffer);
+  // parsing may not be necessary
   const numCols = parseInt(cols);
   const numRows = parseInt(rows);
   const numTotal = parseInt(total);
+
+  const inputBuffer = Buffer.from(ImageData);
+  const imageInput = sharp(inputBuffer);
   const { width: imgWidth, height: imgHeight } = await imageInput.metadata();
-  const resize = {};
+
+  // draw border around image
   const extend = itemType === "Card" ? 2 : {};
+  const resize = {};
   
+  // for backImage with same back
   if (!isFace && isSameBack) {
     if (imgWidth > imgHeight) {
       resize.width = 91;
@@ -448,51 +473,56 @@ const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true
     const formattedImageBuffer = await imageInput.resize(resize).extend(extend).toBuffer()
     return Array(Math.min(numTotal, cols*rows)).fill(formattedImageBuffer);
   }
-  const cardArray = [];
 
-  const cardWidth = Math.floor(imgWidth / numCols);
-  const cardHeight = Math.floor(imgHeight / numRows);
+  // Dimension of each item image
+  const itemWidth = Math.floor(imgWidth / numCols);
+  const itemHeight = Math.floor(imgHeight / numRows);
   if (itemType !== "Piece") {
-    if (cardWidth > cardHeight) {
+    if (itemWidth > itemHeight) {
       resize.width = 91;
     } else {
       resize.height = 91;
     }
   }
 
-  // extract the cards
+  // Slice the image and store in array 
+  const itemArray = [];
   for (let i = 0; i < numRows; i++) {
-    const y = i * cardHeight;
+    const y = i * itemHeight;
     for (let j = 0; j < numCols; j++) {
       const input = sharp(inputBuffer);
-      const x = j * cardWidth;
-
-      if (
-        x + cardWidth <= imgWidth &&
-        y + cardHeight <= imgHeight
-      ) {
+      const x = j * itemWidth;
+      // check if enough space for a card is available to be sliced
+      if (x + itemWidth <= imgWidth && y + itemHeight <= imgHeight) {
         await input
-          .extract({
-            left: x,
-            top: y,
-            width: cardWidth,
-            height: cardHeight
-          })
+          .extract({ left: x, top: y, width: itemWidth, height: itemHeight })
           .resize(resize)
           .extend(extend)
           .toBuffer()
           .then((res) => {
-            cardArray.push(res);
+            itemArray.push(res);
           });
       }
     }
   }
-  return cardArray.slice(0, numTotal);
+  return itemArray.slice(0, numTotal);
 };
 
-const createCardObjects = async (
+/**
+ * Combine face and back array to create a group of functional items
+ * with two side (back.data will be null for single sided item (piece))
+ * 
+ * @param {Array} cardArray Array of buffer(base64)
+ * @param {Array} backArray Array of buffer(base64)
+ * @param {String} faceType image format (e.g. image/webp)
+ * @param {String} backType image format (e.g. image/webp)
+ * @param {Boolean} isLandscape whether to rotate the image or not
+ * @param {String} itemType Card, Token or Piece
+ * @returns Array of CardV2 object
+ */
+const createGameObjects = async (
   cardArray, backArray, faceType, backType, isLandscape, itemType) => {
-  //Card Array consists of buffers for every card in the deck.
+  //If single sided, create array of null
   backArray ??= Array(cardArray.length).fill(null);
 
   return cardArray.map((buffer, index) => ({

@@ -6,7 +6,7 @@ import "./savedGames.css";
 import { BASE_URL } from '../../util/constants'
 import Themes from "./savedGamesTheme";
 import Header from "../header/header";
-import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
+import BuildGameForm from "../buildGame/buildGameForm";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 
 

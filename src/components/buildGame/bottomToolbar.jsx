@@ -2,14 +2,23 @@ import React, { useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AppBar from "@mui/material/AppBar";
-import { SMARTButton, SMARTIconButton } from "../../button/button";
+import { SMARTButton, SMARTIconButton } from "../button/button";
 import { FaPlus } from "react-icons/fa";
-import Modal from "../../modal/modal";
+import Modal from "../modal/modal";
 import ImageUploadForm from "./imageUploadForm";
-import "./bottomToolbar.css";
-import { BASE_URL } from '../../../util/constants'
+import { BASE_URL } from '../../util/constants'
 
-
+/**
+ * Bottom bar for toggling imageUploadForm and game save UI.
+ * @component
+ * 
+ * @property {Array} decks
+ * @property {function} setDecks
+ * @property {Array} tokens
+ * @property {function} setTokens
+ * @property {Array} pieces
+ * @property {function} setPieces
+ */
 const BottomToolbar = ({
   decks, setDecks, tokens, setTokens, pieces, setPieces }) => {
 
@@ -17,9 +26,9 @@ const BottomToolbar = ({
   const navigate = useNavigate();
 
   const [showForm, setShowForm] = useState(false);
-
   const [thumbnails, setThumbnails] = useState([]);
 
+  // for modal
   const nodeRef = useRef(null);
 
   return (
@@ -65,6 +74,7 @@ const BottomToolbar = ({
           </div>
         </div>
       </AppBar>
+
       <Modal
         title="Upload Item"
         onClose={() => setShowForm(false)}
@@ -82,6 +92,12 @@ const BottomToolbar = ({
     </>
   );
 
+  /**
+   * Delete clicked item from the data and bottom bar.
+   * 
+   * @param {String} deletedName 
+   * @param {String} deletedType Card, Token or Piece
+   */
   function deleteItem(deletedName, deletedType) {
     const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
     setters[deletedType](prevItems => {
@@ -92,15 +108,19 @@ const BottomToolbar = ({
     });
   }
 
+  /**
+   * Create game data from the buildGamePage and store it in the database.
+   */
   function handleSave() {
     const items = [...decks, ...tokens, ...pieces];
-    console.log(items)
+    // Create game Item data
     const promises = items.map((obj) => {
       return axios
               .post(`${BASE_URL}/api/addDecks`, obj, {
                 headers: { "Content-Type": "application/json" }
               }).then((res) => res.data);
     })
+    // Create game Data
     Promise.all(promises)
       .then((values) => values.map(({ deckId }) => deckId))
       .then((deckIds) => {
@@ -121,4 +141,5 @@ const BottomToolbar = ({
       .catch((err) => console.log(err));
   }
 }
+// React.memo prevent re-rendering of thumbnail images while adding new item.
 export default React.memo(BottomToolbar);
