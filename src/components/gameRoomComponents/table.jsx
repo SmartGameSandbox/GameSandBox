@@ -23,7 +23,6 @@ const Table = ({ socket, username, roomID }) => {
   const GA_PARAMS = {setCanEmit, setTableData, emitMouseChange, tableData, setItemBeingUpdated};
 
   useEffect(() => {
-    console.log(itemBeingUpdated)
     if (!canEmit) return;
     if (itemBeingUpdated) {
       socket.emit("itemChange", { username, roomID, itemBeingUpdated },
