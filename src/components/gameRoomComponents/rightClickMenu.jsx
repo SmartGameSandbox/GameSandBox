@@ -1,12 +1,15 @@
 import { Group, Rect, Text } from "react-konva";
 
-const RightClickMenu = ({ x, y, cardId, setTableData, setRightClickPos, setClickedCardID, setCanEmit}) => {
+const RightClickMenu = ({
+  x, y, cardId, setTableData, setRightClickPos, setClickedCardID, setCanEmit, setItemBeingUpdated
+}) => {
   const options = ['Flip', 'Rotate', "Disassemble"];
   const padding = 5;
   const lineHeight = 24;
   const width = 100;
 
   const handleOptionClick = (option) => {
+    setItemBeingUpdated(null);
     if (option === 'Flip') {
       setTableData((prevTable) => {
         const cards = prevTable.cards.map((card) => {

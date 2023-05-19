@@ -127,13 +127,57 @@ io.on("connection", async (socket) => {
     if (ALLROOMSDATA[roomID] && tableData) {
       ALLROOMSDATA[roomID].cards = tableData.cards;
       ALLROOMSDATA[roomID].deck = tableData.deck;
+      ALLROOMSDATA[roomID].tokens = tableData.tokens;
+      ALLROOMSDATA[roomID].pieces = tableData.pieces;
       ALLROOMSDATA[roomID].hand[username] = tableData.hand;
       io.to(roomID).emit("tableChangeUpdate", {
-        username: username,
+        username,
         tableData: {
           cards: ALLROOMSDATA[roomID].cards,
           deck: ALLROOMSDATA[roomID].deck,
+          tokens: ALLROOMSDATA[roomID].tokens,
+          pieces: ALLROOMSDATA[roomID].pieces,
         },
+      });
+    }
+  });
+
+  // Listen for drag of item client-side, then update the server-side information.
+  socket.on("itemChange", ({
+    username,
+    roomID,
+    itemBeingUpdated
+  }) => {
+    if (ALLROOMSDATA[roomID] && itemBeingUpdated) {
+      const {itemID, gamePieceType, deckIndex, x, y} = itemBeingUpdated;
+      if (gamePieceType === "hand") {
+        ALLROOMSDATA[roomID].hand[username].map(item => {
+          if (item.id === itemID) {
+            item.x = x;
+            item.y = y;
+          }
+          return item;
+        });
+      } else if (gamePieceType === "cards") {
+        ALLROOMSDATA[roomID].cards.map(item => {
+          if (item.id === itemID) {
+            item.x = x;
+            item.y = y;
+          }
+          return item;
+        });
+      } else {
+        ALLROOMSDATA[roomID][gamePieceType][deckIndex].map(item => {
+          if (item.id === itemID) {
+            item.x = x;
+            item.y = y;
+          }
+          return item;
+        });
+      }
+      io.to(roomID).emit("tableChangeUpdate", {
+        username,
+        itemBeingUpdated,
       });
     }
   });
