@@ -2,7 +2,7 @@ import "./imageUploadForm.css";
 import { useState } from "react";
 import axios from "axios";
 import { SMARTButton } from "../../button/button";
-import { BASE_URL } from '../../../util/constants'
+import { BASE_URL, CARD_HEIGHT, CARD_WIDTH, CANVAS_WIDTH } from '../../../util/constants';
 
 const ImageUploadForm = ({
   closePopup,
@@ -18,16 +18,28 @@ const ImageUploadForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
-    const [imgSrc] = e.currentTarget[0].files;
+    
     const formData = new FormData(e.currentTarget);
     formData.append("itemType", itemType);
+    const faceImage = await formatImage(formData.get('image'),
+                        Math.max(formData.get('numAcross'), formData.get('numDown')),
+                        formData.get("size"));
+    formData.set('image', faceImage);
 
+    if (formData.get('backFile').size > 0) {
+      const backImage = await formatImage(formData.get('backFile'),
+                          formData.get('isSameBack')
+                            ? 1
+                            : Math.max(formData.get('numAcross'), formData.get('numDown')),
+                            formData.get("size"));
+      formData.set('backFile', backImage);
+    }
     axios
       .post(`${BASE_URL}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(({ data: { newItem } }) => {
-        setThumbnails(prevThumbnails => [...prevThumbnails, {imgSrc, name: newItem.name, itemType}]);
+        setThumbnails(prevThumbnails => [...prevThumbnails, {faceImage: formData.get('image'), name: newItem.name, itemType}]);
         setters[itemType](prevItems => [...prevItems, newItem]);
         closePopup();
       })
@@ -42,13 +54,19 @@ const ImageUploadForm = ({
           <div style={{width: "50%", display: "flex", justifyContent: "space-between"}}>
             <div
               className={`bg-itemtype-button ${checkItemType("Card")}`}
-              onClick={() => {setItemType("Card")}}
+              onClick={() => {
+                setItemType("Card");
+                document.querySelector("input[name='size']").value = CARD_HEIGHT;
+              }}
             >   
               Card
             </div>
             <div
               className={`bg-itemtype-button ${checkItemType("Token")}`}
-              onClick={() => {setItemType("Token")}}
+              onClick={() => {
+                setItemType("Token");
+                document.querySelector("input[name='size']").value = CARD_HEIGHT;
+              }}
             >
               Token
             </div>
@@ -79,6 +97,7 @@ const ImageUploadForm = ({
             multiple
             accept="image/*"
             name="backFile"
+            required={itemType !== 'Piece'}
           />
         </div>
 
@@ -112,6 +131,17 @@ const ImageUploadForm = ({
           />
         </div>
 
+        <div className={`row ${itemType !== 'Piece' ? 'hide' : ''}`}>
+          <label>{`length of longest side in px:`}</label>
+          <input
+            type="number"
+            name="size"
+            defaultValue={CARD_HEIGHT}
+            max={CANVAS_WIDTH}
+            min={CARD_WIDTH}
+          />
+        </div>
+
         <div className={`checkbox-wrapper ${itemType === 'Piece' ? 'hide' : ''}`}>
           <div>
             <label>{`Same back for all ${itemType}s?`}</label>
@@ -124,7 +154,7 @@ const ImageUploadForm = ({
             />
           </div>
           <div className={itemType !== 'Card' ? 'hide' : ""}>
-            <label>Landscape</label>
+            <label>Rotate 90°? &#x27F3;</label>
             <input
               type="checkbox"
               name="isLandscape"
@@ -148,6 +178,27 @@ const ImageUploadForm = ({
       </form>
     </div>
   );
+
+  async function formatImage(file, itemLength, maxSize) {
+    const bitmap = await createImageBitmap(file);
+    let { width, height } = bitmap;
+    const size = itemLength * maxSize;
+    const ratio = Math.max(size/width, size/height);
+    if (width < size || height < size) return file;
+    width *= ratio;
+    height *= ratio;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = height;
+    
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    return new Promise(res => {
+      canvas.toBlob(blob => res(blob), 'image/webp')
+    });
+  }
 
   function checkItemType(inputType) {
     if (inputType === itemType) return "active";

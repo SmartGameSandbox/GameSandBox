@@ -8,9 +8,9 @@ export const CARD_DIVIDER_WIDTH_X = 30
 export const CANVAS_HEIGHT = 800;
 export const CANVAS_WIDTH = 1300;
 
-// Card Constants
-export const CARD_HEIGHT = 90.5;
-export const CARD_WIDTH = 62.5;
+// Card Constants (h:w = 7:5)
+export const CARD_HEIGHT = 91;
+export const CARD_WIDTH = 65;
 export const HAND_CARD_GAP = 30;
 export const HAND_PADDING_X = 110;
 export const HAND_PADDING_Y = 15;
