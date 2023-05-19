@@ -21,6 +21,7 @@ export function onDragMoveGA(
   {deckIndex, setCanEmit, tableData, setTableData, emitMouseChange, setItemBeingUpdated},
   gamePieceType
   ) {
+    console.log(tableData[gamePieceType])
     setCanEmit(true);
     const { x, y } = e.target.attrs;
     let draggedItem;
@@ -33,7 +34,10 @@ export function onDragMoveGA(
       if (["cards", "hand"].includes(gamePieceType)) {
         draggedItem.x = x;
         draggedItem.y = y;
-        prevTable[gamePieceType] = prevTable[gamePieceType].filter((item) => item.id !== itemID).push(draggedItem);
+        prevTable[gamePieceType].map(item => {
+          if (item.id !== itemID) return item;
+          return draggedItem;
+        })
         return {...prevTable};
       }
       if (["deck", "tokens"].includes(gamePieceType)) {
@@ -43,7 +47,10 @@ export function onDragMoveGA(
         draggedItem.x = x;
         draggedItem.y = y;
       }
-      prevTable[gamePieceType][deckIndex] = prevTable[gamePieceType][deckIndex].filter((item) => item.id !== itemID).push(draggedItem);
+      prevTable[gamePieceType][deckIndex].map(item => {
+        if (item.id !== itemID) return item;
+        return draggedItem;
+      })
       return {...prevTable};
     });
     setItemBeingUpdated({itemID, gamePieceType, deckIndex, x, y});
