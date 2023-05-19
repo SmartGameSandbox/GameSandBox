@@ -26,6 +26,7 @@ const Table = ({ socket, username, roomID }) => {
     socket.emit("tableChange", { username, roomID, tableData },
       (err) => {if (err) console.error(err);}
     );
+    console.log(tableData);
   }, [tableData, canEmit, roomID, username, socket]);
 
   useEffect(() => {
@@ -35,13 +36,14 @@ const Table = ({ socket, username, roomID }) => {
                       .map(token => token.filter(({id}) => !handAndTable.includes(id)));
       const pieces = setUpTokenAndPiece(data.pieces)
                       .map(piece => piece.filter(({id}) => !handAndTable.includes(id)));
-      
+      console.log(data);
       setTableData({ ...data, pieces, tokens });
     });
 
     socket.on("tableChangeUpdate", (data) => {
       if (data.username === username) return;
       setCanEmit(false);
+      console.log(data);
       setTableData((prevTable) => ({
         ...prevTable,
         cards: data.tableData.cards,
