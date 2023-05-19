@@ -203,7 +203,7 @@ const Table = ({ socket, username, roomID }) => {
       left: konvaLeft
     } = document.querySelector(".konvajs-content").getBoundingClientRect();
     const {clientY, clientX} = event.evt;
-    setRightClickPos({ x: clientX - konvaLeft, y: clientY - konvaTop });
+    setRightClickPos({ x: clientX - konvaLeft - 1, y: clientY - konvaTop - 1});
     setClickedCardID(cardID);
   }
 
