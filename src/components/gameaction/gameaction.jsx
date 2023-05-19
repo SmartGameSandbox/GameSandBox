@@ -15,32 +15,48 @@
 
 import * as Constants from "../../util/constants";
 
-export function onDragMoveGA(e, itemID, {deckIndex, setCanEmit, setTableData, emitMouseChange}, gamePieceType) {
+export function onDragMoveGA(
+  e,
+  itemID,
+  {deckIndex, setCanEmit, tableData, setTableData, emitMouseChange, setItemBeingUpdated},
+  gamePieceType
+  ) {
     setCanEmit(true);
     const { x, y } = e.target.attrs;
+    let draggedItem;
+    if (["cards", "hand"].includes(gamePieceType)) {
+      draggedItem = tableData[gamePieceType].find((item) => item.id === itemID);
+    } else {
+      draggedItem = tableData[gamePieceType][deckIndex].find((item) => item.id === itemID);
+    }
     setTableData((prevTable) => {
       if (["cards", "hand"].includes(gamePieceType)) {
-        const found = prevTable[gamePieceType].find((item) => item.id === itemID);
-        found.x = x;
-        found.y = y;
-        prevTable[gamePieceType].filter((item) => item.id !== itemID).push(found);
+        draggedItem.x = x;
+        draggedItem.y = y;
+        prevTable[gamePieceType].filter((item) => item.id !== itemID).push(draggedItem);
         return {...prevTable};
       }
-      const found = prevTable[gamePieceType][deckIndex].find((item) => item.id === itemID);
       if (["deck", "tokens"].includes(gamePieceType)) {
-        found.x = x - Constants.DECK_PADDING;
-        found.y = y - Constants.DECK_PADDING;
+        draggedItem.x = x - Constants.DECK_PADDING;
+        draggedItem.y = y - Constants.DECK_PADDING;
       } else {
-        found.x = x;
-        found.y = y;
+        draggedItem.x = x;
+        draggedItem.y = y;
       }
-      prevTable[gamePieceType][deckIndex].filter((item) => item.id !== itemID).push(found);
+      prevTable[gamePieceType][deckIndex].filter((item) => item.id !== itemID).push(draggedItem);
       return {...prevTable};
     });
+    setItemBeingUpdated({itemID, gamePieceType, deckIndex, x, y});
     emitMouseChange(e);
   };
 
-export function onDragEndGA(e, itemID, {deckIndex, setCanEmit, setTableData, tableData, emitMouseChange}, gamePieceType) {
+export function onDragEndGA(
+  e,
+  itemID,
+  {deckIndex, setCanEmit, setTableData, tableData, emitMouseChange, setItemBeingUpdated},
+  gamePieceType
+  ) {
+    setItemBeingUpdated(null);
     const {x: cursorX, y: cursorY} = e.target.attrs;
     let deckX, deckY, deckW, deckH, draggedItem;
     if (["cards", "hand"].includes(gamePieceType)) {
