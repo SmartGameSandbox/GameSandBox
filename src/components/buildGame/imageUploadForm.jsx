@@ -1,9 +1,17 @@
-import "./imageUploadForm.css";
 import { useState } from "react";
 import axios from "axios";
-import { SMARTButton } from "../../button/button";
-import { BASE_URL, CARD_HEIGHT, CARD_WIDTH, CANVAS_WIDTH } from '../../../util/constants';
+import { SMARTButton } from "../button/button";
+import { BASE_URL, CARD_HEIGHT, CARD_WIDTH, CANVAS_WIDTH } from '../../util/constants';
 
+/**
+ * Take user Input to pass data to the server for creating gameItem Data.
+ * @component
+ * @property {function} closePopup toggle visibility of parent modal.
+ * @property {function} setThumbnails
+ * @property {function} setDecks
+ * @property {function} setTokens
+ * @property {function} setPieces
+ */
 const ImageUploadForm = ({
   closePopup,
   setThumbnails,
@@ -11,67 +19,42 @@ const ImageUploadForm = ({
   setTokens,
   setPieces,
  }) => {
+  // toggles for form UI, only itemType used for business logic.
   const [isSingleBack, setIsSingleBack] = useState(false);
   const [isLandScape, setIsLandScape] = useState(false);
   const [itemType, setItemType] = useState("Card");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
-    
-    const formData = new FormData(e.currentTarget);
-    formData.append("itemType", itemType);
-    const faceImage = await formatImage(formData.get('image'),
-                        Math.max(formData.get('numAcross'), formData.get('numDown')),
-                        formData.get("size"));
-    formData.set('image', faceImage);
-
-    if (formData.get('backFile').size > 0) {
-      const backImage = await formatImage(formData.get('backFile'),
-                          formData.get('isSameBack')
-                            ? 1
-                            : Math.max(formData.get('numAcross'), formData.get('numDown')),
-                            formData.get("size"));
-      formData.set('backFile', backImage);
-    }
-    axios
-      .post(`${BASE_URL}/api/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-      .then(({ data: { newItem } }) => {
-        setThumbnails(prevThumbnails => [...prevThumbnails, {faceImage: formData.get('image'), name: newItem.name, itemType}]);
-        setters[itemType](prevItems => [...prevItems, newItem]);
-        closePopup();
-      })
-      .catch((err) => console.log(err));
-  };
+  // check if itemtype button is active or not
+  const checkItemType = (inputType) => inputType === itemType ? "active" : "";
 
   return (
-    <div className="bg-form">
+    <div className="bg-form image-upload">
       <form onSubmit={handleSubmit}>
       <div className="row">
           <label>Item Type:</label>
-          <div style={{width: "50%", display: "flex", justifyContent: "space-between"}}>
+          <div className="itemtype-wrapper">
             <div
-              className={`bg-itemtype-button ${checkItemType("Card")}`}
+              className={checkItemType("Card")}
               onClick={() => {
                 setItemType("Card");
+                // set the size to default value (CARD_HEIGHT)
                 document.querySelector("input[name='size']").value = CARD_HEIGHT;
               }}
             >   
               Card
             </div>
             <div
-              className={`bg-itemtype-button ${checkItemType("Token")}`}
+              className={checkItemType("Token")}
               onClick={() => {
                 setItemType("Token");
+                // set the size to default value (CARD_HEIGHT)
                 document.querySelector("input[name='size']").value = CARD_HEIGHT;
               }}
             >
               Token
             </div>
             <div
-              className={`bg-itemtype-button ${checkItemType("Piece")}`}
+              className={checkItemType("Piece")}
               onClick={() => {setItemType("Piece")}}
             >
               Piece
@@ -179,6 +162,54 @@ const ImageUploadForm = ({
     </div>
   );
 
+  /**
+   * Create FormData from form submission, edit and create game Data
+   * @param {SubmitEvent} e 
+   */
+  async function handleSubmit (e) {
+    e.preventDefault();
+    const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
+    
+    const formData = new FormData(e.currentTarget);
+    formData.append("itemType", itemType);
+
+    // format images if they exist and update formData
+    const faceImage = await formatImage(formData.get('image'),
+                        Math.max(formData.get('numAcross'), formData.get('numDown')),
+                        formData.get("size"));
+    formData.set('image', faceImage);
+    if (formData.get('backFile').size > 0) {
+      const backImage = await formatImage(formData.get('backFile'),
+                          formData.get('isSameBack')
+                            ? 1
+                            : Math.max(formData.get('numAcross'), formData.get('numDown')),
+                            formData.get("size"));
+      formData.set('backFile', backImage);
+    }
+    // API POST to create game item data
+    axios
+      .post(`${BASE_URL}/api/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then(({ data: { newItem } }) => {
+        setThumbnails(prevThumbnails => {
+          const newThumbnail = {faceImage: formData.get('image'), name: newItem.name, itemType};
+          return [...prevThumbnails, newThumbnail]
+        });
+        setters[itemType](prevItems => [...prevItems, newItem]);
+        closePopup();
+      })
+      .catch((err) => console.log(err));
+  };
+
+  /**
+   * Resize the image uploaded from user if too big
+   * 
+   * @param {File} file 
+   * @param {Number} itemLength 
+   * @param {Number} maxSize 
+   * @returns Promise of formatted image as blob
+   */
   async function formatImage(file, itemLength, maxSize) {
     const bitmap = await createImageBitmap(file);
     let { width, height } = bitmap;
@@ -199,11 +230,6 @@ const ImageUploadForm = ({
       canvas.toBlob(blob => res(blob), 'image/webp')
     });
   }
-
-  function checkItemType(inputType) {
-    if (inputType === itemType) return "active";
-    return "bg-itemtype-button";
-  } 
 };
 
 export default ImageUploadForm;

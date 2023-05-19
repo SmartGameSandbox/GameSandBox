@@ -1,0 +1,244 @@
+/* BuildGamePage */
+.blur {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    width: 100vw;
+    height: 100vh;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.bgame-header {
+    padding-top: 3%;
+    padding-left: 2%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.bgame-header > button {
+    height: 4em;
+    background: transparent;
+    border-radius: 5em;
+    color: #163B6E;
+}
+
+.bgame-heading {
+    color: black;
+    margin: 0px;
+    font-family: 'Nunito';
+    font-size: 2em;
+    font-weight: bold;
+    padding: 1px 7px 1px 7px;
+}
+
+.bgame-tabletop {
+    margin-top: 100px;
+    z-index: 101;
+    position: relative;
+}
+
+.bgame-tabletop > div {
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.bgame-toolbar {
+    margin-top: 50px;
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-bottom: 30px;
+}
+
+/* BottomToolBar */
+.tb-container {
+    border-radius: 1%;
+    padding: 15px 0;
+    align-items: center;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.tb-container > div {
+    margin: 0 10px 0 15px;
+}
+
+.bt-IconBtnContainer {
+    display: flex;
+    margin: 10px;
+}
+
+.image-preview {
+    display: flex;
+    width: 52px;
+    height: 52px;
+    margin-left: 15px;
+    background-size: 52px 52px;
+    align-items: center;
+    justify-content: center;
+    outline: #FDF551 solid 2px;
+    color: black;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 20px;
+    font-size: 32px;
+    text-shadow: 0px 0px 2px white;
+}
+
+.image-preview.Card {
+    border-radius: 5px;
+}
+
+/* imageUploadForm, buildGameForm */
+#build-game-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+    padding: 0%;
+  }
+  
+.btnContainer {
+    grid-column-start: 1;
+    grid-column-end: 3;
+}
+
+.btnContainer .bg-createGameBtn {
+    width: 50%;
+    margin-left: 25%;
+}
+
+.bg-form form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    padding-top: 0;
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+    gap: 1em;
+  }
+  
+.bg-form .row {
+    width: 90%;
+    min-height: 38px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+  
+.bg-form .row.last {
+    margin-top: 12px;
+    min-height: 46px;
+    justify-content: space-around;
+}
+  
+.bg-form label {
+    text-align: end;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: bold;
+}
+  
+.bg-form.image-upload form div {
+    overflow-y: hidden;
+}
+  
+.bg-form form div.hide {
+    max-height: 0;
+    min-height: 0;
+    transition: max-height 100ms;
+}
+  
+.checkbox-wrapper {
+    width: 50%;
+    max-height: 100px;
+    transition: max-height 200ms ease-out;
+}
+  
+.checkbox-wrapper div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    max-height: 30px;
+    transition: max-height 200ms ease-out;
+}
+
+.bg-form input {
+    border-radius: 10px;
+    border: none;
+    height: 34px;
+    width: fit-content;
+    padding-left: 15px;
+    font-family: Nunito;
+    font-weight: bold;
+}
+  
+.bg-form input[type="number"] {
+    margin-right: 1px;
+}
+  
+.bg-form input[type="number"]:focus {
+    outline: #163B6E solid 1px;
+}
+  
+.bg-form input[type="file"] {
+    width: 185px;
+    overflow-x: hidden;
+    padding-top: 8px;
+}
+  
+.checkbox-wrapper input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 0.15em;
+    outline: 0.15em solid #000;
+    cursor: pointer;
+    position: relative;
+}
+  
+input.checked::before {
+    content: "\2714";
+    font-size: 1.5em;
+    color: black;
+    background: transparent;
+    position: absolute;
+    right: 1px;
+    top: -5px;
+}
+  
+.itemtype-wrapper {
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+}
+  
+.itemtype-wrapper div {
+    background-color: #163B6EBB;
+    color: #FDF551CC;
+    border-radius: 12px;
+    width: 60px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 200ms
+}
+  
+.itemtype-wrapper div:hover {
+    background-color: #163B6EDD;
+    color: #FDF551;
+}
+  
+.itemtype-wrapper div.active {
+    background-color: #FDF551;
+    color: #163B6E;
+}

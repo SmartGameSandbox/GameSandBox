@@ -12,7 +12,7 @@ import { SMARTButton } from '../button/button';
 import { BASE_URL } from '../../util/constants'
 import styles from './dashboardStyle';
 import Modal from "../modal/modal";
-import BuildGameForm from "../buildGame/buildGameComponents/buildGameForm";
+import BuildGameForm from "../buildGame/buildGameForm";
 import Header from "../header/header";
 
 const Dashboard = () => {
