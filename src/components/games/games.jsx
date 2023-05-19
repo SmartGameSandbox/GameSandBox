@@ -1,10 +1,3 @@
-/*
-  File: games.jsx
-
-  Description: Contains the Games component. It fetches a list of games for the user
-  and allows the user to create a room for each game and redirects them to the room page.
-*/
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { SMARTButton } from "../button/button";
@@ -34,16 +27,16 @@ const Games = () => {
       });
   }, [isLoading, games]);
 
+  //Creating a room by sending a post request with the cardDeck and game name and redirecting to the live room created
   const createroom = async (gameId) => {
     const game = games.find(({ _id }) => _id === gameId);
     if (!game) return;
     const { cardDeck, name } = game;
 
-    // Make a request to the server to create a room for the game
     await axios
       .post(`${BASE_URL}/api/room`, { name, cardDeck })
       .then((response) => {
-        window.location.href = `/room?id=${response.data.id}`; // Redirect to the room page
+        window.location.href = `/room?id=${response.data.id}`;
       })
       .catch((error) => {
         console.log(error);
@@ -57,7 +50,7 @@ const Games = () => {
         {isLoading
           ? <LoadingSpinner />
           : <div style={styles.btnGroup}>
-              {games.map((gameObj) => ( // Create a SMARTButton for each game
+              {games.map((gameObj) => (
                 <SMARTButton
                   key={gameObj._id}
                   sx={styles.gameButtons}
