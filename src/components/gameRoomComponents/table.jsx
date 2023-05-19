@@ -18,16 +18,24 @@ const Table = ({ socket, username, roomID }) => {
   const [rightClickPos, setRightClickPos] = useState({ x: null, y: null });
   const [clickedCardID, setClickedCardID] = useState(null);
   const [canEmit, setCanEmit] = useState(true);
+  const [itemBeingUpdated, setItemBeingUpdated] = useState(null);
 
-  const GA_PARAMS = {setCanEmit, setTableData, emitMouseChange, tableData};
+  const GA_PARAMS = {setCanEmit, setTableData, emitMouseChange, tableData, setItemBeingUpdated};
 
   useEffect(() => {
-    if (!canEmit || !tableData) return;
-    socket.emit("tableChange", { username, roomID, tableData },
-      (err) => {if (err) console.error(err);}
-    );
-    console.log(tableData);
-  }, [tableData, canEmit, roomID, username, socket]);
+    if (!canEmit) return;
+    if (itemBeingUpdated) {
+      socket.emit("itemChange", { username, roomID, itemBeingUpdated },
+        (err) => {if (err) console.error(err);}
+      );
+      return;
+    }
+    if (!itemBeingUpdated && tableData) {
+      socket.emit("tableChange", { username, roomID, tableData },
+        (err) => {if (err) console.error(err);}
+      );
+    }
+  }, [tableData, itemBeingUpdated, canEmit, roomID, username, socket]);
 
   useEffect(() => {
     socket.on("tableReload", (data) => {
@@ -36,20 +44,39 @@ const Table = ({ socket, username, roomID }) => {
                       .map(token => token.filter(({id}) => !handAndTable.includes(id)));
       const pieces = setUpTokenAndPiece(data.pieces)
                       .map(piece => piece.filter(({id}) => !handAndTable.includes(id)));
-      console.log(data);
       setTableData({ ...data, pieces, tokens });
     });
 
     socket.on("tableChangeUpdate", (data) => {
       if (data.username === username) return;
       setCanEmit(false);
-      console.log(data);
-      setTableData((prevTable) => ({
-        ...prevTable,
-        cards: data.tableData.cards,
-        deck: data.tableData.deck,
-        pieces: data.tableData.pieces,
-      }));
+      if (data.itemBeingUpdated) {
+        const {itemID, gamePieceType, deckIndex, x, y} = data.itemBeingUpdated;
+        setTableData((prevTable) => {
+          if (["hand", "cards"].includes(gamePieceType)) {
+            prevTable[gamePieceType].map(item => {
+              if (item.id === itemID) {
+                item.x = x;
+                item.y = y;
+              }
+              return item;
+            });
+          } else {
+            prevTable[gamePieceType][deckIndex].map(item => {
+              if (item.id === itemID) {
+                item.x = x;
+                item.y = y;
+              }
+              return item;
+            });
+          }
+          return {...prevTable};
+        });
+        return;
+      }
+      if (data.tableData) {
+        setTableData((prevTable) => ({...prevTable, ...data.tableData}));
+      }
     });
 
     socket.on("mousePositionUpdate", ({ username: cursorMoved, x, y }) => {
@@ -114,6 +141,7 @@ const Table = ({ socket, username, roomID }) => {
           setCanEmit={setCanEmit}
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
+          setItemBeingUpdated={setItemBeingUpdated}
         />
         ))}
         {tableData?.tokens?.map((token, index) => (
@@ -124,6 +152,7 @@ const Table = ({ socket, username, roomID }) => {
           setCanEmit={setCanEmit}
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
+          setItemBeingUpdated={setItemBeingUpdated}
         />
         ))}
         {tableData?.pieces?.map((piece, index) => (
@@ -134,6 +163,7 @@ const Table = ({ socket, username, roomID }) => {
           setCanEmit={setCanEmit}
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
+          setItemBeingUpdated={setItemBeingUpdated}
         />
         ))}
         {tableData?.cards?.map((card) => (
@@ -169,6 +199,7 @@ const Table = ({ socket, username, roomID }) => {
             setCanEmit={setCanEmit}
             setRightClickPos={setRightClickPos}
             setClickedCardID={setClickedCardID}
+            setItemBeingUpdated={setItemBeingUpdated}
           />
         )}
         <Hand
@@ -176,6 +207,7 @@ const Table = ({ socket, username, roomID }) => {
           setCanEmit={setCanEmit}
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
+          setItemBeingUpdated={setItemBeingUpdated}
         />
       </Layer>
       <Layer>
