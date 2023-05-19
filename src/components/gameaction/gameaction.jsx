@@ -24,6 +24,7 @@ export function onDragMoveGA(e, itemID, {deckIndex, setCanEmit, setTableData, em
         found.x = x;
         found.y = y;
         prevTable[gamePieceType].filter((item) => item.id !== itemID).push(found);
+        emitMouseChange(e);
         return {...prevTable};
       }
       const found = prevTable[gamePieceType][deckIndex].find((item) => item.id === itemID);
@@ -35,9 +36,10 @@ export function onDragMoveGA(e, itemID, {deckIndex, setCanEmit, setTableData, em
         found.y = y;
       }
       prevTable[gamePieceType][deckIndex].filter((item) => item.id !== itemID).push(found);
+      emitMouseChange(e);
       return {...prevTable};
     });
-    emitMouseChange(e);
+  emitMouseChange(e);
   };
 
 export function onDragEndGA(e, itemID, {deckIndex, setCanEmit, setTableData, tableData, emitMouseChange}, gamePieceType) {
