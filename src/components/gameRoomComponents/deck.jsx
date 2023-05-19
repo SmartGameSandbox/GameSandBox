@@ -1,38 +1,32 @@
 // This module contains the actions that can be performed on a deck of (exclusively) cards.
 // Should be renamed to deckOfCards or whatever you see fit to avoid confusion with deck of tokens or pieces.
-
 import { useRef } from "react";
-import Card from "../card/card";
+import Card from "./card";
 import * as Constants from "../../util/constants";
 import { Rect } from "react-konva";
-import { onDragMoveCardGA, onDragEndGA } from "../gameaction/gameaction";
-
+import { onDragMoveGA, onDragEndGA } from "../gameaction/gameaction";
 
 // deck data
-const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange }) => {
+const Deck = (props) => {
+  const { tableData, deckIndex } = props;
   const isLandScape = useRef(null);
   isLandScape.current ??= tableData.deck[deckIndex][0].isLandscape;
-
-  const onDragMoveCard = (e, cardID) => {
-    onDragMoveCardGA(e, cardID, deckIndex, setCanEmit, setTableData, emitMouseChange, "deck");
-  };
-
-  const onDragEnd = (e, cardID) => {
-    onDragEndGA(e, cardID, deckIndex, setCanEmit, setTableData, emitMouseChange, "deck");
+  const deckDimension = useRef(null);
+  deckDimension.current ??= {
+    x: tableData.deck[deckIndex][0].x,
+    y: tableData.deck[deckIndex][0].y,
+    width: tableData.deck[deckIndex][0].width,
+    height: tableData.deck[deckIndex][0].height
   };
 
   return (
     <>
       <Rect
         key={`deck_square_${deckIndex}`}
-        x={
-          Constants.DECK_STARTING_POSITION_X
-          + deckIndex * 140
-          + (isLandScape.current ? 20 : 0)
-        }
-        y={Constants.DECK_STARTING_POSITION_Y}
-        width={Constants.DECK_AREA_WIDTH}
-        height={Constants.DECK_AREA_HEIGHT}
+        x={(deckDimension.current.x) + (isLandScape.current ? 20 : 0)}
+        y={deckDimension.current.y}
+        width={deckDimension.current.width + 2*Constants.DECK_PADDING}
+        height={deckDimension.current.height + 2*Constants.DECK_PADDING}
         cornerRadius={10}
         fill={"rgba(177, 177, 177, 0.6)"}
         rotation={isLandScape.current ? 90 : 0} // rotate by 90 degrees if any card is landscape
@@ -46,11 +40,11 @@ const Deck = ({ tableData, deckIndex, setCanEmit, setTableData, emitMouseChange 
                   : card.imageSource.back}
             id={card.id}
             type={card.type}
-            x={card.x + deckIndex * 140}
-            y={card.y}
+            x={Constants.DECK_PADDING + card.x}
+            y={Constants.DECK_PADDING + card.y}
             isLandscape={card.isLandscape}
-            onDragEnd={onDragEnd}
-            onDragMove={onDragMoveCard}
+            onDragEnd={(e, id) => onDragEndGA(e, id, props, "deck")}
+            onDragMove={(e, id) => onDragMoveGA(e, id, props, "deck")}
             draggable
           />
         ))}

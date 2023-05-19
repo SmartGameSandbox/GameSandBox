@@ -18,7 +18,7 @@ const Games = () => {
   const [games, setGames] = useState([]);
 
   useEffect(() => {
-    // Get the list of saved games for the user from database
+    //Query server with the user id and set games based on the response
     axios
       .get(`${BASE_URL}/api/games`, {
         params: {
@@ -34,7 +34,6 @@ const Games = () => {
       });
   }, [isLoading, games]);
 
-  // Create a room for the game
   const createroom = async (gameId) => {
     const game = games.find(({ _id }) => _id === gameId);
     if (!game) return;

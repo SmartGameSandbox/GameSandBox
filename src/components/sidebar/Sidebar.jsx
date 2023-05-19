@@ -10,11 +10,11 @@ let currVal = 2;
 if (process.env.NODE_ENV === "production") {
   currVal = 1;
 }
-
+//The module that represents side bar menu and its animation during transition
 const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const firstTime = React.useRef(0);
-
+  //Logout handling function that clears session storage when user clicks on "logout"
   const handleLogout = () => {
     sessionStorage.clear();
     window.location.href = "/logout";

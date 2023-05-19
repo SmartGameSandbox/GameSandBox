@@ -106,6 +106,10 @@ const Login = () => {
                 placeholder="Please enter your password"
                 value={passwordInputText}
                 onChange={handlePasswordTextInputChange}
+                onKeyDown={(e) => {
+                  if (e.code !== "Enter") return;
+                  handleSubmit();
+                }}
                 className="text-field"
                 required
                 label="Password"
