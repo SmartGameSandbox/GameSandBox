@@ -1,19 +1,18 @@
 import { Group, Rect, Text } from "react-konva";
 
 const RightClickMenu = ({
-  x, y, cardId, setTableData, setRightClickPos, setClickedCardID, setCanEmit, setItemBeingUpdated
+  x, y, itemID, setTableData, setRightClickPos, setClickedID, setCanEmit, setItemUpdated
 }) => {
-  const options = ['Flip', 'Rotate', "Disassemble"];
-  const padding = 5;
-  const lineHeight = 24;
-  const width = 100;
+  const OPTIONS = ['Flip', 'Rotate', "Disassemble"];
+  const PAD = 5;
+  const LINE_HEIGHT = 24;
+  const WIDTH = 100;
 
   const handleOptionClick = (option) => {
-    setItemBeingUpdated(null);
     if (option === 'Flip') {
       setTableData((prevTable) => {
         const cards = prevTable.cards.map((card) => {
-          if (card.id !== cardId) return card;
+          if (card.id !== itemID) return card;
           if (card.pile.length > 0) {
             card.pile.map((cardInPile) => cardInPile.isFlipped = !cardInPile.isFlipped)
           }
@@ -28,7 +27,7 @@ const RightClickMenu = ({
     else if (option === 'Disassemble') {
       setTableData((prevTable) => {
         prevTable.cards.forEach((card) => {
-          if (card.id === cardId && card.pile.length > 0) {
+          if (card.id === itemID && card.pile.length > 0) {
             card.pile.forEach(cardInPile => prevTable.cards.push(cardInPile))
             card.pile.forEach((cardInPile, index) => cardInPile.x = card.x + (index+1)*20)
             card.pile.forEach((cardInPile, index) => cardInPile.y = card.y + (index+1)*20)
@@ -39,8 +38,9 @@ const RightClickMenu = ({
       });
       setCanEmit(true);
     }
+    setItemUpdated({ itemID, option });
     setRightClickPos({ x: null, y: null });
-    setClickedCardID(null);
+    setClickedID(null);
   }
 
   return (
@@ -48,24 +48,24 @@ const RightClickMenu = ({
       <Rect
         x={0}
         y={0}
-        width={width}
-        height={options.length * lineHeight}
+        width={WIDTH}
+        height={OPTIONS.length * LINE_HEIGHT}
         stroke="black"
         strokeWidth={0.5}
       />
-      {options.map((option, index) => (
+      {OPTIONS.map((option, index) => (
         <Group key={index} >
           <Rect
             x={0}
-            y={index * lineHeight}
-            width={width}
-            height={lineHeight}
+            y={index * LINE_HEIGHT}
+            width={WIDTH}
+            height={LINE_HEIGHT}
             fill={index % 2 === 0 ? '#f0f0f0' : '#ffffff'}
             onClick={()=>handleOptionClick(option)}
           />
           <Text
-            x={padding}
-            y={index * lineHeight + padding}
+            x={PAD}
+            y={index * LINE_HEIGHT + PAD}
             text={option}
             fontSize={14}
             onClick={()=>handleOptionClick(option)}
