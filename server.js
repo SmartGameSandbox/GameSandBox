@@ -117,40 +117,99 @@ io.on("connection", async (socket) => {
     console.log(`User ${username} joined room ${roomID}`);
   });
 
-  // Listen for tableChanges client-side, then update the server-side information.
-  // Notes: should update game objects other than cards (tokens, etc).
-  socket.on("tableChange", ({
-    username,
-    roomID,
-    tableData
-  }) => {
-    if (ALLROOMSDATA[roomID] && tableData) {
-      ALLROOMSDATA[roomID].cards = tableData.cards;
-      ALLROOMSDATA[roomID].deck = tableData.deck;
-      ALLROOMSDATA[roomID].tokens = tableData.tokens;
-      ALLROOMSDATA[roomID].pieces = tableData.pieces;
-      ALLROOMSDATA[roomID].hand[username] = tableData.hand;
+  // Listen for item Drop(dragDown) on client-side, then update the server-side information.
+  socket.on("itemDrop", ({ username, roomID, itemUpdated }) => {
+    // To Do: test if this condition check is required
+    if (ALLROOMSDATA[roomID] && itemUpdated) {
+      const { itemID, pileIds, src, dest, deckIndex, x, y } = itemUpdated;
+      if (!dest && !pileIds) return;
+      // identify the dragged item.
+      let targetItem;
+      if (src === "cards") {
+        targetItem = ALLROOMSDATA[roomID].cards.find((item) => item.id === itemID);
+      }else if (src === "hand") {
+        targetItem = ALLROOMSDATA[roomID].hand[username].find((item) => item.id === itemID);
+      } else {
+        targetItem = ALLROOMSDATA[roomID][src][deckIndex].find((item) => item.id === itemID);
+      }
+
+      // From table to table
+      if (!dest) {
+        const piles = ALLROOMSDATA[roomID].cards.filter(({id}) => pileIds.includes(id));
+        ALLROOMSDATA[roomID].cards = ALLROOMSDATA[roomID].cards.filter(({id}) => ![...pileIds, itemID].includes(id));
+        piles.forEach(item => {
+          item.x = -100;
+          item.y = -100;
+          targetItem.pile = targetItem.pile.concat(item).concat(item.pile);
+          item.pile = []
+        });
+        ALLROOMSDATA[roomID].cards.push(targetItem);
+        // other place to table
+      } else if (dest === "cards") {
+        if (src === "hand") {
+          ALLROOMSDATA[roomID].hand[username] = ALLROOMSDATA[roomID].hand[username].filter(item => item.id !== itemID);
+          itemUpdated.handItem = targetItem;
+        } else {
+          ALLROOMSDATA[roomID][src][deckIndex] = ALLROOMSDATA[roomID][src][deckIndex].filter((card) => card.id !== itemID);
+        }
+        ALLROOMSDATA[roomID].cards.push(targetItem);
+        // To hands
+      } else if (dest === "hand") {
+        if (src === dest) return;
+        if (src === "cards") {
+          ALLROOMSDATA[roomID].cards = ALLROOMSDATA[roomID].cards.filter(({id}) => id !== itemID);
+        } else {
+          ALLROOMSDATA[roomID][src][deckIndex] = ALLROOMSDATA[roomID][src][deckIndex].filter(({id}) => id !== itemID);
+        }
+
+        if (targetItem.pile.length > 0) {
+          const PAD = 10;
+          const HAND_WIDTH = 1400;
+          const CARD_WIDTH = 65;
+          targetItem.pile.forEach((item, index) => {
+            item.x = x;
+            item.y = y;
+            if (x + CARD_WIDTH + (index + 1) * PAD <= HAND_WIDTH) {
+              item.x += (index + 1) * PAD;
+            }
+            ALLROOMSDATA[roomID].hand[username].push(item);
+          });
+          targetItem.pile = [];
+        }
+        ALLROOMSDATA[roomID].hand[username].push(targetItem);
+      } else {
+        if (targetItem.pile.length > 0) {
+          targetItem.pile.forEach((item) => {
+            item.x = x;
+            item.y = y;
+            ALLROOMSDATA[roomID].deck[deckIndex].push(item);
+          });
+        }
+          targetItem.pile = [];
+          targetItem.x = x;
+          targetItem.y = y;
+          if (src === "deck") {
+            ALLROOMSDATA[roomID].deck[deckIndex] = ALLROOMSDATA[roomID].deck[deckIndex].filter(card => card.id !== itemID);
+          } else if (src === "hand") {
+            ALLROOMSDATA[roomID][src][username] = ALLROOMSDATA[roomID][src][username].filter(card => card.id !== itemID);
+            itemUpdated.handItem = targetItem;
+          } else {
+            ALLROOMSDATA[roomID][src] = ALLROOMSDATA[roomID][src].filter(card => card.id !== itemID);
+          }
+          ALLROOMSDATA[roomID].deck[deckIndex].push(targetItem);
+      }
       io.to(roomID).emit("tableChangeUpdate", {
         username,
-        tableData: {
-          cards: ALLROOMSDATA[roomID].cards,
-          deck: ALLROOMSDATA[roomID].deck,
-          tokens: ALLROOMSDATA[roomID].tokens,
-          pieces: ALLROOMSDATA[roomID].pieces,
-        },
+        updatedData: {...itemUpdated, type: "drop"},
       });
     }
   });
 
   // Listen for drag of item client-side, then update the server-side information.
-  socket.on("itemChange", ({
-    username,
-    roomID,
-    itemBeingUpdated
-  }) => {
-    if (ALLROOMSDATA[roomID] && itemBeingUpdated) {
-      const {itemID, gamePieceType, deckIndex, x, y} = itemBeingUpdated;
-      if (gamePieceType === "hand") {
+  socket.on("itemDrag", ({ username, roomID, itemUpdated }) => {
+    if (ALLROOMSDATA[roomID] && itemUpdated) {
+      const {itemID, src, deckIndex, x, y} = itemUpdated;
+      if (src === "hand") {
         ALLROOMSDATA[roomID].hand[username].map(item => {
           if (item.id === itemID) {
             item.x = x;
@@ -158,7 +217,10 @@ io.on("connection", async (socket) => {
           }
           return item;
         });
-      } else if (gamePieceType === "cards") {
+        // drag in hand is not revealed to others, no need to emit.
+        return;
+      }
+      if (src === "cards") {
         ALLROOMSDATA[roomID].cards.map(item => {
           if (item.id === itemID) {
             item.x = x;
@@ -167,7 +229,7 @@ io.on("connection", async (socket) => {
           return item;
         });
       } else {
-        ALLROOMSDATA[roomID][gamePieceType][deckIndex].map(item => {
+        ALLROOMSDATA[roomID][src][deckIndex].map(item => {
           if (item.id === itemID) {
             item.x = x;
             item.y = y;
@@ -177,7 +239,39 @@ io.on("connection", async (socket) => {
       }
       io.to(roomID).emit("tableChangeUpdate", {
         username,
-        itemBeingUpdated,
+        updatedData: {...itemUpdated, type: "drag"},
+      });
+    }
+  });
+
+  // Listen for item Action (flip, etc.) client-side, then update the server-side information.
+  socket.on("itemAction", ({ username, roomID, itemUpdated }) => {
+    if (ALLROOMSDATA[roomID] && itemUpdated) {
+      const { itemID, option } = itemUpdated;
+      if (option === "Flip") {
+        ALLROOMSDATA[roomID].cards.map(item => {
+          if (item.id !== itemID) return item;
+          if (item.pile.length > 0) {
+            item.pile.map(itemInPile => itemInPile.isFlipped = !itemInPile.isFlipped);
+          }
+          item.isFlipped = !item.isFlipped;
+          return item;
+        });
+      } else if (option === "Disassemble") {
+        ALLROOMSDATA[roomID].cards.forEach((card) => {
+          if (card.id === itemID && card.pile.length > 0) {
+            card.pile.forEach((cardInPile, index) => {
+              ALLROOMSDATA[roomID].cards.push(cardInPile);
+              cardInPile.x = card.x + (index+1)*20;
+              cardInPile.y = card.y + (index+1)*20;
+            });
+            card.pile = []
+          };
+        });
+      }
+      io.to(roomID).emit("tableChangeUpdate", {
+        username,
+        updatedData: {...itemUpdated, type: "action"},
       });
     }
   });
@@ -244,11 +338,25 @@ app.get("/api/room", async (req, res) => {
 //create room
 app.post("/api/room", async (req, res) => {
   const ROOM_ID_LENGTH = 10;
+
+  const setUpTokenAndPiece = (deck, numCards) => {
+    if (deck.length < numCards) {
+      const maxIndex = deck.length;
+      return Array.from({length: numCards}, (_, i) => {
+        const newItem = structuredClone(deck[i % maxIndex]);
+        newItem.id += i;
+        return newItem;
+      });
+    }
+    return deck;
+  };
+
   const filterMapItem = (items, itemType) => {
     return items.reduce((acc, item) => {
       if (item.type === itemType) {
         if (itemType !== "Card") {
           acc.push({totalNum: item.numCards, deck: item.deck});
+          acc.push(setUpTokenAndPiece(item.deck, item.numCards));
         } else {
           acc.push(item.deck);
         }

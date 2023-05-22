@@ -16,45 +16,50 @@ const Table = ({ socket, username, roomID }) => {
   const [tableData, setTableData] = useState(null);
   const [cursors, setCursors] = useState([]);
   const [rightClickPos, setRightClickPos] = useState({ x: null, y: null });
-  const [clickedCardID, setClickedCardID] = useState(null);
+  const [clickedID, setClickedID] = useState(null);
   const [canEmit, setCanEmit] = useState(true);
-  const [itemBeingUpdated, setItemBeingUpdated] = useState(null);
+  const [itemUpdated, setItemUpdated] = useState(null);
 
-  const GA_PARAMS = {setCanEmit, setTableData, emitMouseChange, tableData, setItemBeingUpdated};
+  const GA_PARAMS = {setCanEmit, setTableData, emitMouseChange, tableData, setItemUpdated};
 
   useEffect(() => {
-    if (!canEmit) return;
-    if (itemBeingUpdated) {
-      socket.emit("itemChange", { username, roomID, itemBeingUpdated },
+    if (!canEmit || !itemUpdated) return;
+    if (itemUpdated.type === "drag") {
+      socket.emit("itemDrag", { username, roomID, itemUpdated },
         (err) => {if (err) console.error(err);}
       );
       return;
     }
-    if (!itemBeingUpdated && tableData) {
-      socket.emit("tableChange", { username, roomID, tableData },
+    if (itemUpdated.option) {
+      socket.emit("itemAction", { username, roomID, itemUpdated },
         (err) => {if (err) console.error(err);}
       );
+      return;
     }
-  }, [tableData, itemBeingUpdated, canEmit, roomID, username, socket]);
+    if (itemUpdated.src) {
+      socket.emit("itemDrop", { username, roomID, itemUpdated },
+        (err) => {if (err) console.error(err);}
+      );
+      return;
+    }
+  }, [itemUpdated, canEmit, roomID, username, socket]);
 
   useEffect(() => {
     socket.on("tableReload", (data) => {
-      const handAndTable = [...data.cards, ...Object.values(data.hand).flat()].map(({id}) => id);
-      const tokens = setUpTokenAndPiece(data.tokens)
-                      .map(token => token.filter(({id}) => !handAndTable.includes(id)));
-      const pieces = setUpTokenAndPiece(data.pieces)
-                      .map(piece => piece.filter(({id}) => !handAndTable.includes(id)));
-      setTableData({ ...data, pieces, tokens });
+      console.log(data)
+      setTableData(data);
     });
 
+    // To Do: move drag, drop, action somewhere else (e.g. gameAction)
     socket.on("tableChangeUpdate", (data) => {
+      console.log(data.updatedData.handItem)
       if (data.username === username) return;
       setCanEmit(false);
-      if (data.itemBeingUpdated) {
-        const {itemID, gamePieceType, deckIndex, x, y} = data.itemBeingUpdated;
+      if (data.itemBeingUpdated.type === "drag") {
+        const {itemID, src, deckIndex, x, y} = data.updatedData;
         setTableData((prevTable) => {
-          if (["hand", "cards"].includes(gamePieceType)) {
-            prevTable[gamePieceType].map(item => {
+          if (["hand", "cards"].includes(src)) {
+            prevTable[src].map(item => {
               if (item.id === itemID) {
                 item.x = x;
                 item.y = y;
@@ -62,7 +67,7 @@ const Table = ({ socket, username, roomID }) => {
               return item;
             });
           } else {
-            prevTable[gamePieceType][deckIndex].map(item => {
+            prevTable[src][deckIndex].map(item => {
               if (item.id === itemID) {
                 item.x = x;
                 item.y = y;
@@ -74,8 +79,99 @@ const Table = ({ socket, username, roomID }) => {
         });
         return;
       }
-      if (data.tableData) {
-        setTableData((prevTable) => ({...prevTable, ...data.tableData}));
+      if (data.itemBeingUpdated.type === "drop") {
+        const { handItem, itemID, pileIds, src, dest, deckIndex, x, y } = data.updatedData;
+        // other user releasing card from their hand to the public
+        if (handItem) {
+          setTableData(prevTable => {
+            if (dest === "cards") {
+              prevTable.cards.push(handItem);
+            } else {
+              prevTable[dest][deckIndex].push(handItem);
+            }
+            return {...prevTable};
+          });
+          return;
+        }
+        setTableData((prevTable) => {
+          let targetItem;
+          if (["hand", "cards"].includes(src)) {
+            targetItem = prevTable[src].find((item) => item.id === itemID);
+          } else {
+            targetItem = prevTable[src][deckIndex].find((item) => item.id === itemID);
+          }
+          // From table to table
+          if (!dest) {
+            const piles = prevTable.cards.filter(({id}) => pileIds.includes(id));
+            prevTable.cards = prevTable.cards.filter(({id}) => ![...pileIds, itemID].includes(id));
+            piles.forEach(item => {
+              item.x = -100;
+              item.y = -100;
+              targetItem.pile = targetItem.pile.concat(item).concat(item.pile);
+              item.pile = []
+            });
+            prevTable.cards.push(targetItem);
+            // other place to table
+          } else if (dest === "cards") {
+            if (src === "hand") {
+              prevTable.hand = prevTable.hand.filter(item => item.id !== itemID);
+            } else {
+              prevTable[src][deckIndex] = prevTable[src][deckIndex].filter((card) => card.id !== itemID);
+            }
+            prevTable.cards.push(targetItem);
+          } else if (dest === "hand") {
+            if (src === "cards") {
+              prevTable.cards = prevTable.cards.filter(({id}) => id !== itemID);
+            } else {
+              prevTable[src][deckIndex] = prevTable[src][deckIndex].filter(({id}) => id !== itemID);
+            }
+          } else {
+            if (targetItem.pile.length > 0) {
+              targetItem.pile.forEach((item) => {
+                item.x = x;
+                item.y = y;
+                prevTable.deck[deckIndex].push(item);
+              });
+            }
+              targetItem.pile = [];
+              targetItem.x = x;
+              targetItem.y = y;
+              if (src === "deck") {
+                prevTable.deck[deckIndex] = prevTable.deck[deckIndex].filter(card => card.id !== itemID);
+              } else {
+                prevTable[src] = prevTable[src].filter(card => card.id !== itemID);
+              }
+              prevTable.deck[deckIndex].push(targetItem);
+          }
+          return {...prevTable};
+        });
+      }
+      if (data.itemBeingUpdated.type === "action") {
+        const { itemID, option } = data.updatedData;
+        setTableData((prevTable) => {
+          if (option === "Flip") {
+            prevTable.cards.map(item => {
+              if (item.id !== itemID) return item;
+              if (item.pile.length > 0) {
+                item.pile.map(itemInPile => itemInPile.isFlipped = !itemInPile.isFlipped);
+              }
+              item.isFlipped = !item.isFlipped;
+              return item;
+            });
+          } else if (option === "Disassemble") {
+            prevTable.cards.forEach((card) => {
+              if (card.id === itemID && card.pile.length > 0) {
+                card.pile.forEach((cardInPile, index) => {
+                  prevTable.cards.push(cardInPile);
+                  cardInPile.x = card.x + (index+1)*20;
+                  cardInPile.y = card.y + (index+1)*20;
+                });
+                card.pile = []
+              };
+            });
+          }
+          return {...prevTable};
+        });
       }
     });
 
@@ -141,7 +237,7 @@ const Table = ({ socket, username, roomID }) => {
           setCanEmit={setCanEmit}
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
-          setItemBeingUpdated={setItemBeingUpdated}
+          setItemUpdated={setItemUpdated}
         />
         ))}
         {tableData?.tokens?.map((token, index) => (
@@ -152,7 +248,7 @@ const Table = ({ socket, username, roomID }) => {
           setCanEmit={setCanEmit}
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
-          setItemBeingUpdated={setItemBeingUpdated}
+          setItemUpdated={setItemUpdated}
         />
         ))}
         {tableData?.pieces?.map((piece, index) => (
@@ -163,7 +259,7 @@ const Table = ({ socket, username, roomID }) => {
           setCanEmit={setCanEmit}
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
-          setItemBeingUpdated={setItemBeingUpdated}
+          setItemUpdated={setItemUpdated}
         />
         ))}
         {tableData?.cards?.map((card) => (
@@ -194,12 +290,12 @@ const Table = ({ socket, username, roomID }) => {
           <RightClickMenu
             x={rightClickPos.x}
             y={rightClickPos.y}
-            cardId={clickedCardID}
+            itemID={clickedID}
             setTableData={setTableData}
             setCanEmit={setCanEmit}
             setRightClickPos={setRightClickPos}
-            setClickedCardID={setClickedCardID}
-            setItemBeingUpdated={setItemBeingUpdated}
+            setClickedID={setClickedID}
+            setItemUpdated={setItemUpdated}
           />
         )}
         <Hand
@@ -207,7 +303,7 @@ const Table = ({ socket, username, roomID }) => {
           setCanEmit={setCanEmit}
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
-          setItemBeingUpdated={setItemBeingUpdated}
+          setItemUpdated={setItemUpdated}
         />
       </Layer>
       <Layer>
@@ -231,7 +327,7 @@ const Table = ({ socket, username, roomID }) => {
 
   function handleCloseMenu() {setRightClickPos({x:null, y:null})}
 
-  function handleContextMenu(event, cardID) {
+  function handleContextMenu(event, itemID) {
     event.evt.preventDefault();
     const {
       top: konvaTop,
@@ -239,22 +335,7 @@ const Table = ({ socket, username, roomID }) => {
     } = document.querySelector(".konvajs-content").getBoundingClientRect();
     const {clientY, clientX} = event.evt;
     setRightClickPos({ x: clientX - konvaLeft - 1, y: clientY - konvaTop - 1});
-    setClickedCardID(cardID);
-  }
-
-  function setUpTokenAndPiece(data) {
-    return data.map(item => {
-      if (item.deck.length < item.totalNum) {
-        const maxIndex = item.deck.length;
-        const newTokenArray = Array.from({length: item.totalNum}, (_, i) => {
-          const newItem = structuredClone(item.deck[i % maxIndex]);
-          newItem.id += i;
-          return newItem;
-        });
-        item.deck = newTokenArray;
-      }
-      return item.deck;
-    });
+    setClickedID(itemID);
   }
 
   // To Do: assign these functions to individual deck so that each decks can be collected/shuffled.
