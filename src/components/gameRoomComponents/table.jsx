@@ -262,7 +262,7 @@ const Table = ({ socket, username, roomID }) => {
           setItemUpdated={setItemUpdated}
         />
         ))}
-        {tableData?.cards?.map((card) => (
+        {tableData?.cards?.filter(card => !!card).map((card) => (
             <Group 
               key={`card_${card.id}`}
               onContextMenu={(e) => handleContextMenu(e, card.id)}
