@@ -52,10 +52,9 @@ const Table = ({ socket, username, roomID }) => {
 
     // To Do: move drag, drop, action somewhere else (e.g. gameAction)
     socket.on("tableChangeUpdate", (data) => {
-      console.log(data.updatedData.handItem)
       if (data.username === username) return;
       setCanEmit(false);
-      if (data.itemBeingUpdated.type === "drag") {
+      if (data.updatedData.type === "drag") {
         const {itemID, src, deckIndex, x, y} = data.updatedData;
         setTableData((prevTable) => {
           if (["hand", "cards"].includes(src)) {
@@ -79,7 +78,7 @@ const Table = ({ socket, username, roomID }) => {
         });
         return;
       }
-      if (data.itemBeingUpdated.type === "drop") {
+      if (data.updatedData.type === "drop") {
         const { handItem, itemID, pileIds, src, dest, deckIndex, x, y } = data.updatedData;
         // other user releasing card from their hand to the public
         if (handItem) {
@@ -146,7 +145,7 @@ const Table = ({ socket, username, roomID }) => {
           return {...prevTable};
         });
       }
-      if (data.itemBeingUpdated.type === "action") {
+      if (data.updatedData.type === "action") {
         const { itemID, option } = data.updatedData;
         setTableData((prevTable) => {
           if (option === "Flip") {
