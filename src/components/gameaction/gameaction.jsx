@@ -15,6 +15,13 @@
 
 import * as Constants from "../../util/constants";
 
+/**
+ * Read the Dragmove event and update tableData and server.
+ * @param {Event} e 
+ * @param {String} itemID 
+ * @param {Object} props or params declared 
+ * @param {String} src the origin of the item (cards, hand, deck, tokens, piece)
+ */
 export function onDragMoveGA(
   e,
   itemID,
@@ -56,6 +63,13 @@ export function onDragMoveGA(
     emitMouseChange(e);
   };
 
+  /**
+   * Read the DragEnd event and update tableData and server.
+   * @param {Event} e 
+   * @param {String} itemID 
+   * @param {Object} props or params declared 
+   * @param {String} src the origin of the item (cards, hand, deck, tokens, piece)
+   */
 export function onDragEndGA(
   e,
   itemID,
@@ -64,12 +78,14 @@ export function onDragEndGA(
   ) {
     const {x: cursorX, y: cursorY} = e.target.attrs;
     let deckX, deckY, deckW, deckH, draggedItem;
+    // identify the item
     if (["cards", "hand"].includes(src)) {
       draggedItem = tableData[src].find((item) => item.id === itemID);
       deckIndex = tableData.cardsInDeck.findIndex(deck => deck.includes(itemID)) ?? -1;
     } else {
       draggedItem = tableData[src][deckIndex].find((item) => item.id === itemID);
     }
+    // for snapping on to card Deck
     if (src !== "tokens" && deckIndex > -1) {
       deckX = tableData.deckDimension[deckIndex].x;
       deckY = tableData.deckDimension[deckIndex].y;
@@ -112,6 +128,7 @@ export function onDragEndGA(
               item.x = cursorX;
             }
             item.y = cursorY;
+            item.isFlipped = true;
               prevTable.hand.push(item);
           })
           draggedItem.pile = []
@@ -119,6 +136,7 @@ export function onDragEndGA(
         // add card to hand
         draggedItem.x = cursorX;
         draggedItem.y = cursorY;
+        draggedItem.isFlipped = true;
         if (["cards", "hand"].includes(src)) {
           prevTable[src] = prevTable[src].filter((card) => card.id !== itemID);
         } else {
@@ -134,6 +152,7 @@ export function onDragEndGA(
         // remove item from previous array
         if (src === "hand") {
           prevTable.hand = prevTable.hand.filter(item => item.id !== itemID);
+          draggedItem.isFlipped = false;
         } else {
           prevTable[src][deckIndex] = prevTable[src][deckIndex].filter((card) => card.id !== itemID);
         }

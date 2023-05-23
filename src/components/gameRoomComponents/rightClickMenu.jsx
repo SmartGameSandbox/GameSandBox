@@ -9,14 +9,16 @@ const RightClickMenu = ({
   const WIDTH = 100;
 
   const handleOptionClick = (option) => {
+    let isFlipped;
     if (option === 'Flip') {
       setTableData((prevTable) => {
         const cards = prevTable.cards.map((card) => {
           if (card.id !== itemID) return card;
+          isFlipped = !card.isFlipped;
           if (card.pile.length > 0) {
-            card.pile.map((cardInPile) => cardInPile.isFlipped = !cardInPile.isFlipped)
+            card.pile.map((cardInPile) => cardInPile.isFlipped = isFlipped)
           }
-          card.isFlipped = !card.isFlipped
+          card.isFlipped = isFlipped
           return card;
         });
         prevTable.cards = cards;
@@ -38,7 +40,7 @@ const RightClickMenu = ({
       });
       setCanEmit(true);
     }
-    setItemUpdated({ itemID, option });
+    setItemUpdated({ itemID, option, isFlipped });
     setRightClickPos({ x: null, y: null });
     setClickedID(null);
   }
