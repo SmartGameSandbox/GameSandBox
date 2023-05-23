@@ -249,14 +249,14 @@ io.on("connection", async (socket) => {
   // Listen for item Action (flip, etc.) client-side, then update the server-side information.
   socket.on("itemAction", ({ username, roomID, itemUpdated }) => {
     if (ALLROOMSDATA[roomID] && itemUpdated) {
-      const { itemID, option } = itemUpdated;
+      const { itemID, option, isFlipped } = itemUpdated;
       if (option === "Flip") {
         ALLROOMSDATA[roomID].cards.map(item => {
           if (item.id !== itemID) return item;
           if (item.pile.length > 0) {
-            item.pile.map(itemInPile => itemInPile.isFlipped = !itemInPile.isFlipped);
+            item.pile.map(itemInPile => itemInPile.isFlipped = isFlipped);
           }
-          item.isFlipped = !item.isFlipped;
+          item.isFlipped = isFlipped;
           return item;
         });
       } else if (option === "Disassemble") {
