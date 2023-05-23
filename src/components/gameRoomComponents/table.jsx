@@ -99,7 +99,8 @@ const Table = ({ socket, username, roomID }) => {
           } else {
             targetItem = prevTable[src][deckIndex].find((item) => item.id === itemID);
           }
-          console.log(targetItem);
+          console.log(itemID, src, targetItem);
+          if (!targetItem) return prevTable;
           // From table to table
           if (!dest) {
             const piles = prevTable.cards.filter(({id}) => pileIds.includes(id));
