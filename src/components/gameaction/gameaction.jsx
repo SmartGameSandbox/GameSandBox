@@ -70,7 +70,7 @@ export function onDragEndGA(
     } else {
       draggedItem = tableData[src][deckIndex].find((item) => item.id === itemID);
     }
-    if (deckIndex > -1) {
+    if (src !== "tokens" && deckIndex > -1) {
       deckX = tableData.deckDimension[deckIndex].x;
       deckY = tableData.deckDimension[deckIndex].y;
       deckW = tableData.deckDimension[deckIndex].width * 0.8;
