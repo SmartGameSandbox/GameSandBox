@@ -355,7 +355,6 @@ app.post("/api/room", async (req, res) => {
     return items.reduce((acc, item) => {
       if (item.type === itemType) {
         if (itemType !== "Card") {
-          acc.push({totalNum: item.numCards, deck: item.deck});
           acc.push(setUpTokenAndPiece(item.deck, item.numCards));
         } else {
           acc.push(item.deck);

@@ -46,7 +46,6 @@ const Table = ({ socket, username, roomID }) => {
 
   useEffect(() => {
     socket.on("tableReload", (data) => {
-      console.log(data)
       setTableData(data);
     });
 
