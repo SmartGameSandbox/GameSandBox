@@ -46,6 +46,7 @@ const Table = ({ socket, username, roomID }) => {
 
   useEffect(() => {
     socket.on("tableReload", (data) => {
+      console.log(data);
       setTableData(data);
     });
 
@@ -53,6 +54,7 @@ const Table = ({ socket, username, roomID }) => {
     socket.on("tableChangeUpdate", (data) => {
       if (data.username === username) return;
       setCanEmit(false);
+      console.log(data.updatedData);
       if (data.updatedData.type === "drag") {
         const {itemID, src, deckIndex, x, y} = data.updatedData;
         setTableData((prevTable) => {
