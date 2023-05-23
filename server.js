@@ -132,7 +132,7 @@ io.on("connection", async (socket) => {
       } else {
         targetItem = ALLROOMSDATA[roomID][src][deckIndex].find((item) => item.id === itemID);
       }
-
+      if (!targetItem) return;
       // From table to table
       if (!dest) {
         const piles = ALLROOMSDATA[roomID].cards.filter(({id}) => pileIds.includes(id));
