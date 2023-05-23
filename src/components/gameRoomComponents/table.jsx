@@ -54,7 +54,6 @@ const Table = ({ socket, username, roomID }) => {
     socket.on("tableChangeUpdate", (data) => {
       if (data.username === username) return;
       setCanEmit(false);
-      console.log(data.updatedData);
       if (data.updatedData.type === "drag") {
         const {itemID, src, deckIndex, x, y} = data.updatedData;
         setTableData((prevTable) => {
@@ -100,6 +99,7 @@ const Table = ({ socket, username, roomID }) => {
           } else {
             targetItem = prevTable[src][deckIndex].find((item) => item.id === itemID);
           }
+          console.log(targetItem);
           // From table to table
           if (!dest) {
             const piles = prevTable.cards.filter(({id}) => pileIds.includes(id));
@@ -262,7 +262,7 @@ const Table = ({ socket, username, roomID }) => {
           setItemUpdated={setItemUpdated}
         />
         ))}
-        {tableData?.cards?.filter(card => !!card).map((card) => (
+        {tableData?.cards?.map((card) => (
             <Group 
               key={`card_${card.id}`}
               onContextMenu={(e) => handleContextMenu(e, card.id)}
