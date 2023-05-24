@@ -46,7 +46,6 @@ const Table = ({ socket, username, roomID }) => {
 
   useEffect(() => {
     socket.on("tableReload", (data) => {
-      console.log(data);
       setTableData(data);
     });
 
@@ -99,7 +98,6 @@ const Table = ({ socket, username, roomID }) => {
           } else {
             targetItem = prevTable[src][deckIndex].find((item) => item.id === itemID);
           }
-          console.log(itemID, src, targetItem);
           if (!targetItem) return prevTable;
           // From table to table
           if (!dest) {
@@ -344,20 +342,17 @@ const Table = ({ socket, username, roomID }) => {
   //   setCanEmit(true);
   //   setTableData((prevTable) => {
   //     // put cards to deck
-  //     console.log(prevTable.deck);
   //     prevTable.deck = prevTable.deck
   //                       .map((pile, index) => pile
   //                         .concat(prevTable.cards
   //                           .filter(card => prevTable.cardsInDeck[index]
   //                             .includes(card))));
   //     // set cards in deck to starting position
-  //     console.log(prevTable.deck);
   //     prevTable.deck = prevTable.deck.map((pile) => pile.map((card) => {
   //       card.x = Constants.DECK_STARTING_POSITION_X + Constants.DECK_PADDING;
   //       card.y = Constants.DECK_STARTING_POSITION_Y + Constants.DECK_PADDING;
   //       return card;
   //     }));
-  //     console.log(prevTable.deck);
   //     prevTable.cards = [];
   //     // flip all deck
   //     // prevTable.deck = prevTable.deck[0].map((card) => {

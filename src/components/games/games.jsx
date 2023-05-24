@@ -25,7 +25,7 @@ const Games = () => {
       .catch((error) => {
         console.log(error);
       });
-  }, [isLoading, games]);
+  }, []);
 
   //Creating a room by sending a post request with the cardDeck and game name and redirecting to the live room created
   const createroom = async (gameId) => {

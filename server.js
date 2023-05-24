@@ -169,6 +169,7 @@ io.on("connection", async (socket) => {
           targetItem.pile.forEach((item, index) => {
             item.x = x;
             item.y = y;
+            item.isFlipped = false;
             if (x + CARD_WIDTH + (index + 1) * PAD <= HAND_WIDTH) {
               item.x += (index + 1) * PAD;
             }
@@ -176,6 +177,7 @@ io.on("connection", async (socket) => {
           });
           targetItem.pile = [];
         }
+        targetItem.isFlipped = false;
         ALLROOMSDATA[roomID].hand[username].push(targetItem);
       } else {
         if (targetItem.pile.length > 0) {
@@ -247,14 +249,14 @@ io.on("connection", async (socket) => {
   // Listen for item Action (flip, etc.) client-side, then update the server-side information.
   socket.on("itemAction", ({ username, roomID, itemUpdated }) => {
     if (ALLROOMSDATA[roomID] && itemUpdated) {
-      const { itemID, option } = itemUpdated;
+      const { itemID, option, isFlipped } = itemUpdated;
       if (option === "Flip") {
         ALLROOMSDATA[roomID].cards.map(item => {
           if (item.id !== itemID) return item;
           if (item.pile.length > 0) {
-            item.pile.map(itemInPile => itemInPile.isFlipped = !itemInPile.isFlipped);
+            item.pile.map(itemInPile => itemInPile.isFlipped = isFlipped);
           }
-          item.isFlipped = !item.isFlipped;
+          item.isFlipped = isFlipped;
           return item;
         });
       } else if (option === "Disassemble") {
@@ -339,30 +341,57 @@ app.get("/api/room", async (req, res) => {
 app.post("/api/room", async (req, res) => {
   const ROOM_ID_LENGTH = 10;
 
+  /**
+   * Fill up the array to the number of Items declared.
+   * @param {Array} deck 
+   * @param {Number} numCards 
+   * @returns Array with size numCards, filled with deep copies of items.
+   */
   const setUpTokenAndPiece = (deck, numCards) => {
     if (deck.length < numCards) {
       const maxIndex = deck.length;
       return Array.from({length: numCards}, (_, i) => {
-        const newItem = structuredClone(deck[i % maxIndex]);
+        const newItem = JSON.parse(JSON.stringify(deck[i % maxIndex]));
         newItem.id += i;
         return newItem;
       });
     }
     return deck;
   };
+  
+  /**
+   * Shuffle the cards before placing on table.
+   * @param {Array} array of cards 
+   */
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+  };
 
+  /**
+   * Filter the item array by the type specified
+   * @param {Array} items all items
+   * @param {String} itemType Card, Token or Piece 
+   * @returns Card, Token or Piece array
+   */
   const filterMapItem = (items, itemType) => {
     return items.reduce((acc, item) => {
       if (item.type === itemType) {
         if (itemType !== "Card") {
           acc.push(setUpTokenAndPiece(item.deck, item.numCards));
         } else {
+          shuffleArray(item.deck);
           acc.push(item.deck);
         }
       }
       return acc;
     }, []);
-  }
+  };
+  
   try {
     const deckIds = req.body?.cardDeck;
     if (!deckIds || deckIds.length < 1) {
@@ -406,7 +435,6 @@ app.post("/api/register", async (req, res) => {
     email: req.body.email,
     password: req.body.password,
   });
-  console.log(newUser);
   try {
     // Check if a user with the same username already exists in the database
     if (await User.findOne({ 
