@@ -8,7 +8,8 @@
 // ie: inside deck.jsx.
 
 import useImage from "use-image";
-import { Image } from "react-konva";
+import { Image, Text, Rect, Group } from "react-konva";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../util/constants";
 const Buffer = require("buffer").Buffer;
 
 const Card = ({
@@ -18,23 +19,65 @@ const Card = ({
   x,
   y,
   isLandscape,
+  cardCount,
+  onMouseEnter,
+  onMouseLeave,
   onDragMove,
   onDragEnd,
 }) => {
 
   const [img] = useImage(`data:image/${src.contentType};base64,${Buffer.from(src.data).toString("base64")}`);
+  const cardWidth = img ? img.width : 0;
+  const cardHeight = img ? img.height : 0;
+
   return (
-    <Image
-      key={id}
-      x={x}
-      y={y}
-      image={img}
-      isLandscape={isLandscape}
-      rotation={isLandscape ? 90: 0}
-      draggable
-      onDragMove={(e) => {onDragMove(e, id);}}
-      onDragEnd={(e) => {onDragEnd(e, id);}}
-    />
+    <Group>
+      <Image
+        key={id}
+        x={x}
+        y={y}
+        image={img}
+        isLandscape={isLandscape}
+        rotation={isLandscape ? 90: 0}
+        draggable
+        type={type}
+        onMouseEnter={(e) => {onMouseEnter(e, id);}}
+        onMouseLeave={(e) => {onMouseLeave(e);}}
+        onDragMove={(e) => {onDragMove(e, id);}}
+        onDragEnd={(e) => {onDragEnd(e, id);}}
+        dragBoundFunc={(pos) => {
+          // Define the boundaries of the tabletop
+          const tabletopWidth = CANVAS_WIDTH;
+          const tabletopHeight = CANVAS_HEIGHT;
+      
+          // Calculate the restricted position
+          const restrictedX = Math.max(0, Math.min(tabletopWidth - img.width, pos.x));
+          const restrictedY = Math.max(0, Math.min(tabletopHeight - img.height, pos.y));
+      
+          return { x: restrictedX, y: restrictedY };
+        }}
+      />
+      {cardCount > 1 && (
+        <>
+          <Rect
+            x={x}
+            y={y + cardHeight-1}
+            width={cardWidth}
+            height={20}
+            fill="#163B6E"
+          />
+          <Text
+            x={x + cardWidth / 2 - (cardCount > 9 ? 12 : 5)}
+            y={y + cardHeight + 1.5}
+            text={cardCount}
+            fontSize={16}
+             fill="white"
+            fontStyle="bold"
+            fontFamily="Nunito"
+          />
+        </>
+      )}
+    </Group>
   );
 }
 

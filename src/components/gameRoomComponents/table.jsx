@@ -10,21 +10,25 @@ import Piece from "./piece";
 import RightClickMenu from './rightClickMenu';
 import useImage from "use-image";
 import handIcon from "../icons/hand-regular.png";
-import { onDragMoveGA, onDragEndGA } from "../gameaction/gameaction";
+import { onDragMoveGA, onDragEndGA, onMouseEnterGA, onMouseLeaveGA } from "../gameaction/gameaction";
 
 const Table = ({ socket, username, roomID }) => {
   const [tableData, setTableData] = useState(null);
   const [cursors, setCursors] = useState([]);
   const [rightClickPos, setRightClickPos] = useState({ x: null, y: null });
+  const [options, setOptions] = useState([]);
   const [clickedID, setClickedID] = useState(null);
   const [canEmit, setCanEmit] = useState(true);
   const [itemUpdated, setItemUpdated] = useState(null);
+  const [itemHovered, setItemHovered] = useState({ width: null, height: null });
 
-  const GA_PARAMS = {setCanEmit, setTableData, emitMouseChange, tableData, setItemUpdated};
+  const GA_PARAMS = {setCanEmit, setTableData, emitMouseChange, tableData, setItemUpdated, setItemHovered, itemHovered};
 
   useEffect(() => {
     if (!canEmit || !itemUpdated) return;
     if (itemUpdated.type === "drag") {
+      // Close the right click menu on drag
+      handleCloseMenu();
       socket.emit("itemDrag", { username, roomID, itemUpdated },
         (err) => {if (err) console.error(err);}
       );
@@ -116,6 +120,11 @@ const Table = ({ socket, username, roomID }) => {
               prevTable.hand = prevTable.hand.filter(item => item.id !== itemID);
             } else {
               prevTable[src][deckIndex] = prevTable[src][deckIndex].filter((card) => card.id !== itemID);
+              // Automatically remove any decks with no cards left inside them
+              if (prevTable[src][deckIndex].length < 1) {
+                prevTable[src].splice(deckIndex, 1);
+                prevTable.deckDimension.splice(deckIndex, 1);
+              }
             }
             prevTable.cards.push(targetItem);
           } else if (dest === "hand") {
@@ -160,14 +169,32 @@ const Table = ({ socket, username, roomID }) => {
           } else if (option === "Disassemble") {
             prevTable.cards.forEach((card) => {
               if (card.id === itemID && card.pile.length > 0) {
+                // Change these numbers based on the canvas width and height
+                const xOffset = card.x > 600 ? -20 : 20;
+                const yOffset = card.y > 240 ? -20 : 20;
+
                 card.pile.forEach((cardInPile, index) => {
                   prevTable.cards.push(cardInPile);
-                  cardInPile.x = card.x + (index+1)*20;
-                  cardInPile.y = card.y + (index+1)*20;
+                  cardInPile.x = card.x + (index + 1) * xOffset;
+                  cardInPile.y = card.y + (index + 1) * yOffset;
                 });
                 card.pile = []
               };
             });
+          } else if (option === "Shuffle") {
+            const cards = prevTable.cards.map(card => {
+              if (card.id === itemID && card.pile.length > 0) {
+                card = data.updatedData.shuffledPile.finalCard;
+              }
+              return card;
+            });
+            prevTable.cards = cards;
+          } else if (option === "Lock" || option === "Unlock") {
+            prevTable.cards = data.updatedData.isLocked[0];
+            prevTable.deck = data.updatedData.isLocked[1];
+            prevTable.deckDimension = data.updatedData.isLocked[2];
+          } else if (option === "Split") {
+            prevTable.cards = data.updatedData.splitPile;
           }
           return {...prevTable};
         });
@@ -187,6 +214,14 @@ const Table = ({ socket, username, roomID }) => {
           }
           return cursor;
         });
+      });
+    });
+
+    socket.on("userDisconnected", ({username: cursorLeft}) => {
+      setCursors((prevCursors) => {
+        // Use the filter method to remove the matching cursor
+        const updatedCursors = prevCursors.filter((cursor) => cursor.username !== cursorLeft);
+        return updatedCursors;
       });
     });
 
@@ -228,16 +263,23 @@ const Table = ({ socket, username, roomID }) => {
           height={Constants.HAND_HEIGHT}
           fill="#163B6E"
         />
-        {tableData?.deck?.map((deck, index) => (
-          <Deck
-          key={`deck_${index}`}
-          tableData={tableData}
-          deckIndex={index}
-          setCanEmit={setCanEmit}
-          setTableData={setTableData}
-          emitMouseChange={emitMouseChange}
-          setItemUpdated={setItemUpdated}
-        />
+        {tableData?.deckDimension?.map((deck, index) => (
+          <Group 
+            key={`deck_${index}`}
+            onContextMenu={(e) => handleContextMenu(e, index)}
+          >
+            <Deck
+              key={`deck_${deck.id}`}
+              id={deck.id}
+              tableData={tableData}
+              deckIndex={index}
+              setCanEmit={setCanEmit}
+              setTableData={setTableData}
+              emitMouseChange={emitMouseChange}
+              setItemUpdated={setItemUpdated}
+              setItemHovered={setItemHovered}
+            />
+          </Group>
         ))}
         {tableData?.tokens?.map((token, index) => (
           <Token
@@ -248,6 +290,7 @@ const Table = ({ socket, username, roomID }) => {
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
           setItemUpdated={setItemUpdated}
+          setItemHovered={setItemHovered}
         />
         ))}
         {tableData?.pieces?.map((piece, index) => (
@@ -259,6 +302,7 @@ const Table = ({ socket, username, roomID }) => {
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
           setItemUpdated={setItemUpdated}
+          setItemHovered={setItemHovered}
         />
         ))}
         {tableData?.cards?.map((card) => (
@@ -278,6 +322,9 @@ const Table = ({ socket, username, roomID }) => {
                 x={card.x}
                 y={card.y}
                 isLandscape={card.isLandscape}
+                cardCount={card.pile.length+1}
+                onMouseEnter={(e, id) => onMouseEnterGA(e, id, GA_PARAMS)}
+                onMouseLeave={(e) => onMouseLeaveGA(e, GA_PARAMS)}
                 onDragMove={(e, id) => onDragMoveGA(e, id, GA_PARAMS, "cards")}
                 onDragEnd={(e, id) => onDragEndGA(e, id, GA_PARAMS, "cards")}
               />
@@ -290,6 +337,7 @@ const Table = ({ socket, username, roomID }) => {
             x={rightClickPos.x}
             y={rightClickPos.y}
             itemID={clickedID}
+            options={options}
             setTableData={setTableData}
             setCanEmit={setCanEmit}
             setRightClickPos={setRightClickPos}
@@ -303,11 +351,22 @@ const Table = ({ socket, username, roomID }) => {
           setTableData={setTableData}
           emitMouseChange={emitMouseChange}
           setItemUpdated={setItemUpdated}
+          setItemHovered={setItemHovered}
         />
       </Layer>
       <Layer>
         <HandImage/>
         <Cursors key={`cursor_${username}`} cursors={cursors} />
+      </Layer>
+      <Layer>
+        {itemHovered.width !== null && itemHovered.height !== null && (
+          <Image
+            x={Constants.CANVAS_WIDTH/2 - itemHovered.width/2}
+            y={Constants.CANVAS_HEIGHT/2 + itemHovered.height}
+            image={itemHovered.image}
+            scaleX={2}
+            scaleY={2}/>
+        )}
       </Layer>
     </>
   );
@@ -333,8 +392,13 @@ const Table = ({ socket, username, roomID }) => {
       left: konvaLeft
     } = document.querySelector(".konvajs-content").getBoundingClientRect();
     const {clientY, clientX} = event.evt;
-    setRightClickPos({ x: clientX - konvaLeft - 1, y: clientY - konvaTop - 1});
+    const xOffset = clientX > Constants.CANVAS_WIDTH/2 ? 97 : 0;
+    setRightClickPos({ x: clientX - konvaLeft - 1 - xOffset, y: clientY - konvaTop - 1});
     setClickedID(itemID);
+    if (tableData.cards.find(card => card.id === itemID)) {
+      if (tableData.cards.find(card => card.id === itemID).pile.length > 0) setOptions(['Flip', 'Shuffle', 'Split', 'Disassemble', 'Lock']);
+      else setOptions(['Flip']);
+    } else setOptions(['Unlock']);
   }
 
   // To Do: assign these functions to individual deck so that each decks can be collected/shuffled.

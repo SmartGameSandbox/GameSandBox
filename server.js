@@ -67,6 +67,8 @@ cron.schedule(
   }
 );
 
+const socketUserMap = {};
+
 // Web sockets
 io.on("connection", async (socket) => {
   // Attempt to join room given roomID
@@ -97,6 +99,7 @@ io.on("connection", async (socket) => {
     // Create server-side array "deckDimension" if it doesn't exist.
     // Collection of dimension (x, y, width, height) for card decks.
     ALLROOMSDATA[roomID].deckDimension ??= ALLROOMSDATA[roomID].deck?.map(deck => ({
+                                                                              id: uuidv4(),
                                                                               x: deck[0].x,
                                                                               y: deck[0].y,
                                                                               width: deck[0].width,
@@ -115,6 +118,7 @@ io.on("connection", async (socket) => {
     });
     // add user to the user array here
     console.log(`User ${username} joined room ${roomID}`);
+    socketUserMap[socket.id] = username;
   });
 
   // Listen for item Drop(dragDown) on client-side, then update the server-side information.
@@ -151,6 +155,11 @@ io.on("connection", async (socket) => {
           itemUpdated.handItem = targetItem;
         } else {
           ALLROOMSDATA[roomID][src][deckIndex] = ALLROOMSDATA[roomID][src][deckIndex].filter((card) => card.id !== itemID);
+          // Automatically remove any decks with no cards left inside them
+          if (ALLROOMSDATA[roomID][src][deckIndex].length < 1) {
+            ALLROOMSDATA[roomID][src].splice(deckIndex, 1);
+            ALLROOMSDATA[roomID].deckDimension.splice(deckIndex, 1);
+          }
         }
         ALLROOMSDATA[roomID].cards.push(targetItem);
         // To hands
@@ -249,7 +258,7 @@ io.on("connection", async (socket) => {
   // Listen for item Action (flip, etc.) client-side, then update the server-side information.
   socket.on("itemAction", ({ username, roomID, itemUpdated }) => {
     if (ALLROOMSDATA[roomID] && itemUpdated) {
-      const { itemID, option, isFlipped } = itemUpdated;
+      const { itemID, option, isFlipped, isLocked, shuffledPile, splitPile } = itemUpdated;
       if (option === "Flip") {
         ALLROOMSDATA[roomID].cards.map(item => {
           if (item.id !== itemID) return item;
@@ -262,14 +271,30 @@ io.on("connection", async (socket) => {
       } else if (option === "Disassemble") {
         ALLROOMSDATA[roomID].cards.forEach((card) => {
           if (card.id === itemID && card.pile.length > 0) {
+            const xOffset = card.x > 600 ? -20 : 20;
+            const yOffset = card.y > 240 ? -20 : 20;
             card.pile.forEach((cardInPile, index) => {
               ALLROOMSDATA[roomID].cards.push(cardInPile);
-              cardInPile.x = card.x + (index+1)*20;
-              cardInPile.y = card.y + (index+1)*20;
+              cardInPile.x = card.x + (index + 1) * xOffset;
+              cardInPile.y = card.y + (index + 1) * yOffset;
             });
             card.pile = []
           };
         });
+      } else if (option == 'Shuffle') {
+        const cards = ALLROOMSDATA[roomID].cards.map(card => {
+          if (card.id === itemID && card.pile.length > 0) {
+            card = shuffledPile.finalCard;
+          }
+          return card;
+        });
+        ALLROOMSDATA[roomID].cards = cards;
+      } else if (option === "Lock" || option === "Unlock") {
+        ALLROOMSDATA[roomID].cards = isLocked[0];
+        ALLROOMSDATA[roomID].deck = isLocked[1];
+        ALLROOMSDATA[roomID].deckDimension = isLocked[2];
+      } else if (option === "Split") {
+        ALLROOMSDATA[roomID].cards = splitPile;
       }
       io.to(roomID).emit("tableChangeUpdate", {
         username,
@@ -289,6 +314,25 @@ io.on("connection", async (socket) => {
       x: x,
       y: y,
       username: username,
+    });
+  });
+
+  socket.on("disconnecting", () => {
+    const rooms = Array.from(socket.rooms);
+    const username = socketUserMap[socket.id];
+
+    rooms.forEach((room) => {
+      if (room !== socket.id) {
+        // // This check ensures that you don't emit to the socket's own ID
+        io.to(room).emit("userDisconnected", {
+          username: username,
+        });
+
+        // Remove the entry from the map to clean up
+        delete socketUserMap[socket.id];
+
+        console.log('User ' + username + ' left room ' + room);
+      }
     });
   });
 });
@@ -491,6 +535,62 @@ app.post("/api/login", async (req, res) => {
       message: "User login successful",
       user: user,
       token: token,
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: err.message
+    });
+  }
+});
+
+app.get('/api/profile', async (req, res) => {
+  // Handle the request and send a response
+  const creatorId = req.query.creatorId;
+  try {
+    const user = await User.findById(creatorId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      email: user.email,
+    });
+  } catch (err) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/profileUpdate', async (req, res) => {
+  try {
+    // Find the user by their user ID
+    const existingUser = await User.findById(req.query.creatorId);
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    // Check if the new username is already in use by someone else
+    const newUsername = req.body.username;
+    const usernameExists = await User.findOne({ username: newUsername });
+
+    if (usernameExists) {
+      return res.status(400).json({
+        message: "Username already exists"
+      });
+    }
+
+    // Update the username of the existing user
+    existingUser.username = newUsername;
+    await existingUser.save();
+
+    res.json({
+      status: "success",
+      message: "Profile updated",
+      user: existingUser,
     });
   } catch (err) {
     res.status(400).json({
@@ -743,7 +843,7 @@ if (process.env.NODE_ENV === "production") {
 
   // Handle all routes with a wildcard (*) and send the "index.html" file
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "build", "index.html"));
+    res.sendFile(path.resolve(__dirname, "build", "index.js"));
   });
 }
 

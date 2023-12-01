@@ -48,6 +48,11 @@ const Login = () => {
           bcryptjs.compare(password, response.data.user.password, (err, result) => {
             if (result) {
               setErrorMessage("");
+
+              // INVESTIGATE WHY THIS WORKS ON LIVE BUT NOT DEV =====================
+              localStorage.setItem("username", response.data.user.username);
+              localStorage.setItem("id", response.data.user._id);
+
               sessionStorage.setItem("username", response.data.user.username);
               sessionStorage.setItem("id", response.data.user._id);
               sessionStorage.setItem("token", response.data.token); // Store generated authentication token in session storage

@@ -4,12 +4,12 @@ import { useRef } from "react";
 import Card from "./card";
 import * as Constants from "../../util/constants";
 import { Rect } from "react-konva";
-import { onDragMoveGA, onDragEndGA } from "../gameaction/gameaction";
+import { onDragMoveGA, onDragEndGA, onMouseEnterGA, onMouseLeaveGA } from "../gameaction/gameaction";
 
 // deck data
 const Token = (props) => {
   const { tableData, deckIndex } = props;
-
+  
   const deckDimension = useRef(null);
   deckDimension.current ??= {
     x: tableData.tokens[deckIndex][0].x,
@@ -42,6 +42,8 @@ const Token = (props) => {
             y={deckDimension.current.y + Constants.DECK_PADDING}
             onDragEnd={(e, id) => onDragEndGA(e, id, props, "tokens")}
             onDragMove={(e, id) => onDragMoveGA(e, id, props, "tokens")}
+            onMouseEnter={(e, id) => onMouseEnterGA(e, id, props)}
+            onMouseLeave={(e) => onMouseLeaveGA(e, props)}
             draggable
           />
         ))}

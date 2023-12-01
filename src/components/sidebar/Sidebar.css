@@ -103,6 +103,71 @@
     margin: auto auto auto 10%;
 }
 
+/* PROFILE MODAL ================================== */
+
+.profile-form form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    padding-top: 0;
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+    gap: 1em;
+}
+
+.profile-form .row {
+    width: 90%;
+    min-height: 38px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-form label {
+    text-align: end;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.profile-form form div {
+    overflow-y: hidden;
+}
+
+.profile-form form div.hide {
+    max-height: 0;
+    min-height: 0;
+    transition: max-height 100ms;
+}
+
+.profile-form input {
+    border-radius: 10px;
+    border: none;
+    height: 34px;
+    width: fit-content;
+    padding-left: 15px;
+    font-family: Nunito;
+    font-weight: bold;
+}
+
+.profile-form input[type="text"] {
+    margin-right: 1px;
+}
+
+.profile-form input[type="text"]:focus {
+    outline: #163B6E solid 1px;
+}
+
+.profile-form #errorModal {
+    display: none;
+    color: red;
+}
+
+/* ANIMATIONS ======================================= */
+
 @keyframes rotation {
     from {
         transform: rotate(0deg);

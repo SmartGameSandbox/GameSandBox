@@ -19,3 +19,7 @@ export const roomWrapper = {
     minHeight: `${Constants.CANVAS_HEIGHT}px`,
     boxSizing: "border-box"
 };
+
+export const inviteWrapper = {
+    marginRight: '50px',
+}

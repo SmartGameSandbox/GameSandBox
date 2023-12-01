@@ -6,6 +6,7 @@ import { FaArrowLeft, FaEdit, FaSave } from "react-icons/fa";
 import BottomToolbar from "./bottomToolbar";
 import { SMARTButton } from "../button/button";
 import { CANVAS_HEIGHT, HAND_HEIGHT, CANVAS_WIDTH } from "../../util/constants";
+import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 const Buffer = require("buffer").Buffer;
 
 /**
@@ -13,6 +14,8 @@ const Buffer = require("buffer").Buffer;
  * @component
  */
 const BuildGamePage = () => {
+
+  const tabletopRef = useRef(null);
 
   const location = useLocation();
   const [header, setHeader] = useState(location.state.name);
@@ -70,9 +73,10 @@ const BuildGamePage = () => {
 
   return (
     <>
-      <div
-        className="blur"
-        style={{display: `${itemToAdd ? 'block' : 'none'}`}}/>
+
+      <div className="blur" style={{display: `${itemToAdd ? 'block' : 'none'}`}}>
+        <LoadingSpinner />
+      </div>
 
       <div className="bgame-header">
         <SMARTButton
@@ -102,8 +106,8 @@ const BuildGamePage = () => {
             : <FaEdit fontSize="large" />}
         </SMARTButton>
       </div>
-
-      <div className="bgame-tabletop">
+              
+      <div className="bgame-tabletop" style={{zIndex: `${itemToAdd ? 200 : 50}`}} ref={tabletopRef}>
         <Stage width={CANVAS_WIDTH} height={CANVAS_HEIGHT - HAND_HEIGHT}>
           <Layer id="layer">
             <Rect
@@ -122,16 +126,28 @@ const BuildGamePage = () => {
             />
             {displayItems.map(({images, x, y}, index) => (
               images.map((img, index2) => (
-                <Image
-                key={`${index}-${index2}`}
-                image={img}
-                x={x}
-                y={y}
-                width={img.width}
-                height={img.height}
-                draggable
-                rotation = {img.className === "landscape" ? 90 : 0}
-              />
+                  <Image
+                  key={`${index}-${index2}`}
+                  image={img}
+                  x={x}
+                  y={y}
+                  width={img.width}
+                  height={img.height}
+                  draggable
+                  rotation = {img.className === "landscape" ? 90 : 0}
+                  dragBoundFunc={(pos) => {
+                    // Define the boundaries of the tabletop
+                    const tabletop = tabletopRef.current;
+                    const tabletopWidth = CANVAS_WIDTH;
+                    const tabletopHeight = tabletop.clientHeight;
+                
+                    // Calculate the restricted position
+                    const restrictedX = Math.max(0, Math.min(tabletopWidth - img.width, pos.x));
+                    const restrictedY = Math.max(0, Math.min(tabletopHeight - img.height, pos.y));
+                
+                    return { x: restrictedX, y: restrictedY };
+                  }}
+                  />
               ))
             ))}
             {!!itemToAdd && (

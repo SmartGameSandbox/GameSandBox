@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { SMARTButton } from "../button/button";
 import { BASE_URL, CARD_HEIGHT, CARD_WIDTH, CANVAS_WIDTH } from '../../util/constants';
@@ -23,6 +23,37 @@ const ImageUploadForm = ({
   const [isSingleBack, setIsSingleBack] = useState(false);
   const [isLandScape, setIsLandScape] = useState(false);
   const [itemType, setItemType] = useState("Card");
+
+  const numAcrossRef = useRef(null);
+  const numDownRef = useRef(null);
+  const numTotalRef = useRef(null);
+
+  useEffect(() => {
+    // Calculate the total number of item types and update "numTotal" when "numAcross" or "numDown" changes
+    const updateTotal = () => {
+      const numAcross = parseInt(numAcrossRef.current.value, 10) || 0;
+      const numDown = parseInt(numDownRef.current.value, 10) || 0;
+      numTotalRef.current.value = numAcross * numDown;
+    };
+  
+    const numAcrossInput = numAcrossRef.current;
+    const numDownInput = numDownRef.current;
+  
+    if (numAcrossInput && numDownInput) {
+      numAcrossInput.addEventListener("input", updateTotal);
+      numDownInput.addEventListener("input", updateTotal);
+    }
+  
+    // Clean up the event listeners when the component unmounts
+    return () => {
+      if (numAcrossInput) {
+        numAcrossInput.removeEventListener("input", updateTotal);
+      }
+      if (numDownInput) {
+        numDownInput.removeEventListener("input", updateTotal);
+      }
+    };
+  }, []);
 
   // check if itemtype button is active or not
   const checkItemType = (inputType) => inputType === itemType ? "active" : "";
@@ -86,11 +117,12 @@ const ImageUploadForm = ({
 
         <div className="row">
           <label>{`Number of ${itemType}s Across:`}</label>
-          <input
-            type="number"
-            name="numAcross"
-            defaultValue={1}
-            min={1}
+          <input 
+            type="number" 
+            name="numAcross" 
+            defaultValue={1} 
+            min={1} 
+            ref={numAcrossRef}
           />
         </div>
 
@@ -101,16 +133,18 @@ const ImageUploadForm = ({
             name="numDown"
             defaultValue={1}
             min={1}
+            ref={numDownRef}
           />
         </div>
 
-        <div className="row">
+        <div className="row total">
           <label>{`Total Number of ${itemType}s:`}</label>
           <input
             type="number"
             name="numTotal"
             defaultValue={1}
             min={1}
+            ref={numTotalRef}
           />
         </div>
 
@@ -169,6 +203,9 @@ const ImageUploadForm = ({
   async function handleSubmit (e) {
     e.preventDefault();
     const setters = { Card: setDecks, Token: setTokens, Piece: setPieces };
+
+    // Add the screen blur while loading
+    document.querySelector(".blur").style.display = "block";
     
     const formData = new FormData(e.currentTarget);
     formData.append("itemType", itemType);
@@ -198,6 +235,7 @@ const ImageUploadForm = ({
         });
         setters[itemType](prevItems => [...prevItems, newItem]);
         closePopup();
+        
       })
       .catch((err) => console.log(err));
   };

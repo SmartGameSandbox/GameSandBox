@@ -5,7 +5,7 @@
 
 import React from 'react';
 import Card from './card'
-import { onDragMoveGA, onDragEndGA } from "../gameaction/gameaction";
+import { onDragMoveGA, onDragEndGA, onMouseEnterGA, onMouseLeaveGA } from "../gameaction/gameaction";
 
 // deck data
 const Hand = (props) => {
@@ -26,6 +26,8 @@ const Hand = (props) => {
                     x={card.x}
                     y={card.y}
                     isLandscape={card.isLandscape}
+                    onMouseEnter={(e, id) => onMouseEnterGA(e, id, props)}
+                    onMouseLeave={(e) => onMouseLeaveGA(e, props)}
                     onDragEnd={(e, id) => onDragEndGA(e, id, props, "hand")}
                     onDragMove={(e, id) => onDragMoveGA(e, id, props, "hand")}
                     draggable

@@ -25,10 +25,12 @@ import * as Constants from "../../util/constants";
 export function onDragMoveGA(
   e,
   itemID,
-  {deckIndex, setCanEmit, tableData, setTableData, emitMouseChange, setItemUpdated},
+  {deckIndex, setCanEmit, tableData, setTableData, emitMouseChange, setItemUpdated, setItemHovered},
   src,
   ) {
     setCanEmit(true);
+    // Reset the enlarged image
+    setItemHovered({ width: null, height: null});
     const { x, y } = e.target.attrs;
     let draggedItem;
     if (["cards", "hand"].includes(src)) {
@@ -81,7 +83,7 @@ export function onDragEndGA(
     // identify the item
     if (["cards", "hand"].includes(src)) {
       draggedItem = tableData[src].find((item) => item.id === itemID);
-      deckIndex = tableData.cardsInDeck.findIndex(deck => deck.includes(itemID)) ?? -1;
+      deckIndex = findDeckIndex(tableData.deckDimension, cursorX, cursorY);
     } else {
       draggedItem = tableData[src][deckIndex].find((item) => item.id === itemID);
     }
@@ -156,6 +158,14 @@ export function onDragEndGA(
         } else {
           prevTable[src][deckIndex] = prevTable[src][deckIndex].filter((card) => card.id !== itemID);
         }
+        // Automatically remove any decks with no cards left inside them
+        for (let i = 0; i < prevTable.deck.length; i++) {
+          if (prevTable.deck[i].length < 1) {
+            prevTable.deck.splice(i, 1);
+            prevTable.deckDimension.splice(i, 1);
+          }
+        }
+        
         draggedItem.x = cursorX;
         draggedItem.y = cursorY;
         prevTable.cards.push(draggedItem);
@@ -188,3 +198,45 @@ export function onDragEndGA(
     }
     emitMouseChange(e);
   }
+
+ /**
+   * Handle mouse enter event for a card.
+   * @param {Event} e 
+   * @param {String} itemID 
+   * @param {Object} props or params declared 
+   * @param {String} src
+   */
+export function onMouseEnterGA(e, itemID, { setItemHovered }) {
+  const { x, y, image } = e.target.attrs;
+  if (e.target.attrs.type == "Piece" || e.target.attrs.type == "Token") return;
+  if (image && image.naturalWidth !== undefined && image.naturalHeight !== undefined) {
+    const width = image.naturalWidth * 2;
+    const height = image.naturalHeight * 2;
+    setItemHovered({ x, y, image, width, height });
+  }
+}
+
+/**
+   * Handle mouse enter event for a card.
+   * @param {Event} e 
+   * @param {Object} props or params declared 
+   */
+export function onMouseLeaveGA(e, { setItemHovered }) {
+  setItemHovered({ width: null, height: null });
+}
+
+// Function to find the deckIndex based on cursor position
+function findDeckIndex(deckDimensions, cursorX, cursorY) {
+  for (let i = 0; i < deckDimensions.length; i++) {
+    const { x: deckX, y: deckY, width: deckW, height: deckH } = deckDimensions[i];
+    if (
+      cursorX >= deckX - deckW / 2 &&
+      cursorX <= deckX + deckW / 2 &&
+      cursorY >= deckY - deckH / 2 &&
+      cursorY <= deckY + deckH / 2
+    ) {
+      return i;
+    }
+  }
+  return -1; // Return -1 if no deck is found
+}

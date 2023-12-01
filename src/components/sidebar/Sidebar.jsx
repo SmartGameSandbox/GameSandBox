@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./Sidebar.css";
+import SidebarProfile from "./SidebarProfile";
+import Modal from "../modal/modal";
 import profileIcon from "../icons/account_circle_FILL0_wght400_GRAD0_opsz48.png";
 import settingsIcon from "../icons/settings_FILL0_wght400_GRAD0_opsz48.png";
 import logoutIcon from "../icons/power_settings_new_FILL0_wght400_GRAD0_opsz48.png";
@@ -19,6 +21,11 @@ const Sidebar = () => {
     sessionStorage.clear();
     window.location.href = "/logout";
   }
+
+  const [showForm, setShowForm] = useState(false);
+
+  // for modal
+  const nodeRef = useRef(null);
 
   React.useEffect(() => {
     if (open) {
@@ -61,25 +68,37 @@ const Sidebar = () => {
   }, [open]);
 
   return (
-    <nav className="navbar">
-      <div id="options">
-        <div id="profile" className="option">
-          <img src={profileIcon} alt="Profile" />
-          <a href="/profile">Profile</a>
+    <>
+      <nav className="navbar">
+        <div id="options">
+          <div id="profile" className="option" onClick={() => setShowForm(true)}>
+            <img src={profileIcon} alt="Profile" />
+            <p>Profile</p>
+          </div>
+          <div id="settings" className="option">
+            <img src={settingsIcon} alt="Settings" />
+            <a href="/settings">Settings</a>
+          </div>
+          <div id="logout" className="option" onClick={handleLogout}>
+            <img src={logoutIcon} alt="Logout" />
+            <a href="/logout">Logout</a>
+          </div>
         </div>
-        <div id="settings" className="option">
-          <img src={settingsIcon} alt="Settings" />
-          <a href="/settings">Settings</a>
+        <div id="close-open" onClick={() => { setOpen(!open) }}>
+          <img id="close-arrow" src={arrowIcon} alt="Close" />
         </div>
-        <div id="logout" className="option" onClick={handleLogout}>
-          <img src={logoutIcon} alt="Logout" />
-          <a href="/logout">Logout</a>
-        </div>
-      </div>
-      <div id="close-open" onClick={() => { setOpen(!open) }}>
-        <img id="close-arrow" src={arrowIcon} alt="Close" />
-      </div>
-    </nav>
+      </nav>
+      <Modal
+        title="User Profile"
+        onClose={() => setShowForm(false)}
+        show={showForm}
+        nodeRef={nodeRef}
+      >
+        <SidebarProfile
+          closePopup={() => setShowForm(false)}
+        />
+      </Modal>
+    </>
   );
 }
 

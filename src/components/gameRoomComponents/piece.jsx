@@ -2,7 +2,7 @@
 // Should be renamed to deckOfPieces or whatever you see fit to avoid confusion with deck of cards or tokens.
 
 import Card from "./card";
-import { onDragMoveGA, onDragEndGA } from "../gameaction/gameaction";
+import { onDragMoveGA, onDragEndGA, onMouseEnterGA, onMouseLeaveGA } from "../gameaction/gameaction";
 
 // deck data
 const Piece = (props) => {
@@ -20,6 +20,8 @@ const Piece = (props) => {
           y={card.y}
           onDragEnd={(e, id) => onDragEndGA(e, id, props, "pieces")}
           onDragMove={(e, id) => onDragMoveGA(e, id, props, "pieces")}
+          onMouseEnter={(e, id) => onMouseEnterGA(e, id, props)}
+          onMouseLeave={(e) => onMouseLeaveGA(e, props)}
           draggable
         />
       ))}
