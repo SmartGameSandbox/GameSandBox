@@ -341,7 +341,7 @@ io.on("connect_error", (err) => {
   console.log(`connect_error due to ${err.message}`);
 });
 
-// Restful Apis
+// Restful Apis ==================================================================================================
 // Get all currently hosted rooms.
 app.get("/api/rooms", async (req, res) => {
   try {
@@ -843,7 +843,7 @@ if (process.env.NODE_ENV === "production") {
 
   // Handle all routes with a wildcard (*) and send the "index.html" file
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "build", "index.js"));
+    res.sendFile(path.resolve(__dirname, "build", "index.html"));
   });
 }
 
