@@ -56,7 +56,8 @@ const Register = () => {
   };
 
   const validatePassword = (password) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[_!@#$%^&*?/])[\w!@#$%^&*?/]{8,}$/; // Regex expression to validate password
+//    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[_!@#$%^&*?/])[\w!@#$%^&*?/]{8,}$/; // Regex expression to validate password
+    const passwordRegex = /^.{4,}$/; // Min of 4 characters, don't care what
     return passwordRegex.test(password); // Returns true if password matches regex requirements, false otherwise
   };
 
