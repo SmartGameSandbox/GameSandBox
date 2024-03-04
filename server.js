@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require("uuid");
 const { ObjectId } = require("bson");
 
 const path = require("path");
-const mongoose = require("mongoose");
+//const mongoose = require("mongoose");
 const idGenerator = require("./utils/id_generator");
 const cron = require("node-cron");
 const bcryptjs = require('bcryptjs');
@@ -93,7 +93,7 @@ io.on("connection", async (socket) => {
     // Create server-side array "cardsInDeck" if it doesn't exist.
     // Collection of id of cards that belong to specific deck.
     ALLROOMSDATA[roomID].cardsInDeck ??= ALLROOMSDATA[roomID].deck?.map(deck => deck.map(({id}) => id)) ?? [];
-    
+
     // Create server-side array "deckDimension" if it doesn't exist.
     // Collection of dimension (x, y, width, height) for card decks.
     ALLROOMSDATA[roomID].deckDimension ??= ALLROOMSDATA[roomID].deck?.map(deck => ({
@@ -343,8 +343,8 @@ app.post("/api/room", async (req, res) => {
 
   /**
    * Fill up the array to the number of Items declared.
-   * @param {Array} deck 
-   * @param {Number} numCards 
+   * @param {Array} deck
+   * @param {Number} numCards
    * @returns Array with size numCards, filled with deep copies of items.
    */
   const setUpTokenAndPiece = (deck, numCards) => {
@@ -358,10 +358,10 @@ app.post("/api/room", async (req, res) => {
     }
     return deck;
   };
-  
+
   /**
    * Shuffle the cards before placing on table.
-   * @param {Array} array of cards 
+   * @param {Array} array of cards
    */
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -375,7 +375,7 @@ app.post("/api/room", async (req, res) => {
   /**
    * Filter the item array by the type specified
    * @param {Array} items all items
-   * @param {String} itemType Card, Token or Piece 
+   * @param {String} itemType Card, Token or Piece
    * @returns Card, Token or Piece array
    */
   const filterMapItem = (items, itemType) => {
@@ -391,7 +391,7 @@ app.post("/api/room", async (req, res) => {
       return acc;
     }, []);
   };
-  
+
   try {
     const deckIds = req.body?.cardDeck;
     if (!deckIds || deckIds.length < 1) {
@@ -401,7 +401,7 @@ app.post("/api/room", async (req, res) => {
     while (await Room.findOne({ id: roomID })) {
       roomID = idGenerator(ROOM_ID_LENGTH);
     }
-    
+
     const gameItemData = await Grid.find({ _id: { $in: deckIds } });
     const gameRoomData = {
       id: roomID,
@@ -437,7 +437,7 @@ app.post("/api/register", async (req, res) => {
   });
   try {
     // Check if a user with the same username already exists in the database
-    if (await User.findOne({ 
+    if (await User.findOne({
         username: req.body.username
       })) {
       throw new Error("Username already exists");
@@ -548,7 +548,7 @@ app.post("/api/upload",
     );
     let backArray = null;
     const backType = backFile?.[0].mimetype || "";
-    
+
     // check if backfile exist (card, token)
     if (backFile?.[0].filename) {
       const backImageData = fs.readFileSync(
@@ -557,10 +557,10 @@ app.post("/api/upload",
       backArray = await sliceImages(itemType, backImageData, numAcross, numDown, numTotal, false, isSameBack);
     }
     const faceArray = await sliceImages(itemType, imageData, numAcross, numDown, numTotal);
-    
+
     const gameItemDocuments = await createGameObjects(
                             faceArray, backArray, faceType, backType, isLandscape, itemType);
-    
+
     //To Do: change the key to be more general between card, token, piece and additional future items
     const gameItemDeck = {
       name: facefile,
@@ -628,7 +628,7 @@ app.post("/api/saveGame", async (req, res) => {
 /**
  * Slice image to grid specified by cols and row.
  * The max dimension is set for cards and tokens.
- * 
+ *
  * @param {String} itemType Card, Token or Piece
  * @param {File} ImageData
  * @param {Number} cols number of items across
@@ -636,7 +636,7 @@ app.post("/api/saveGame", async (req, res) => {
  * @param {Number} total total number of items in final array
  * @param {Boolean} isFace whether the image is back or face image file
  * @param {Boolean} isSameBack if true, retain the back image as whole without slicing
- * 
+ *
  * @returns Array of processing image buffer
  */
 const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true, isSameBack = false) => {
@@ -652,7 +652,7 @@ const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true
   // draw border around image
   const extend = itemType === "Card" ? 2 : {};
   const resize = {};
-  
+
   // for backImage with same back
   if (!isFace && isSameBack) {
     if (imgWidth > imgHeight) {
@@ -675,7 +675,7 @@ const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true
     }
   }
 
-  // Slice the image and store in array 
+  // Slice the image and store in array
   const itemArray = [];
   for (let i = 0; i < numRows; i++) {
     const y = i * itemHeight;
@@ -701,7 +701,7 @@ const sliceImages = async (itemType, ImageData, cols, rows, total, isFace = true
 /**
  * Combine face and back array to create a group of functional items
  * with two side (back.data will be null for single sided item (piece))
- * 
+ *
  * @param {Array} cardArray Array of buffer(base64)
  * @param {Array} backArray Array of buffer(base64)
  * @param {String} faceType image format (e.g. image/webp)
@@ -747,17 +747,99 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Start the server and establish a MongoDB connection
-http.listen(port, async (err) => {
-  if (err) return console.log(err);
+//******************************************************************************
+// Start the server and establish a MongoDB connection.
+/*
+const mongoose = require("mongoose");
 
-  try {
-    // Connect to the MongoDB database using provided connection string
-    await mongoose.connect(
-      "mongodb+srv://root:S4ndB0x@game-sandbox.altns89.mongodb.net/data?retryWrites=true&w=majority"
-    );
-  } catch (error) {
-    console.log("db error");
-  }
-  console.log("Server running on port: ", port);
+http.listen (port, async (err) => {
+	if (err) { return (console.log(err)); }
+
+console.log ("Connecting to DB ...");
+	try
+	{
+		// [0] (node:25020) [MONGOOSE] DeprecationWarning: Mongoose: the
+		// `strictQuery` option will be switched back to `false` by default in
+		// Mongoose 7. Use `mongoose.set('strictQuery', false);` if you want to
+		// prepare for this change. Or use `mongoose.set('strictQuery', true);`
+		// to suppress this warning.
+
+		mongoose.set ('strictQuery', false);
+
+		// Connect to the MongoDB database using provided connection string
+		await mongoose.connect (
+//			"mongodb+srv://root:S4ndB0x@game-sandbox.altns89.mongodb.net/data?retryWrites=true&w=majority"
+//			"mongodb+srv://root:S4ndB0x@game-sandbox.altns89.mongodb.net?retryWrites=true&w=majority"
+			"mongodb+srv://alan:1111@game-sandbox.altns89.mongodb.net/data?retryWrites=true&w=majority"
+			);
+	} // try
+	catch (error)
+	{
+console.log (error);
+		console.log ("db error");
+	} // catch
+	console.log ("Server running on port: ", port);
 });
+*/
+
+const { MongoClient, ServerApiVersion } = require('mongodb');
+
+http.listen (port, async (err) => {
+	if (err) { return (console.log(err)); }
+
+	const client = new MongoClient (
+		"mongodb+srv://root:S4ndB0x@game-sandbox.altns89.mongodb.net/data?retryWrites=true&w=majority&tls=true"
+//		"mongodb+srv://root:S4ndB0x@game-sandbox.altns89.mongodb.net/data?retryWrites=true&w=majority&tls=false"
+		, {
+			serverApi: {
+				version: ServerApiVersion.v1,
+				strict: true,
+				deprecationErrors: true,
+				}
+			});
+
+	console.log ("Connecting to DB ...");
+	try
+	{
+		await client.connect();
+		// Send a ping to confirm a successful connection
+		await client.db("admin").command({ ping: 1 });
+		console.log("Pinged your deployment. You successfully connected to MongoDB!");
+	} // try
+	catch (error)
+	{
+		console.log (error);
+	} // catch
+	finally
+	{
+		// Ensures that the client will close when you finish/error
+		await client.close();
+	} // finally
+	console.log ("Server running on port: ", port);
+}); // http.listen
+
+/*
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://root:<password>@game-sandbox.altns89.mongodb.net/?retryWrites=true&w=majority";
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+async function run() {
+  try {
+    // Connect the client to the server	(optional starting in v4.7)
+    await client.connect();
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
+  }
+}
+run().catch(console.dir);
+*/
